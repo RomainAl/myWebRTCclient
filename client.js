@@ -26,7 +26,7 @@ socket.on("create", function () {
     .then(function (stream) {
       /* use the stream */
       userStream = stream;
-      userVideo.volume = 0
+      userVideo.volume = 0;
       userVideo.srcObject = stream;
       userVideo.onloadedmetadata = function (e) {
         userVideo.play();
