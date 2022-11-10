@@ -1,11 +1,9 @@
-// import { io } from "socket.io-client";
 const socket = io.connect("https://192.168.1.41:1337");
 
 const roomName = "test";
 let rtcPeerConnection;
 let currentClientId;
 
-// Contains the stun server URL we will be using.
 let iceServers = {
   iceServers: [
     { urls: "stun:stun.services.mozilla.com" },
@@ -14,8 +12,6 @@ let iceServers = {
 };
 
 socket.emit("join", roomName, true);
-
-// Triggered when a room is succesfully created.
 
 socket.on("offer", function (offer, clientId) {
     currentClientId = clientId;
@@ -37,7 +33,6 @@ socket.on("offer", function (offer, clientId) {
 
 
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
-
 function OnIceCandidateFunction(event) {
     console.log("Candidate");
     if (event.candidate) {
@@ -46,7 +41,6 @@ function OnIceCandidateFunction(event) {
   }
   
   // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
-  
   function OnTrackFunction(event) {
     // Attention need a video to have a sound
     if (event.track.kind === 'video'){
@@ -54,7 +48,7 @@ function OnIceCandidateFunction(event) {
       let video = document.getElementsByName('video'+currentClientId);
       if (video.length == 0){
         video = document.createElement("video");
-        video.setAttribute("name", 'video'+currentClientId)
+        video.setAttribute("name", 'video'+currentClientId);
         videos.appendChild(video);
       }
       video.volume = 0;
@@ -62,6 +56,7 @@ function OnIceCandidateFunction(event) {
       video.onloadedmetadata = function (e) {
           video.play();
       };
+      video.style.display = "none";
     };
 
     if (event.track.kind === 'audio'){

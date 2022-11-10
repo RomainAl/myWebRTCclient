@@ -16,6 +16,10 @@ body {
     margin: 30px auto;
   }
   
+  #videos {
+    display: none;
+  }
+  
   #chat-window {
     height: 400px;
     overflow: auto;
