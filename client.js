@@ -1,7 +1,8 @@
 // import { io } from "socket.io-client";
-const socket = io.connect("https://192.168.1.41:1337");
+const socket = io.connect("https://192.168.1.42:1337");
 
-let userVideo = document.getElementById("user-video");
+let userVideo = document.getElementById("video");
+let userCanvas = document.getElementById("canvas");
 let roomName = "test";
 let rtcPeerConnection;
 let userStream;
@@ -31,6 +32,10 @@ socket.on("create", function () {
       userVideo.onloadedmetadata = function (e) {
         userVideo.play();
       };
+      userVideo.style.display = 'none';
+      const streamVisualizer = new StreamVisualizer(stream, canvas, false);
+      streamVisualizer.start();
+
     })
     .catch(function (err) {
       /* handle the error */

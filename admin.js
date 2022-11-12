@@ -1,4 +1,4 @@
-const socket = io.connect("https://192.168.1.41:1337");
+const socket = io.connect("https://192.168.1.42:1337");
 
 const roomName = "test";
 let rtcPeerConnection;
@@ -67,7 +67,7 @@ function OnIceCandidateFunction(event) {
         canvas.setAttribute("name", 'canvas'+currentClientId)
         canvass.appendChild(canvas);
       }
-      const streamVisualizer = new StreamVisualizer(event.streams[0], canvas);
+      const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, true);
       streamVisualizer.start();
     };
 

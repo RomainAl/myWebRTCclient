@@ -25,7 +25,7 @@ const HEIGHT = 100;
 const SMOOTHING = 0.8;
 const FFT_SIZE = 2048;
 
-function StreamVisualizer(remoteStream, canvas) {
+function StreamVisualizer(remoteStream, canvas, doSound) {
   console.log('Creating StreamVisualizer with remoteStream and canvas: ',
     remoteStream, canvas);
   this.canvas = canvas;
@@ -52,8 +52,9 @@ function StreamVisualizer(remoteStream, canvas) {
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
 
   this.source.connect(this.analyser);
-  this.source.connect(this.context.destination);
-  
+  if (doSound){
+    this.source.connect(this.context.destination);
+  }
   this.startTime = 0;
   this.startOffset = 0;
 }
