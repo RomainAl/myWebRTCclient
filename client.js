@@ -3,9 +3,13 @@ const socket = io.connect("https://192.168.1.42:1337");
 
 let userVideo = document.getElementById("video");
 let userCanvas = document.getElementById("canvas");
+let adminVideo = document.getElementById("adminVideo");
+let adminCanvas = document.getElementById("adminCanvas");
+
 let roomName = "test";
 let rtcPeerConnection;
 let userStream;
+let adminStream;
 
 // Contains the stun server URL we will be using.
 let iceServers = {
@@ -19,10 +23,12 @@ socket.emit("join", roomName, false);
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
+  console.log(navigator.mediaDevices.enumerateDevices())
   navigator.mediaDevices
     .getUserMedia({
-      audio: true,
-      video: { width: 1280, height: 720 },
+      audio: {deviceId: 'f21036352162286635f2fec8212d266ceab219d9a16ef2eaf96f4491864862d6'},
+      video: { width: 1280/2, 
+               height: 720/2 },
     })
     .then(function (stream) {
       /* use the stream */
@@ -32,7 +38,7 @@ socket.on("create", function () {
       userVideo.onloadedmetadata = function (e) {
         userVideo.play();
       };
-      userVideo.style.display = 'none';
+      //userVideo.style.display = 'none';
       const streamVisualizer = new StreamVisualizer(stream, canvas, false);
       streamVisualizer.start();
 
@@ -91,32 +97,6 @@ socket.on("joined", function () {
     });
 });
 
-// Triggered when a room is full (meaning has 2 people).
-
-socket.on("full", function () {
-  alert("Room is Full, Can't Join");
-});
-
-// Triggered when a peer has joined the room and ready to communicate.
-
-socket.on("ready", function () {
-  if (creator) {
-    rtcPeerConnection = new RTCPeerConnection(iceServers);
-    rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
-    rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
-    rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
-    rtcPeerConnection
-      .createOffer()
-      .then((offer) => {
-        rtcPeerConnection.setLocalDescription(offer);
-        socket.emit("offer", offer, roomName);
-      })
-
-      .catch((error) => {
-        console.log(error);
-      });
-  }
-});
 
 // Triggered on receiving an ice candidate from the peer.
 
@@ -141,11 +121,21 @@ function OnIceCandidateFunction(event) {
   }
 }
 
-// Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
+  // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
+  function OnTrackFunction(event) {
+    // Attention need a video to have a sound
+    if (event.track.kind === 'video'){
+      adminVideo.volume = 0;
+      adminVideo.srcObject = event.streams[0];
+      adminVideo.onloadedmetadata = function (e) {
+        adminVideo.play();
+      };
+      //adminVideo.style.display = "none";
+    };
 
-function OnTrackFunction(event) {
-  // peerVideo.srcObject = event.streams[0];
-  // peerVideo.onloadedmetadata = function (e) {
-  //   peerVideo.play();
-  // };
-}
+    if (event.track.kind === 'audio'){
+      const streamVisualizer = new StreamVisualizer(event.streams[0], adminCanvas, true);
+      streamVisualizer.start();
+    };
+
+  }

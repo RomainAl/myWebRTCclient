@@ -1,26 +1,53 @@
 {
   
   "name": "mywebrtcclient",
+  
   "version": "1.0.0",
+  
   "description": "",
+  
   "main": "client.js",
+  
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  
+    
+  "test": "echo \"Error: no test specified\" && exit 1"
+  
   },
+  
   "repository": {
-    "type": "git",
-    "url": "git+https://github.com/RomainAl/myWebRTCclient.git"
+  
+    
+  "type": "git",
+  
+    
+  "url": "git+https://github.com/RomainAl/myWebRTCclient.git"
+  
   },
+  
   "author": "",
+  
   "license": "ISC",
+  
   "bugs": {
-    "url": "https://github.com/RomainAl/myWebRTCclient/issues"
+  
+    
+  "url": "https://github.com/RomainAl/myWebRTCclient/issues"
+  
   },
+  
   "homepage": "https://github.com/RomainAl/myWebRTCclient#readme",
+  
   "dependencies": {
-    "socket.io-client": "^4.5.3"
+    
+  "socket.io-client": "^4.5.3"
+  
   },
+  
   "devDependencies": {
-    "webpack": "^5.74.0"
+  
+    
+  "webpack": "^5.74.0"
+  
   }
 }

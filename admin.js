@@ -1,5 +1,9 @@
 const socket = io.connect("https://192.168.1.42:1337");
 
+let adminVideo = document.getElementById("adminVideo");
+let adminCanvas = document.getElementById("adminCanvas");
+let adminStream;
+
 const roomName = "test";
 let rtcPeerConnection;
 let currentClientId;
@@ -13,12 +17,43 @@ let iceServers = {
 
 socket.emit("join", roomName, true);
 
+socket.on("create", function () {
+  console.log(navigator.mediaDevices.enumerateDevices())
+  navigator.mediaDevices
+    .getUserMedia({
+      audio: true,
+      video: { deviceId : 'c9fb7a7a57de6db00dca4dfd77278ccecdaacca1458d31e7ee058e46cd986c61',
+               width: 1280/2, 
+               height: 720/2 },
+    })
+    .then(function (stream) {
+      /* use the stream */
+      adminStream = stream;
+      adminVideo.volume = 0;
+      adminVideo.srcObject = adminStream;
+      adminVideo.onloadedmetadata = function (e) {
+        adminVideo.play();
+      };
+      //adminStream.style.display = 'none';
+      const streamVisualizer = new StreamVisualizer(stream, adminCanvas, false);
+      streamVisualizer.start();
+
+    })
+    .catch(function (err) {
+      /* handle the error */
+      alert("Couldn't Access User Media");
+      console.log(err);
+    })
+});
+
 socket.on("offer", function (offer, clientId) {
     currentClientId = clientId;
     rtcPeerConnection = new RTCPeerConnection(iceServers);
     rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
     rtcPeerConnection.ontrack = OnTrackFunction;
     rtcPeerConnection.setRemoteDescription(offer);
+    rtcPeerConnection.addTrack(adminStream.getTracks()[0], adminStream);
+    rtcPeerConnection.addTrack(adminStream.getTracks()[1], adminStream);
     rtcPeerConnection
     .createAnswer()
     .then((answer) => {
@@ -56,7 +91,7 @@ function OnIceCandidateFunction(event) {
       video.onloadedmetadata = function (e) {
           video.play();
       };
-      video.style.display = "none";
+      //video.style.display = "none";
     };
 
     if (event.track.kind === 'audio'){
