@@ -19,43 +19,53 @@ let iceServers = {
   ],
 };
 
+const offerOptions = {
+  offerToReceiveAudio: 1,
+  offerToReceiveVideo: 1,
+  voiceActivityDetection: false
+};
+
 socket.emit("join", roomName, false);
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
   console.log(navigator.mediaDevices.enumerateDevices())
+  //navigator.wakeLock.request("screen").then(lock => {setTimeout(()=>Lock.release(), 10*60*1000)});
   navigator.mediaDevices
     .getUserMedia({
-      audio: {deviceId: 'f21036352162286635f2fec8212d266ceab219d9a16ef2eaf96f4491864862d6'},
-      video: { width: 1280/2, 
-               height: 720/2 },
+      audio: true,
+      video: false,
     })
     .then(function (stream) {
       /* use the stream */
       userStream = stream;
-      userVideo.volume = 0;
-      userVideo.srcObject = stream;
-      userVideo.onloadedmetadata = function (e) {
-        userVideo.play();
-      };
-      //userVideo.style.display = 'none';
+      const audioTracks = userStream.getAudioTracks();
+      if (audioTracks.length > 0) {
+        console.log(`Using Audio device: ${audioTracks[0].label}`);
+      }
+      userVideo.style.display = 'none';
       const streamVisualizer = new StreamVisualizer(stream, canvas, false);
       streamVisualizer.start();
 
     })
     .catch(function (err) {
       /* handle the error */
-      alert("Couldn't Access User Media");
+      alert(`getUserMedia() error: ${err.name}`);
       console.log(err);
     })
     .then(function(){
       rtcPeerConnection = new RTCPeerConnection(iceServers);
       rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
       rtcPeerConnection.ontrack = OnTrackFunction;
+      //userStream.getTracks().forEach(track => rtcPeerConnection.addTrack(track, userStream));
+      console.log('Adding Local Stream to peer connection');
+      // rtcPeerConnection = new RTCPeerConnection(iceServers);
+      // rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
+      // rtcPeerConnection.ontrack = OnTrackFunction;
       rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
-      rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
+      //rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
       rtcPeerConnection
-        .createOffer()
+        .createOffer(offerOptions)
         .then((offer) => {
           rtcPeerConnection.setLocalDescription(offer);
           socket.emit("offer", offer);
@@ -134,7 +144,7 @@ function OnIceCandidateFunction(event) {
     };
 
     if (event.track.kind === 'audio'){
-      const streamVisualizer = new StreamVisualizer(event.streams[0], adminCanvas, true);
+      const streamVisualizer = new StreamVisualizer(event.streams[0], adminCanvas, false);
       streamVisualizer.start();
     };
 

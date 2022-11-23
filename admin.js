@@ -78,13 +78,13 @@ function OnIceCandidateFunction(event) {
   // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
   function OnTrackFunction(event) {
     // Attention need a video to have a sound
-    if (event.track.kind === 'video'){
-      let videos = document.getElementById('videos');
+    if (event.track.kind === 'audio'){
+      let medias = document.getElementById('medias');
       let video = document.getElementsByName('video'+currentClientId);
       if (video.length == 0){
         video = document.createElement("video");
         video.setAttribute("name", 'video'+currentClientId);
-        videos.appendChild(video);
+        medias.appendChild(video);
       }
       video.volume = 0;
       video.srcObject = event.streams[0];
@@ -95,6 +95,26 @@ function OnIceCandidateFunction(event) {
     };
 
     if (event.track.kind === 'audio'){
+      let medias = document.getElementById('medias');
+      let audio = document.getElementsByName('audio'+currentClientId);
+      if (audio.length == 0){
+        audio = document.createElement("audio");
+        audio.setAttribute("name", 'audio'+currentClientId);
+        audio.controls = true;
+        audio.autoplay = true;
+        medias.appendChild(audio);
+      }
+      //video.volume = 0;
+      if (audio.srcObject !== event.streams[0]) {
+        audio.srcObject = event.streams[0];
+        console.log('Received remote stream');
+      }
+      // video.onloadedmetadata = function (e) {
+      //     video.play();
+      // };
+    };
+
+    if (event.track.kind === 'audio'){
       let canvass = document.getElementById('canvass');
       let canvas = document.getElementsByName(currentClientId);
       if (canvas.length == 0){
@@ -102,7 +122,7 @@ function OnIceCandidateFunction(event) {
         canvas.setAttribute("name", 'canvas'+currentClientId)
         canvass.appendChild(canvas);
       }
-      const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, true);
+      const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
       streamVisualizer.start();
     };
 
