@@ -1,7 +1,13 @@
 const socket = io.connect("https://192.168.1.42:1337");
 
-let adminVideo = document.getElementById("adminVideo");
-let adminCanvas = document.getElementById("adminCanvas");
+const adminVideo = document.getElementById("adminVideo");
+const adminCanvas = document.getElementById("adminCanvas");
+const sendButton = document.getElementById('sendButton');
+
+sendButton.onclick = sendData;
+let sendChannelArray = [];
+let sendChannel;
+let receiveChannel;
 let adminStream;
 
 const roomName = "test";
@@ -18,11 +24,11 @@ let iceServers = {
 socket.emit("join", roomName, true);
 
 socket.on("create", function () {
-  console.log(navigator.mediaDevices.enumerateDevices())
+  //console.log(navigator.mediaDevices.enumerateDevices())
   navigator.mediaDevices
     .getUserMedia({
       audio: true,
-      video: { deviceId : 'c9fb7a7a57de6db00dca4dfd77278ccecdaacca1458d31e7ee058e46cd986c61',
+      video: { deviceId : 'ef5f9be1a1a18793ff79da05470b34940cedbda7bae081e6132994d1e851870a',
                width: 1280/2, 
                height: 720/2 },
     })
@@ -54,6 +60,34 @@ socket.on("offer", function (offer, clientId) {
     rtcPeerConnection.setRemoteDescription(offer);
     rtcPeerConnection.addTrack(adminStream.getTracks()[0], adminStream);
     rtcPeerConnection.addTrack(adminStream.getTracks()[1], adminStream);
+    rtcPeerConnection.ondatachannel = receiveChannelCallback;
+    rtcPeerConnection.onconnectionstatechange = (ev) => {
+      switch(ev.currentTarget.connectionState) {
+        case "new":
+          console.log("New...");
+          break;
+        case "checking":
+          console.log("Connecting…");
+          break;
+        case "connected":
+          console.log("Online");
+          break;
+        case "disconnected":
+          console.log("Disconnecting…");
+          ev.currentTarget.close();
+          break;
+        case "closed":
+          console.log("Offline");
+          break;
+        case "failed":
+          console.log("Error");
+          ev.currentTarget.close();
+          break;
+        default:
+          console.log("Unknown");
+          break;
+      }
+    };
     rtcPeerConnection
     .createAnswer()
     .then((answer) => {
@@ -64,12 +98,18 @@ socket.on("offer", function (offer, clientId) {
     .catch((error) => {
         console.log(error);
     });
+    sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+    sendChannel.onopen = onSendChannelStateChange;
+    sendChannel.onmessage = onSendChannelMessageCallback;
+    sendChannel.onclose = onSendChannelStateChange;
+    sendChannelArray.push(sendChannel);
   });
 
 
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
 function OnIceCandidateFunction(event) {
     console.log("Candidate");
+    //console.log(event.candidate);
     if (event.candidate) {
       socket.emit("candidate", event.candidate, roomName);
     }
@@ -77,6 +117,7 @@ function OnIceCandidateFunction(event) {
   
   // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
   function OnTrackFunction(event) {
+    console.log(event.currentTarget);
     // Attention need a video to have a sound
     if (event.track.kind === 'audio'){
       let medias = document.getElementById('medias');
@@ -126,4 +167,51 @@ function OnIceCandidateFunction(event) {
       streamVisualizer.start();
     };
 
+  }
+  function receiveChannelCallback(event) {
+    console.log('Receive Channel Callback');
+    receiveChannel = event.channel;
+    receiveChannel.onmessage = onReceiveChannelMessageCallback;
+    receiveChannel.onopen = onReceiveChannelStateChange;
+    receiveChannel.onclose = onReceiveChannelStateChange;
+  }
+  
+  function onReceiveChannelMessageCallback(event) {
+    console.log('Received Message');
+  }
+
+  function onReceiveChannelStateChange() {
+    const readyState = receiveChannel.readyState;
+    console.log(`Receive channel state is: ${readyState}`);
+  }
+
+  function sendData() {
+    const data = "test";
+    console.log(sendChannelArray);
+    for (i = 0; i < sendChannelArray.length; i++){
+      if (sendChannelArray[i].readyState === 'open') {
+        sendChannelArray[i].send(data);
+      }
+    }
+    console.log('Sent Data: ' + data);
+  }
+  
+
+  function onSendChannelStateChange() {
+    const readyState = sendChannel.readyState;
+    console.log('Send channel state is: ' + readyState);
+    // if (readyState === 'open') {
+    //   dataChannelSend.disabled = false;
+    //   dataChannelSend.focus();
+    //   sendButton.disabled = false;
+    //   closeButton.disabled = false;
+    // } else {
+    //   dataChannelSend.disabled = true;
+    //   sendButton.disabled = true;
+    //   closeButton.disabled = true;
+    // }
+  }
+  
+  function onSendChannelMessageCallback(event) {
+    console.log('Received Message');
   }

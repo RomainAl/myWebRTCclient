@@ -8,6 +8,8 @@ let adminCanvas = document.getElementById("adminCanvas");
 
 let roomName = "test";
 let rtcPeerConnection;
+let receiveChannel;
+let sendChannel;
 let userStream;
 let adminStream;
 
@@ -29,7 +31,7 @@ socket.emit("join", roomName, false);
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
-  console.log(navigator.mediaDevices.enumerateDevices())
+  //console.log(navigator.mediaDevices.enumerateDevices())
   //navigator.wakeLock.request("screen").then(lock => {setTimeout(()=>Lock.release(), 10*60*1000)});
   navigator.mediaDevices
     .getUserMedia({
@@ -63,6 +65,38 @@ socket.on("create", function () {
       // rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
       // rtcPeerConnection.ontrack = OnTrackFunction;
       rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
+      sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+      sendChannel.onopen = onSendChannelStateChange;
+      sendChannel.onmessage = onSendChannelMessageCallback;
+      sendChannel.onclose = onSendChannelStateChange;
+      rtcPeerConnection.ondatachannel = receiveChannelCallback;
+      rtcPeerConnection.onconnectionstatechange = (ev) => {
+        switch(ev.currentTarget.connectionState) {
+          case "new":
+            console.log("New...");
+            break;
+          case "checking":
+            console.log("Connecting…");
+            break;
+          case "connected":
+            console.log("Online");
+            break;
+          case "disconnected":
+            console.log("Disconnecting…");
+            ev.currentTarget.close();
+            break;
+          case "closed":
+            console.log("Offline");
+            break;
+          case "failed":
+            console.log("Error");
+            ev.currentTarget.close();
+            break;
+          default:
+            console.log("Unknown");
+            break;
+        }
+      };
       //rtcPeerConnection.addTrack(userStream.getTracks()[1], userStream);
       rtcPeerConnection
         .createOffer(offerOptions)
@@ -78,33 +112,6 @@ socket.on("create", function () {
     }
 
     );
-});
-
-// Triggered when a room is succesfully joined.
-
-socket.on("joined", function () {
-  creator = false;
-
-  navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: { width: 1280, height: 720 },
-    })
-    .then(function (stream) {
-      /* use the stream */
-      userStream = stream;
-      divVideoChatLobby.style = "display:none";
-      userVideo.volume = 0;
-      userVideo.srcObject = stream;
-      userVideo.onloadedmetadata = function (e) {
-        userVideo.play();
-      };
-      socket.emit("ready", roomName);
-    })
-    .catch(function (err) {
-      /* handle the error */
-      alert("Couldn't Access User Media");
-    });
 });
 
 
@@ -126,6 +133,7 @@ socket.on("answer", function (answer) {
 
 function OnIceCandidateFunction(event) {
   console.log("Candidate");
+  //console.log(event.candidate);
   if (event.candidate) {
     socket.emit("candidate", event.candidate, roomName);
   }
@@ -148,4 +156,44 @@ function OnIceCandidateFunction(event) {
       streamVisualizer.start();
     };
 
+  }
+  
+  function receiveChannelCallback(event) {
+    console.log('Receive Channel Callback');
+    receiveChannel = event.channel;
+    receiveChannel.onmessage = onReceiveChannelMessageCallback;
+    receiveChannel.onopen = onReceiveChannelStateChange;
+    receiveChannel.onclose = onReceiveChannelStateChange;
+  }
+  
+  function onReceiveChannelMessageCallback(event) {
+    console.log('Received Message : ' + event.data);
+    if ( event.data === 'test'){
+      adminVideo.style.display = "none";
+      adminCanvas.style.display = "none";
+    }
+  }
+
+  function onReceiveChannelStateChange() {
+    const readyState = receiveChannel.readyState;
+    console.log(`Receive channel state is: ${readyState}`);
+  }
+
+  function onSendChannelStateChange() {
+    const readyState = sendChannel.readyState;
+    console.log('Send channel state is: ' + readyState);
+    // if (readyState === 'open') {
+    //   dataChannelSend.disabled = false;
+    //   dataChannelSend.focus();
+    //   sendButton.disabled = false;
+    //   closeButton.disabled = false;
+    // } else {
+    //   dataChannelSend.disabled = true;
+    //   sendButton.disabled = true;
+    //   closeButton.disabled = true;
+    // }
+  }
+  
+  function onSendChannelMessageCallback(event) {
+    console.log('Received Message');
   }
