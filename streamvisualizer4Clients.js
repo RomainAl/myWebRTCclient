@@ -22,10 +22,10 @@
 //const HEIGHT = 100;
 
 // Interesting parameters to tweak!
-const SMOOTHING = 0.8;
+const SMOOTHING = 0.0;
 const FFT_SIZE = 2048;
 
-function StreamVisualizer(remoteStream, canvas, doSound) {
+function StreamVisualizer4Clients(remoteStream, canvas, doSound) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
   this.canvas = canvas;
   this.drawContext = this.canvas.getContext('2d');
@@ -58,11 +58,11 @@ function StreamVisualizer(remoteStream, canvas, doSound) {
   this.startOffset = 0;
 }
 
-StreamVisualizer.prototype.start = function() {
+StreamVisualizer4Clients.prototype.start = function() {
   requestAnimationFrame(this.draw.bind(this));
 };
 
-StreamVisualizer.prototype.draw = function() {
+StreamVisualizer4Clients.prototype.draw = function() {
   let barWidth;
   let offset;
   let height;
@@ -80,16 +80,16 @@ StreamVisualizer.prototype.draw = function() {
   //this.canvas.height = HEIGHT;
   this.drawContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
   // Draw the frequency domain chart.
-  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
-    value = this.freqs[i];
-    percent = value / 256;
-    height = this.canvas.height * percent;
-    offset = this.canvas.height - height - 1;
-    barWidth = this.canvas.width / this.analyser.frequencyBinCount;
-    let hue = i/this.analyser.frequencyBinCount * 360;
-    this.drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-    this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
-  }
+  // for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
+  //   value = this.freqs[i];
+  //   percent = value / 256;
+  //   height = this.canvas.height * percent;
+  //   offset = this.canvas.height - height - 1;
+  //   barWidth = this.canvas.width / this.analyser.frequencyBinCount;
+  //   let hue = i/this.analyser.frequencyBinCount * 360;
+  //   this.drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
+  //   this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
+  // }
 
   // Draw the time domain chart.
   for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
@@ -98,14 +98,14 @@ StreamVisualizer.prototype.draw = function() {
     height = this.canvas.height * percent;
     offset = this.canvas.height - height - 1;
     barWidth = this.canvas.width/this.analyser.frequencyBinCount;
-    this.drawContext.fillStyle = 'black';
+    this.drawContext.fillStyle = 'white';
     this.drawContext.fillRect(i * barWidth, offset, 1, 2);
   }
 
   requestAnimationFrame(this.draw.bind(this));
 };
 
-StreamVisualizer.prototype.getFrequencyValue = function(freq) {
+StreamVisualizer4Clients.prototype.getFrequencyValue = function(freq) {
   let nyquist = this.context.sampleRate/2;
   let index = Math.round(freq/nyquist * this.freqs.length);
   return this.freqs[index];

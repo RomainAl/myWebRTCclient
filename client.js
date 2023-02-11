@@ -1,10 +1,9 @@
-// import { io } from "socket.io-client";
 const socket = io.connect("https://192.168.1.42:1337");
 
-let userVideo = document.getElementById("video");
 let userCanvas = document.getElementById("canvas");
-let adminVideo = document.getElementById("adminVideo");
-let adminCanvas = document.getElementById("adminCanvas");
+let adminVideo = document.getElementById("video");
+// let fullscreen = document.getElementById("fullscreen");
+// fullscreen.onclick = toggleFullScreen;
 
 let roomName = "test";
 let rtcPeerConnection;
@@ -45,9 +44,8 @@ socket.on("create", function () {
       if (audioTracks.length > 0) {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
       }
-      userVideo.style.display = 'none';
-      const streamVisualizer = new StreamVisualizer(stream, canvas, false);
-      streamVisualizer.start();
+      const streamVisualizer4Clients = new StreamVisualizer4Clients(stream, canvas, false);
+      streamVisualizer4Clients.start();
 
     })
     .catch(function (err) {
@@ -139,61 +137,69 @@ function OnIceCandidateFunction(event) {
   }
 }
 
-  // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
-  function OnTrackFunction(event) {
-    // Attention need a video to have a sound
-    if (event.track.kind === 'video'){
-      adminVideo.volume = 0;
-      adminVideo.srcObject = event.streams[0];
-      adminVideo.onloadedmetadata = function (e) {
-        adminVideo.play();
-      };
-      //adminVideo.style.display = "none";
+// Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
+function OnTrackFunction(event) {
+  // Attention need a video to have a sound
+  if (event.track.kind === 'video'){
+    adminVideo.volume = 1;
+    adminVideo.srcObject = event.streams[0];
+    adminVideo.onloadedmetadata = function (e) {
+      adminVideo.play();
     };
+  };
 
-    if (event.track.kind === 'audio'){
-      const streamVisualizer = new StreamVisualizer(event.streams[0], adminCanvas, false);
-      streamVisualizer.start();
-    };
+}
 
-  }
-  
-  function receiveChannelCallback(event) {
-    console.log('Receive Channel Callback');
-    receiveChannel = event.channel;
-    receiveChannel.onmessage = onReceiveChannelMessageCallback;
-    receiveChannel.onopen = onReceiveChannelStateChange;
-    receiveChannel.onclose = onReceiveChannelStateChange;
-  }
-  
-  function onReceiveChannelMessageCallback(event) {
-    console.log('Received Message : ' + event.data);
-    if ( event.data === 'test'){
+function receiveChannelCallback(event) {
+  console.log('Receive Channel Callback');
+  receiveChannel = event.channel;
+  receiveChannel.onmessage = onReceiveChannelMessageCallback;
+  receiveChannel.onopen = onReceiveChannelStateChange;
+  receiveChannel.onclose = onReceiveChannelStateChange;
+}
+
+function onReceiveChannelMessageCallback(event) {
+  console.log('Received Message : ' + event.data);
+  switch (JSON.parse(event.data).scene){
+    case 1:
       adminVideo.style.display = "none";
-      adminCanvas.style.display = "none";
-    }
+      userCanvas.style.display = "initial";
+      break;
+    case 2:
+      userCanvas.style.display = "none";
+      adminVideo.style.display = "initial";
+      break;
+    default :
+      console.log("Pas de scene...")
   }
+}
 
-  function onReceiveChannelStateChange() {
-    const readyState = receiveChannel.readyState;
-    console.log(`Receive channel state is: ${readyState}`);
-  }
+function onReceiveChannelStateChange() {
+  const readyState = receiveChannel.readyState;
+  console.log(`Receive channel state is: ${readyState}`);
+}
 
-  function onSendChannelStateChange() {
-    const readyState = sendChannel.readyState;
-    console.log('Send channel state is: ' + readyState);
-    // if (readyState === 'open') {
-    //   dataChannelSend.disabled = false;
-    //   dataChannelSend.focus();
-    //   sendButton.disabled = false;
-    //   closeButton.disabled = false;
-    // } else {
-    //   dataChannelSend.disabled = true;
-    //   sendButton.disabled = true;
-    //   closeButton.disabled = true;
-    // }
+function onSendChannelStateChange() {
+  const readyState = sendChannel.readyState;
+  console.log('Send channel state is: ' + readyState);
+}
+
+function onSendChannelMessageCallback(event) {
+  console.log('Received Message');
+}
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    toggleFullScreen();
   }
-  
-  function onSendChannelMessageCallback(event) {
-    console.log('Received Message');
+}, false);
+
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    let myScreenOrientation = window.screen.orientation;
+    myScreenOrientation.lock("portrait-primary");
+  } else if (document.exitFullscreen) {
+    document.exitFullscreen();
   }
+}
