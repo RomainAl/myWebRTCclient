@@ -91,6 +91,7 @@ StreamVisualizer4Clients.prototype.draw = function() {
   //   this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
   // }
 
+  
   // Draw the time domain chart.
   for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
     value = this.times[i];
