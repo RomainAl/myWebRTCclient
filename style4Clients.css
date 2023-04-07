@@ -38,3 +38,17 @@ body
   width:100%;
   height:100%;
 }
+
+#webgl {
+  background: #000000;
+  position: fixed;
+  width:100%;
+  height:100%;
+}
+
+#fullscreen {
+  position: absolute; 
+  bottom: 0; 
+  z-index: 1; 
+  text-align: center;
+}

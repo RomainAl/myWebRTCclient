@@ -1,13 +1,16 @@
 const socket = io.connect("https://192.168.1.42:1337");
 
 const adminVideo = document.getElementById("adminVideo");
-const adminCanvas = document.getElementById("adminCanvas");
+const adminVideo2 = document.getElementById("adminVideo2");
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
+const btn_scene3 = document.getElementById('btn_scene3');
 
 btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
+btn_scene3.onclick = sendData;
 
+let admincount = 0;
 let sendChannelArray = [];
 let sendChannel;
 let receiveChannel;
@@ -34,22 +37,26 @@ socket.on("offer", function (offer, clientId) {
 
   console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
-  userVideo = document.createElement("video");
-  userVideo.setAttribute("name", 'video'+currentClientId);
-  userVideo.src = "video1.mp4";
-  userVideo.type = "video/mp4";
-  userVideo.playsInline = true;
-  userVideo.autoplay = true;
-  userVideo.loop = true;
-  userVideo.controls = true;
-  userVideo.muted = true;
+  // userVideo = document.createElement("video");
+  // userVideo.setAttribute("name", 'video'+currentClientId);
+  // userVideo.src = "video1.mp4";
+  // userVideo.type = "video/mp4";
+  // userVideo.playsInline = true;
+  // userVideo.autoplay = true;
+  // userVideo.loop = true;
+  // userVideo.controls = true;
+  // userVideo.muted = true;
 
-  let medias = document.getElementById('medias');
-  medias.appendChild(userVideo);
+  // let medias = document.getElementById('medias');
+  // medias.appendChild(userVideo);
 
   //userVideo.play();
-
-  adminStream = adminVideo.captureStream();
+  if (admincount == 0){
+    adminStream = adminVideo.captureStream();
+    admincount++;
+  } else {
+    adminStream = adminVideo2.captureStream();
+  }
   const videoTracks = adminStream.getVideoTracks();
   const audioTracks = adminStream.getAudioTracks();
   if (videoTracks.length > 0) {
@@ -133,14 +140,10 @@ function OnTrackFunction(event) {
       audio.autoplay = true;
       medias.appendChild(audio);
     }
-    //video.volume = 0;
     if (audio.srcObject !== event.streams[0]) {
       audio.srcObject = event.streams[0];
       console.log('Received remote stream');
     }
-    // video.onloadedmetadata = function (e) {
-    //     video.play();
-    // };
   };
 
   if (event.track.kind === 'audio'){
@@ -178,14 +181,24 @@ function sendData(event) {
   switch (event.srcElement.id){
     case "btn_scene1":
       data = {"scene": 1};
-      adminVideo.volume = 0;
       adminVideo.pause();
+      adminVideo.volume = 0;
+      adminVideo2.pause();
+      adminVideo2.volume = 0;
       break;
     case "btn_scene2":
       data = {"scene": 2};
       adminVideo.play();
       adminVideo.volume = 1;
-      console.log("tamere")
+      adminVideo2.play();
+      adminVideo2.volume = 1;
+      break;
+    case "btn_scene3":
+      data = {"scene": 3};
+      adminVideo.pause();
+      adminVideo.volume = 0;
+      adminVideo2.pause();
+      adminVideo2.volume = 0;
       break;
     default:
       console.log("Error : no scene found !")
