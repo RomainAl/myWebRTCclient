@@ -167,17 +167,17 @@ function onReceiveChannelMessageCallback(event) {
     case 1:
       adminVideo.style.display = "none";
       userCanvas.style.display = "initial";
-      webgl.style.display = "none";
+      //webgl.style.display = "none";
       break;
     case 2:
       userCanvas.style.display = "none";
       adminVideo.style.display = "initial";
-      webgl.style.display = "none";
+      //webgl.style.display = "none";
       break;
     case 3:
       adminVideo.style.display = "none";
       userCanvas.style.display = "none";
-      webgl.style.display = "initial";
+      //webgl.style.display = "initial";
       break;
     default :
       console.log("Pas de scene...")
@@ -206,10 +206,10 @@ document.addEventListener("keydown", (e) => {
 
 function toggleFullScreen() {
   if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-    let myScreenOrientation = window.screen.orientation;
-    myScreenOrientation.lock("portrait-primary");
-  } else if (document.exitFullscreen) {
+    document.documentElement.webkitRequestFullscreen();
+    //let myScreenOrientation = window.screen.orientation;
+    //myScreenOrientation.lock("portrait-primary");
+  } else {
     document.exitFullscreen();
   }
 }
