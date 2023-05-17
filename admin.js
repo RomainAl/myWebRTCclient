@@ -2,6 +2,7 @@ const socket = io.connect("https://192.168.1.42:1337");
 
 const adminVideo = document.getElementById("adminVideo");
 const adminVideo2 = document.getElementById("adminVideo2");
+const adminVideo3 = document.getElementById("adminVideo3");
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
@@ -49,13 +50,15 @@ socket.on("offer", function (offer, clientId) {
 
   // let medias = document.getElementById('medias');
   // medias.appendChild(userVideo);
-
   //userVideo.play();
   if (admincount == 0){
     adminStream = adminVideo.captureStream();
     admincount++;
-  } else {
+  } else if (admincount == 1) {
     adminStream = adminVideo2.captureStream();
+    admincount++;
+  } else {
+    adminStream = adminVideo3.captureStream();
   }
   const videoTracks = adminStream.getVideoTracks();
   const audioTracks = adminStream.getAudioTracks();
@@ -185,6 +188,8 @@ function sendData(event) {
       adminVideo.volume = 0;
       adminVideo2.pause();
       adminVideo2.volume = 0;
+      adminVideo3.pause();
+      adminVideo3.volume = 0;
       break;
     case "btn_scene2":
       data = {"scene": 2};
@@ -192,6 +197,8 @@ function sendData(event) {
       adminVideo.volume = 1;
       adminVideo2.play();
       adminVideo2.volume = 1;
+      adminVideo3.play();
+      adminVideo3.volume = 1;
       break;
     case "btn_scene3":
       data = {"scene": 3};
@@ -199,6 +206,8 @@ function sendData(event) {
       adminVideo.volume = 0;
       adminVideo2.pause();
       adminVideo2.volume = 0;
+      adminVideo3.pause();
+      adminVideo3.volume = 0;
       break;
     default:
       console.log("Error : no scene found !")

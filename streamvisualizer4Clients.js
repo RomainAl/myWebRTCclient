@@ -23,7 +23,7 @@
 
 // Interesting parameters to tweak!
 const SMOOTHING = 0.0;
-const FFT_SIZE = 2048;
+const FFT_SIZE = 256;
 
 function StreamVisualizer4Clients(remoteStream, canvas, doSound) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
@@ -44,10 +44,10 @@ function StreamVisualizer4Clients(remoteStream, canvas, doSound) {
   //console.log('Created Web Audio source from remote stream: ', this.source);
 
   this.analyser = this.context.createAnalyser();
-//  this.analyser.connect(this.context.destination);
+  //  this.analyser.connect(this.context.destination);
   this.analyser.minDecibels = -140;
   this.analyser.maxDecibels = 0;
-  this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
+  //this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
 
   this.source.connect(this.analyser);
@@ -72,7 +72,7 @@ StreamVisualizer4Clients.prototype.draw = function() {
   this.analyser.fftSize = FFT_SIZE;
 
   // Get the frequency data from the currently playing music
-  this.analyser.getByteFrequencyData(this.freqs);
+  //this.analyser.getByteFrequencyData(this.freqs);
   this.analyser.getByteTimeDomainData(this.times);
 
 

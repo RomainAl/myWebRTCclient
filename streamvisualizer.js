@@ -23,7 +23,7 @@
 
 // Interesting parameters to tweak!
 const SMOOTHING = 0.8;
-const FFT_SIZE = 2048;
+const FFT_SIZE = 512;
 
 function StreamVisualizer(remoteStream, canvas, doSound) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);

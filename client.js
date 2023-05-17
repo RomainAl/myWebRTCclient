@@ -2,10 +2,10 @@ const socket = io.connect("https://192.168.1.42:1337");
 
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
-let webgl = document.getElementById("webgl");
+//let webgl = document.getElementById("webgl");
 let fullscreen = document.getElementById("fullscreen");
 fullscreen.onclick = toggleFullScreen;
-mywebgl(webgl);
+//mywebgl(webgl);
 
 let roomName = "test";
 let rtcPeerConnection;
@@ -214,7 +214,7 @@ function toggleFullScreen() {
   }
 }
 
-function mywebgl(canvas) {
+/*function mywebgl(canvas) {
   // Initialize the GL context
   const gl = canvas.getContext("webgl2");
 
@@ -397,4 +397,4 @@ function mywebgl(canvas) {
 
   requestFrame();
   requestAnimationFrame(cancelFrame);
-}
+}*/
