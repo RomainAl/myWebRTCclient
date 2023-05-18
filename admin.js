@@ -7,11 +7,13 @@ const btn_reload = document.getElementById('btn_reload');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
+const btn_changevideo = document.getElementById('btn_changevideo');
 
 btn_reload.onclick = sendData;
 btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
 btn_scene3.onclick = sendData;
+btn_changevideo.onclick = changeVid;
 
 let admincount = 0;
 let sendChannelArray = [];
@@ -232,4 +234,19 @@ function onSendChannelStateChange() {
 
 function onSendChannelMessageCallback(event) {
   console.log('Received Message');
+}
+
+function changeVid(event){
+  //console.log(event);
+  adminVideo.src = "./videos/video2__.mp4";
+  adminVideo.play()
+  .then(() => {
+    adminStream = adminVideo.captureStream()
+    const [videoTrack] = adminStream.getVideoTracks();
+    let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
+    videoSender.replaceTrack(videoTrack);
+    const [audioTrack] = adminStream.getAudioTracks();
+    let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
+    audioSender.replaceTrack(audioTrack);
+    });
 }
