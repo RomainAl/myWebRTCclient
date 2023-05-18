@@ -5,6 +5,7 @@ let adminVideo = document.getElementById("video");
 let fullscreen = document.getElementById("fullscreen");
 fullscreen.onclick = toggleFullScreen;
 
+
 let roomName = "test";
 let rtcPeerConnection;
 let receiveChannel;
@@ -125,12 +126,16 @@ function receiveChannelCallback(event) {
 function onReceiveChannelMessageCallback(event) {
   console.log('Received Message : ' + event.data);
   switch (JSON.parse(event.data).scene){
+    case 0:
+      location.reload();
+      break;
     case 1:
       adminVideo.style.display = "none";
       userCanvas.style.display = "initial";
       break;
     case 2:
       userCanvas.style.display = "none";
+      userCanvas.remove();
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();

@@ -3,10 +3,12 @@ const socket = io.connect("https://192.168.1.42:1337");
 const adminVideo = document.getElementById("adminVideo");
 const adminVideo2 = document.getElementById("adminVideo2");
 const adminVideo3 = document.getElementById("adminVideo3");
+const btn_reload = document.getElementById('btn_reload');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
 
+btn_reload.onclick = sendData;
 btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
 btn_scene3.onclick = sendData;
@@ -181,6 +183,9 @@ function onReceiveChannelStateChange() {
 function sendData(event) {
   let data = {};
   switch (event.srcElement.id){
+    case "btn_reload":
+      data = {"scene": 0};
+      break;
     case "btn_scene1":
       data = {"scene": 1};
       adminVideo.pause();
