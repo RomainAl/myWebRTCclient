@@ -124,7 +124,6 @@ socket.on("offer", function (offer, clientId) {
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
 function OnIceCandidateFunction(event) {
     console.log("Candidate");
-    //console.log(event.candidate);
     if (event.candidate) {
       socket.emit("candidate", event.candidate, roomName);
     }
