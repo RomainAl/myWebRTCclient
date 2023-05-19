@@ -16,14 +16,13 @@ btn_scene3.onclick = sendData;
 btn_changevideo.onclick = changeVid;
 
 let admincount = 0;
-let sendChannelArray = [];
+let clientS = [];
 let sendChannel;
 let receiveChannel;
 let adminStream;
-let userVideo;
 
-const roomName = "test";
-let rtcPeerConnection;
+const NVideo = 8;
+const roomName = "atablee";
 let currentClientId;
 
 let iceServers = {
@@ -42,19 +41,7 @@ socket.on("offer", function (offer, clientId) {
 
   //console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
-  // userVideo = document.createElement("video");
-  // userVideo.setAttribute("name", 'video'+currentClientId);
-  // userVideo.src = "video1.mp4";
-  // userVideo.type = "video/mp4";
-  // userVideo.playsInline = true;
-  // userVideo.autoplay = true;
-  // userVideo.loop = true;
-  // userVideo.controls = true;
-  // userVideo.muted = true;
 
-  // let medias = document.getElementById('medias');
-  // medias.appendChild(userVideo);
-  //userVideo.play();
   if (admincount == 0){
     adminStream = adminVideo.captureStream();
     admincount++;
@@ -65,13 +52,14 @@ socket.on("offer", function (offer, clientId) {
     adminStream = adminVideo3.captureStream();
   }
 
-  rtcPeerConnection = new RTCPeerConnection(iceServers);
+  let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
   rtcPeerConnection.setRemoteDescription(offer);
   adminStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, adminStream));
   rtcPeerConnection.ondatachannel = receiveChannelCallback;
   rtcPeerConnection.onconnectionstatechange = (ev) => {
+    console.log(ev);
     switch(ev.currentTarget.connectionState) {
       case "new":
         console.log("New...");
@@ -108,7 +96,15 @@ socket.on("offer", function (offer, clientId) {
       sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
       sendChannel.onclose = onSendChannelStateChange;
-      sendChannelArray.push(sendChannel);
+      let client = {
+        rtcDataSendChannel: sendChannel,
+        rtcPeerConnection: rtcPeerConnection,
+        clientId : clientId,
+        rtcPeerCoID: rtcPeerConnection.remoteDescription.sdp.slice(9, 29),
+        div: document.getElementsByName('div'+clientId)[0]
+      };
+      clientS.push(client);
+      console.log(clientS);
   })
   .catch((error) => {
       console.log(error);
@@ -129,7 +125,7 @@ function OnIceCandidateFunction(event) {
 function OnTrackFunction(event) {
   console.log(event);
   if (event.track.kind === 'audio'){
-    let medias = document.getElementById('medias');
+    /*let medias = document.getElementById('medias');
     let audio = document.getElementsByName('audio'+currentClientId);
     if (audio.length == 0){
       audio = document.createElement("audio");
@@ -150,7 +146,35 @@ function OnTrackFunction(event) {
       canvass.appendChild(canvas);
     }
     const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
+    streamVisualizer.start();*/
+    let medias = document.getElementById('medias');
+    let clientdiv = document.createElement("div");
+    medias.appendChild(clientdiv);
+    clientdiv.setAttribute("name", 'div' + currentClientId);
+    audio = document.createElement("audio");
+    audio.setAttribute("name", 'audio' + currentClientId);
+    audio.controls = true;
+    audio.autoplay = true;
+    clientdiv.appendChild(audio);
+    if (audio.srcObject !== event.streams[0]) {
+      audio.srcObject = event.streams[0];
+      console.log('Received remote stream');
+    }
+    canvas = document.createElement("canvas");
+    canvas.setAttribute("name", 'canvas' + currentClientId)
+    clientdiv.appendChild(canvas);
+    const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
     streamVisualizer.start();
+    let videoMaster = document.getElementById("adminVideo");
+    videoMaster.setAttribute("name", 'video' + currentClientId)
+    clientdiv.appendChild(videoMaster);
+    for (i=0;i<NVideo;i++){
+       let button = document.createElement("button");
+       button.setAttribute("name", 'btn'+ currentClientId);
+       button.innerText = i+1;
+       button.onclick = changeVid2;
+       clientdiv.appendChild(button);
+    }
   };
 }
 
@@ -214,9 +238,9 @@ function sendData(event) {
       console.log("Error : no scene found !")
   }
   
-  for (i = 0; i < sendChannelArray.length; i++){
-    if (sendChannelArray[i].readyState === 'open') {
-      sendChannelArray[i].send(JSON.stringify(data));
+  for (i = 0; i < clientS.length; i++){
+    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
+      clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
     }
   }
   console.log('Sent Data: ' + data);
@@ -234,14 +258,31 @@ function onSendChannelMessageCallback(event) {
 function changeVid(event){
   //console.log(event);
   adminVideo.src = "./videos/video2__.mp4";
+  adminVideo.type="video/mp4";
   adminVideo.play()
   .then(() => {
     adminStream = adminVideo.captureStream()
     const [videoTrack] = adminStream.getVideoTracks();
-    let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
+    let videoSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
     videoSender.replaceTrack(videoTrack);
     const [audioTrack] = adminStream.getAudioTracks();
-    let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
+    let audioSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
+    audioSender.replaceTrack(audioTrack);
+    });
+}
+
+function changeVid2(event){
+  let videoelement = document.getElementsByName('video' + event.target.name.substring(3))[0];
+  videoelement.src = './videos/video0'+event.target.innerText+'.mp4';
+  videoelement.type="video/mp4";
+  videoelement.play()
+  .then(() => {
+    adminStream = videoelement.captureStream()
+    const [videoTrack] = adminStream.getVideoTracks();
+    let videoSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
+    videoSender.replaceTrack(videoTrack);
+    const [audioTrack] = adminStream.getAudioTracks();
+    let audioSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
     audioSender.replaceTrack(audioTrack);
     });
 }

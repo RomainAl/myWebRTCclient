@@ -6,7 +6,7 @@ let fullscreen = document.getElementById("fullscreen");
 fullscreen.onclick = toggleFullScreen;
 adminVideo.style.display = "none";
 
-let roomName = "test";
+let roomName = "atablee";
 let rtcPeerConnection;
 let receiveChannel;
 let sendChannel;
