@@ -156,6 +156,7 @@ function OnTrackFunction(event) {
     audio.controls = true;
     audio.autoplay = true;
     clientdiv.appendChild(audio);
+    
     if (audio.srcObject !== event.streams[0]) {
       audio.srcObject = event.streams[0];
       console.log('Received remote stream');
@@ -165,15 +166,19 @@ function OnTrackFunction(event) {
     clientdiv.appendChild(canvas);
     const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
     streamVisualizer.start();
-    let videoMaster = document.getElementById("adminVideo");
-    videoMaster.setAttribute("name", 'video' + currentClientId)
-    clientdiv.appendChild(videoMaster);
-    for (i=0;i<NVideo;i++){
-       let button = document.createElement("button");
-       button.setAttribute("name", 'btn'+ currentClientId);
-       button.innerText = i+1;
-       button.onclick = changeVid2;
-       clientdiv.appendChild(button);
+    //let videoMaster = document.getElementById("adminVideo");
+    let videoMaster = document.getElementById("adminVideos");
+    videoMaster = videoMaster.getElementsByTagName("video")[0];
+    if (videoMaster != undefined){
+      videoMaster.setAttribute("name", 'video' + currentClientId);
+      clientdiv.appendChild(videoMaster);
+      for (i=0;i<NVideo;i++){
+        let button = document.createElement("button");
+        button.setAttribute("name", 'btn'+ currentClientId);
+        button.innerText = i+1;
+        button.onclick = changeVid2;
+        clientdiv.appendChild(button);
+      }
     }
   };
 }
@@ -272,17 +277,19 @@ function changeVid(event){
 }
 
 function changeVid2(event){
-  let videoelement = document.getElementsByName('video' + event.target.name.substring(3))[0];
+  const clientId = event.target.name.substring(3);
+  let videoelement = document.getElementsByName('video' + clientId)[0];
   videoelement.src = './videos/video0'+event.target.innerText+'.mp4';
   videoelement.type="video/mp4";
   videoelement.play()
   .then(() => {
     adminStream = videoelement.captureStream()
     const [videoTrack] = adminStream.getVideoTracks();
-    let videoSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
+    let client = clientS.find(t=>t.clientId==clientId);
+    let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
     videoSender.replaceTrack(videoTrack);
     const [audioTrack] = adminStream.getAudioTracks();
-    let audioSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
+    let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
     audioSender.replaceTrack(audioTrack);
     });
 }
