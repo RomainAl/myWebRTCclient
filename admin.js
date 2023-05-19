@@ -40,7 +40,7 @@ socket.on("create", function () {
 
 socket.on("offer", function (offer, clientId) {
 
-  console.log(navigator.mediaDevices.enumerateDevices());
+  //console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
   // userVideo = document.createElement("video");
   // userVideo.setAttribute("name", 'video'+currentClientId);
@@ -63,14 +63,6 @@ socket.on("offer", function (offer, clientId) {
     admincount++;
   } else {
     adminStream = adminVideo3.captureStream();
-  }
-  const videoTracks = adminStream.getVideoTracks();
-  const audioTracks = adminStream.getAudioTracks();
-  if (videoTracks.length > 0) {
-    console.log(`Using video device: ${videoTracks[0].label}`);
-  }
-  if (audioTracks.length > 0) {
-    console.log(`Using audio device: ${audioTracks[0].label}`);
   }
 
   rtcPeerConnection = new RTCPeerConnection(iceServers);
@@ -135,7 +127,7 @@ function OnIceCandidateFunction(event) {
   
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
 function OnTrackFunction(event) {
-
+  console.log(event);
   if (event.track.kind === 'audio'){
     let medias = document.getElementById('medias');
     let audio = document.getElementsByName('audio'+currentClientId);
@@ -150,9 +142,6 @@ function OnTrackFunction(event) {
       audio.srcObject = event.streams[0];
       console.log('Received remote stream');
     }
-  };
-
-  if (event.track.kind === 'audio'){
     let canvass = document.getElementById('canvass');
     let canvas = document.getElementsByName(currentClientId);
     if (canvas.length == 0){
@@ -163,8 +152,14 @@ function OnTrackFunction(event) {
     const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
     streamVisualizer.start();
   };
-
 }
+
+function removeAllChildNodes(parent) {
+  while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+  }
+}
+
 function receiveChannelCallback(event) {
   console.log('Receive Channel Callback');
   receiveChannel = event.channel;
