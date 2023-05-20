@@ -128,12 +128,17 @@ function OnIceCandidateFunction(event) {
 }
 
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
-function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !?
+function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO VIDEO FILTER DESYNCH VIDEO/AUDIO ? TO CHECK !)
   console.log(event);
-  //if (event.track.kind === 'audio'){
+  if (! navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     adminVideo.volume = 0;
     adminVideo.srcObject = event.streams[0];
-  //};
+  } else {
+    if (event.track.kind === 'video'){
+      adminVideo.volume = 0;
+      adminVideo.srcObject = event.streams[0];
+    };
+  }
 }
 
 function receiveChannelCallback(event) {

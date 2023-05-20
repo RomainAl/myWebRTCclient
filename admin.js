@@ -1,5 +1,6 @@
 const socket = io.connect("https://192.168.1.42:1337");
 
+const adminVideos = document.getElementById("adminVideos");
 const adminVideo = document.getElementById("adminVideo");
 const adminVideo2 = document.getElementById("adminVideo2");
 const adminVideo3 = document.getElementById("adminVideo3");
@@ -7,13 +8,11 @@ const btn_reload = document.getElementById('btn_reload');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
-const btn_changevideo = document.getElementById('btn_changevideo');
 
 btn_reload.onclick = sendData;
 btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
 btn_scene3.onclick = sendData;
-btn_changevideo.onclick = changeVid;
 
 let admincount = 0;
 let clientS = [];
@@ -125,28 +124,6 @@ function OnIceCandidateFunction(event) {
 function OnTrackFunction(event) {
   console.log(event);
   if (event.track.kind === 'audio'){
-    /*let medias = document.getElementById('medias');
-    let audio = document.getElementsByName('audio'+currentClientId);
-    if (audio.length == 0){
-      audio = document.createElement("audio");
-      audio.setAttribute("name", 'audio'+currentClientId);
-      audio.controls = true;
-      audio.autoplay = true;
-      medias.appendChild(audio);
-    }
-    if (audio.srcObject !== event.streams[0]) {
-      audio.srcObject = event.streams[0];
-      console.log('Received remote stream');
-    }
-    let canvass = document.getElementById('canvass');
-    let canvas = document.getElementsByName(currentClientId);
-    if (canvas.length == 0){
-      canvas = document.createElement("canvas");
-      canvas.setAttribute("name", 'canvas'+currentClientId)
-      canvass.appendChild(canvas);
-    }
-    const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
-    streamVisualizer.start();*/
     let medias = document.getElementById('medias');
     let clientdiv = document.createElement("div");
     medias.appendChild(clientdiv);
@@ -171,6 +148,7 @@ function OnTrackFunction(event) {
     videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
       videoMaster.setAttribute("name", 'video' + currentClientId);
+      videoMaster.display = "inline";
       clientdiv.appendChild(videoMaster);
       for (i=0;i<NVideo;i++){
         let button = document.createElement("button");
@@ -179,14 +157,13 @@ function OnTrackFunction(event) {
         button.onclick = changeVid2;
         clientdiv.appendChild(button);
       }
+      let button = document.createElement("button");
+      button.setAttribute("name", 'btn'+ currentClientId);
+      button.innerText = "STOP";
+      button.onclick = stop;
+      clientdiv.appendChild(button);
     }
   };
-}
-
-function removeAllChildNodes(parent) {
-  while (parent.firstChild) {
-      parent.removeChild(parent.firstChild);
-  }
 }
 
 function receiveChannelCallback(event) {
@@ -223,11 +200,11 @@ function sendData(event) {
       break;
     case "btn_scene2":
       data = {"scene": 2};
-      adminVideo.play();
+      //adminVideo.play();
       adminVideo.volume = 1;
-      adminVideo2.play();
+      //adminVideo2.play();
       adminVideo2.volume = 1;
-      adminVideo3.play();
+      //adminVideo3.play();
       adminVideo3.volume = 1;
       break;
     case "btn_scene3":
@@ -260,22 +237,6 @@ function onSendChannelMessageCallback(event) {
   console.log('Received Message');
 }
 
-function changeVid(event){
-  //console.log(event);
-  adminVideo.src = "./videos/video2__.mp4";
-  adminVideo.type="video/mp4";
-  adminVideo.play()
-  .then(() => {
-    adminStream = adminVideo.captureStream()
-    const [videoTrack] = adminStream.getVideoTracks();
-    let videoSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
-    videoSender.replaceTrack(videoTrack);
-    const [audioTrack] = adminStream.getAudioTracks();
-    let audioSender = clientS[0].rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
-    audioSender.replaceTrack(audioTrack);
-    });
-}
-
 function changeVid2(event){
   const clientId = event.target.name.substring(3);
   let videoelement = document.getElementsByName('video' + clientId)[0];
@@ -284,12 +245,31 @@ function changeVid2(event){
   videoelement.play()
   .then(() => {
     adminStream = videoelement.captureStream()
-    const [videoTrack] = adminStream.getVideoTracks();
     let client = clientS.find(t=>t.clientId==clientId);
+    const [videoTrack] = adminStream.getVideoTracks();
     let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
     videoSender.replaceTrack(videoTrack);
     const [audioTrack] = adminStream.getAudioTracks();
     let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
     audioSender.replaceTrack(audioTrack);
     });
+}
+
+function stop(event){
+  const clientId = event.target.name.substring(3);
+  let client = clientS.find(t=>t.clientId==clientId);
+  let ind = clientS.findIndex(t=>t.clientId==clientId);
+  client.rtcDataSendChannel.close();
+  client.rtcPeerConnection.close();
+  let videoelement = document.getElementsByName('video' + clientId)[0];
+  adminVideos.appendChild(videoelement);
+  removeAllChildNodes(client.div);
+  client.div.remove();
+  clientS.splice(ind, 1);
+}
+
+function removeAllChildNodes(parent) {
+  while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+  }
 }
