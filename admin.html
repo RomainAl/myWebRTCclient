@@ -7,18 +7,14 @@
     <title>MY WEBRTC ADMIN</title>
 </head>
 <body>
-    <div class="slidecontainer">
-        <input type="range" min="1" max="100" value="50" class="slider" id="myRange">
-      </div>
-
     <div id="buttons">
         <button id="btn_reload">Reload</button>
         <button id="btn_scene1">Scene 1</button>
         <button id="btn_scene2">Scene 2</button>
         <button id="btn_scene3">Scene 3</button>
     </div>
-    <div id="adminVideos">
-        <video id= "adminVideo" playsinline loop controls width="200">
+    <div id="adminVideos" style="display: none;">
+        <!-- <video id= "adminVideo" playsinline loop controls width="200">
             <source src="./videos/video01.mp4" type="video/mp4"/>
             <p>This browser does not support the video element.</p>
         </video>
@@ -29,7 +25,7 @@
         <video id= "adminVideo3" playsinline loop controls width="200">
             <source src="./videos/video03.mp4" type="video/mp4"/>
             <p>This browser does not support the video element.</p>
-        </video>
+        </video> -->
     </div> 
     <div id="medias"></div>
     <script src="https://192.168.1.42:1337/socket.io/socket.io.min.js"></script>

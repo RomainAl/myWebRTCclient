@@ -1,9 +1,17 @@
 const socket = io.connect("https://192.168.1.42:1337");
 
 const adminVideos = document.getElementById("adminVideos");
-const adminVideo = document.getElementById("adminVideo");
-const adminVideo2 = document.getElementById("adminVideo2");
-const adminVideo3 = document.getElementById("adminVideo3");
+for (i = 0; i < 15; i++){
+  videoelement = document.createElement("video");
+  videoelement.src = './videos/video01.mp4';
+  videoelement.type="video/mp4";
+  videoelement.width = 250;
+  videoelement.playsinline = true;
+  videoelement.loop = true;
+  videoelement.controls = true;
+  videoelement.volume = 1;
+  adminVideos.appendChild(videoelement);
+}
 const btn_reload = document.getElementById('btn_reload');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
@@ -14,10 +22,7 @@ btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
 btn_scene3.onclick = sendData;
 
-let admincount = 0;
 let clientS = [];
-let sendChannel;
-let receiveChannel;
 let adminStream;
 
 const NVideo = 8;
@@ -41,16 +46,9 @@ socket.on("offer", function (offer, clientId) {
   //console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
 
-  if (admincount == 0){
-    adminStream = adminVideo.captureStream();
-    admincount++;
-  } else if (admincount == 1) {
-    adminStream = adminVideo2.captureStream();
-    admincount++;
-  } else {
-    adminStream = adminVideo3.captureStream();
-  }
-
+  let videoelement = document.getElementById("adminVideos");
+  videoelement = videoelement.getElementsByTagName("video")[0];
+  adminStream = videoelement.captureStream();
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
@@ -91,7 +89,7 @@ socket.on("offer", function (offer, clientId) {
       rtcPeerConnection.setLocalDescription(answer);
       socket.emit("answer", answer, clientId);
       console.log('answer sent');
-      sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+      let sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
       sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
       sendChannel.onclose = onSendChannelStateChange;
@@ -143,7 +141,7 @@ function OnTrackFunction(event) {
     clientdiv.appendChild(canvas);
     const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
     streamVisualizer.start();
-    //let videoMaster = document.getElementById("adminVideo");
+
     let videoMaster = document.getElementById("adminVideos");
     videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
@@ -154,7 +152,7 @@ function OnTrackFunction(event) {
         let button = document.createElement("button");
         button.setAttribute("name", 'btn'+ currentClientId);
         button.innerText = i+1;
-        button.onclick = changeVid2;
+        button.onclick = changeVid;
         clientdiv.appendChild(button);
       }
       let button = document.createElement("button");
@@ -168,7 +166,7 @@ function OnTrackFunction(event) {
 
 function receiveChannelCallback(event) {
   console.log('Receive Channel Callback');
-  receiveChannel = event.channel;
+  let receiveChannel = event.channel;
   receiveChannel.onmessage = onReceiveChannelMessageCallback;
   receiveChannel.onopen = onReceiveChannelStateChange;
   receiveChannel.onclose = onReceiveChannelStateChange;
@@ -191,30 +189,12 @@ function sendData(event) {
       break;
     case "btn_scene1":
       data = {"scene": 1};
-      adminVideo.pause();
-      adminVideo.volume = 0;
-      adminVideo2.pause();
-      adminVideo2.volume = 0;
-      adminVideo3.pause();
-      adminVideo3.volume = 0;
       break;
     case "btn_scene2":
       data = {"scene": 2};
-      //adminVideo.play();
-      adminVideo.volume = 1;
-      //adminVideo2.play();
-      adminVideo2.volume = 1;
-      //adminVideo3.play();
-      adminVideo3.volume = 1;
       break;
     case "btn_scene3":
       data = {"scene": 3};
-      adminVideo.pause();
-      adminVideo.volume = 0;
-      adminVideo2.pause();
-      adminVideo2.volume = 0;
-      adminVideo3.pause();
-      adminVideo3.volume = 0;
       break;
     default:
       console.log("Error : no scene found !")
@@ -237,7 +217,7 @@ function onSendChannelMessageCallback(event) {
   console.log('Received Message');
 }
 
-function changeVid2(event){
+function changeVid(event){
   const clientId = event.target.name.substring(3);
   let videoelement = document.getElementsByName('video' + clientId)[0];
   videoelement.src = './videos/video0'+event.target.innerText+'.mp4';
