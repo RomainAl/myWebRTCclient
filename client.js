@@ -4,6 +4,7 @@ let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
 let fullscreen = document.getElementById("fullscreen");
 fullscreen.onclick = toggleFullScreen;
+
 adminVideo.style.display = "none";
 
 let roomName = "atablee";

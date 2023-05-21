@@ -24,6 +24,9 @@ btn_scene3.onclick = sendData;
 
 let clientS = [];
 let adminStream;
+let sendChannel;
+let receiveChannel;
+
 
 const NVideo = 8;
 const roomName = "atablee";
@@ -89,7 +92,7 @@ socket.on("offer", function (offer, clientId) {
       rtcPeerConnection.setLocalDescription(answer);
       socket.emit("answer", answer, clientId);
       console.log('answer sent');
-      let sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+      sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
       sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
       sendChannel.onclose = onSendChannelStateChange;
@@ -166,7 +169,7 @@ function OnTrackFunction(event) {
 
 function receiveChannelCallback(event) {
   console.log('Receive Channel Callback');
-  let receiveChannel = event.channel;
+  receiveChannel = event.channel;
   receiveChannel.onmessage = onReceiveChannelMessageCallback;
   receiveChannel.onopen = onReceiveChannelStateChange;
   receiveChannel.onclose = onReceiveChannelStateChange;
