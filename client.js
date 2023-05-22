@@ -1,4 +1,4 @@
-const socket = io.connect("https://192.168.1.42:1337");
+const socket = io.connect("https://192.168.10.2:1337");
 
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");

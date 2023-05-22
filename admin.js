@@ -1,4 +1,4 @@
-const socket = io.connect("https://192.168.1.42:1337");
+const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
 for (i = 0; i < 15; i++){
@@ -131,14 +131,14 @@ function OnTrackFunction(event) {
     clientdiv.setAttribute("name", 'div' + currentClientId);
     audio = document.createElement("audio");
     audio.setAttribute("name", 'audio' + currentClientId);
-    audio.controls = true;
+    audio.controls = false;
     audio.autoplay = true;
     audio.muted = true;
     clientdiv.appendChild(audio);
     
     if (audio.srcObject !== event.streams[0]) {
       audio.srcObject = event.streams[0];
-      console.log('Received remote stream');
+      console.log('Received audio remote stream');
     }
     canvas = document.createElement("canvas");
     canvas.setAttribute("name", 'canvas' + currentClientId)
