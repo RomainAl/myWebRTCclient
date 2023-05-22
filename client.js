@@ -35,9 +35,12 @@ socket.on("create", function () {
   //console.log(navigator.mediaDevices.enumerateDevices());
   if (navigator.wakeLock != undefined){
     navigator.wakeLock.request("screen")
-    .then(lock => {setTimeout(()=>Lock.release(), 60*60*1000)})
+    .then(lock => {
+      setTimeout(()=>Lock.release(), 60*60*1000);
+    })
     .catch(err => {alert(`WakeLock impossible: ${err.name}`)})
   } else {
+    //alert("No WakeLock in this browser !");
     console.log("No WakeLock in this browser !");
   };
 
@@ -166,6 +169,8 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
+      //userStream.getTracks().forEach((track) => {track.stop});
+      userStream.getAudioTracks()[0].stop();
       break;
     case 3:
       adminVideo.style.display = "none";

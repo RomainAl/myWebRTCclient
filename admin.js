@@ -133,6 +133,7 @@ function OnTrackFunction(event) {
     audio.setAttribute("name", 'audio' + currentClientId);
     audio.controls = true;
     audio.autoplay = true;
+    audio.muted = true;
     clientdiv.appendChild(audio);
     
     if (audio.srcObject !== event.streams[0]) {
@@ -142,7 +143,7 @@ function OnTrackFunction(event) {
     canvas = document.createElement("canvas");
     canvas.setAttribute("name", 'canvas' + currentClientId)
     clientdiv.appendChild(canvas);
-    const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, false);
+    const streamVisualizer = new StreamVisualizer(event.streams[0], canvas, true);
     streamVisualizer.start();
 
     let videoMaster = document.getElementById("adminVideos");

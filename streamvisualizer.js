@@ -41,6 +41,8 @@ function StreamVisualizer(remoteStream, canvas, doSound) {
 
   // Create a MediaStreamAudioSourceNode from the remoteStream
   this.source = this.context.createMediaStreamSource(remoteStream);
+  const gainNode = this.context.createGain();
+  gainNode.gain.value = 0.5;
   //console.log('Created Web Audio source from remote stream: ', this.source);
 
   this.analyser = this.context.createAnalyser();
@@ -50,7 +52,7 @@ function StreamVisualizer(remoteStream, canvas, doSound) {
   this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
 
-  this.source.connect(this.analyser);
+  this.source.connect(gainNode).connect(this.analyser);
   if (doSound){
     this.source.connect(this.context.destination);
   }
