@@ -264,7 +264,5 @@ function removeAllChildNodes(parent) {
 function changeBackgroundColor(event){
   data = {"scene": 4};
   clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
-  data = {"scene": 5};
-  setTimeout(()=>clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data)), 100)
   iterKey++;
 }

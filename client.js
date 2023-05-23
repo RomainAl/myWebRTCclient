@@ -45,7 +45,7 @@ socket.on("create", function () {
     console.log("No WakeLock in this browser !");
   };
 
-  if (navigator.mediaDevices.getUserMedia === undefined) {
+  /*if (navigator.mediaDevices.getUserMedia === undefined) {
     navigator.mediaDevices.getUserMedia = function(constraints) {
   
       // First get ahold of the legacy getUserMedia, if present
@@ -62,7 +62,7 @@ socket.on("create", function () {
         getUserMedia.call(navigator, constraints, resolve, reject);
       });
     }
-  }
+  }*/
 
   navigator.mediaDevices
     .getUserMedia({
@@ -178,9 +178,10 @@ function onReceiveChannelMessageCallback(event) {
       break;
     case 4:
       atablee.style.background = "white";
+      setTimeout(()=>{atablee.style.background = "black";}, 100);
       break;
     case 5:
-      atablee.style.background = "black";
+      
       break;
     default :
       console.log("Pas de scene...")
