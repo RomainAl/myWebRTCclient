@@ -27,6 +27,8 @@ let adminStream;
 let sendChannel;
 let receiveChannel;
 
+let iterKey = 0;
+document.addEventListener('keydown', changeBackgroundColor);
 
 const NVideo = 9;
 const roomName = "atablee";
@@ -131,7 +133,7 @@ function OnTrackFunction(event) {
     clientdiv.setAttribute("name", 'div' + currentClientId);
     audio = document.createElement("audio");
     audio.setAttribute("name", 'audio' + currentClientId);
-    audio.controls = true;
+    audio.controls = false;
     audio.autoplay = true;
     audio.muted = true;
     clientdiv.appendChild(audio);
@@ -209,7 +211,7 @@ function sendData(event) {
       clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
     }
   }
-  console.log('Sent Data: ' + data);
+  console.log('Sent Data: ' + data.scene);
 }
 
 function onSendChannelStateChange() {
@@ -246,6 +248,7 @@ function stop(event){
   client.rtcDataSendChannel.close();
   client.rtcPeerConnection.close();
   let videoelement = document.getElementsByName('video' + clientId)[0];
+  videoelement.pause();
   adminVideos.appendChild(videoelement);
   removeAllChildNodes(client.div);
   client.div.remove();
@@ -256,4 +259,12 @@ function removeAllChildNodes(parent) {
   while (parent.firstChild) {
       parent.removeChild(parent.firstChild);
   }
+}
+
+function changeBackgroundColor(event){
+  data = {"scene": 4};
+  clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+  data = {"scene": 5};
+  setTimeout(()=>clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data)), 100)
+  iterKey++;
 }

@@ -2,6 +2,7 @@ const socket = io.connect("https://192.168.10.2:1337");
 
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
+let atablee = document.getElementById("atablee");
 let fullscreen = document.getElementById("fullscreen");
 fullscreen.onclick = toggleFullScreen;
 
@@ -173,8 +174,13 @@ function onReceiveChannelMessageCallback(event) {
       userStream.getAudioTracks()[0].stop();
       break;
     case 3:
-      adminVideo.style.display = "none";
-      userCanvas.style.display = "none";
+      adminVideo.remove();
+      break;
+    case 4:
+      atablee.style.background = "white";
+      break;
+    case 5:
+      atablee.style.background = "black";
       break;
     default :
       console.log("Pas de scene...")
