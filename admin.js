@@ -3,7 +3,7 @@ const socket = io.connect("https://192.168.10.2:1337");
 const adminVideos = document.getElementById("adminVideos");
 for (i = 0; i < 15; i++){
   videoelement = document.createElement("video");
-  videoelement.src = './videos/video01.mp4';
+  videoelement.src = './videos/video03.mp4';
   videoelement.type="video/mp4";
   videoelement.width = 250;
   videoelement.playsinline = true;
@@ -28,7 +28,7 @@ let sendChannel;
 let receiveChannel;
 
 
-const NVideo = 8;
+const NVideo = 9;
 const roomName = "atablee";
 let currentClientId;
 
@@ -131,7 +131,7 @@ function OnTrackFunction(event) {
     clientdiv.setAttribute("name", 'div' + currentClientId);
     audio = document.createElement("audio");
     audio.setAttribute("name", 'audio' + currentClientId);
-    audio.controls = false;
+    audio.controls = true;
     audio.autoplay = true;
     audio.muted = true;
     clientdiv.appendChild(audio);
