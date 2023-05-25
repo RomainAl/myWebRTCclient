@@ -15,6 +15,22 @@ let sendChannel;
 let userStream;
 let adminStream;
 
+var noSleep = new NoSleep();
+
+var wakeLockEnabled = false;
+let wakeCut = document.getElementById("wakeCut");
+wakeCut.addEventListener('click', function() {
+  if (!wakeLockEnabled) {
+    noSleep.enable(); // keep the screen on!
+    wakeLockEnabled = true;
+    alert("Wake Cut ok");
+  } else {
+    noSleep.disable(); // let the screen turn off.
+    wakeLockEnabled = false;
+    alert("Wake Cut Impossible");
+  }
+}, false);
+
 // Contains the stun server URL we will be using.
 let iceServers = {
   iceServers: [

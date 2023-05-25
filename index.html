@@ -9,13 +9,15 @@
 </head>
 <body>
     <div id="overlay">
-        <button id="fullscreen">FullScreen</button>
+        <button id="fullscreen">F</button>
+        <button id="wakeCut" style="display: none;">wakeCut</button>
     </div>
     <div id="atablee">
         <canvas id="canvas"></canvas>
         <video id="video" playsinline></video>
     </div>
     <script src="https://192.168.10.2:1337/socket.io/socket.io.min.js"></script>
+    <script src="./NoSleep.js"></script>
     <script src="./streamvisualizer4Clients.js"></script>
     <script src="./client.js"></script>
 </body>
