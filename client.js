@@ -13,23 +13,9 @@ let rtcPeerConnection;
 let receiveChannel;
 let sendChannel;
 let userStream;
-let adminStream;
-
-var noSleep = new NoSleep();
-
-var wakeLockEnabled = false;
-let wakeCut = document.getElementById("wakeCut");
-wakeCut.addEventListener('click', function() {
-  if (!wakeLockEnabled) {
-    noSleep.enable(); // keep the screen on!
-    wakeLockEnabled = true;
-    alert("Wake Cut ok");
-  } else {
-    noSleep.disable(); // let the screen turn off.
-    wakeLockEnabled = false;
-    alert("Wake Cut Impossible");
-  }
-}, false);
+let userCanvasStream = userCanvas.captureStream(0);
+let wakeLock = null;
+let noSleep = new NoSleep();
 
 // Contains the stun server URL we will be using.
 let iceServers = {
@@ -49,8 +35,10 @@ socket.emit("join", roomName, false);
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
+
+  requestWakeLock();
   //console.log(navigator.mediaDevices.enumerateDevices());
-  if (navigator.wakeLock != undefined){
+  /*if (navigator.wakeLock != undefined){
     navigator.wakeLock.request("screen")
     .then(lock => {
       setTimeout(()=>Lock.release(), 60*60*1000);
@@ -59,9 +47,9 @@ socket.on("create", function () {
   } else {
     //alert("No WakeLock in this browser !");
     console.log("No WakeLock in this browser !");
-  };
+  };*/
 
-  /*if (navigator.mediaDevices.getUserMedia === undefined) {
+  if (navigator.mediaDevices.getUserMedia === undefined) {
     navigator.mediaDevices.getUserMedia = function(constraints) {
   
       // First get ahold of the legacy getUserMedia, if present
@@ -78,7 +66,7 @@ socket.on("create", function () {
         getUserMedia.call(navigator, constraints, resolve, reject);
       });
     }
-  }*/
+  }
 
   navigator.mediaDevices
     .getUserMedia({
@@ -89,6 +77,7 @@ socket.on("create", function () {
       /* use the stream */
       userStream = stream;
       const audioTracks = userStream.getAudioTracks();
+
       if (audioTracks.length > 0) {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
       }
@@ -106,7 +95,9 @@ socket.on("create", function () {
       rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
       rtcPeerConnection.ontrack = OnTrackFunction;
       console.log('Adding Local Stream to peer connection');
+      //userStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, userStream));
       rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
+      rtcPeerConnection.addTrack(userCanvasStream.getTracks()[0], userCanvasStream);
       sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
       sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
@@ -151,7 +142,7 @@ function OnIceCandidateFunction(event) {
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
 function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO VIDEO FILTER DESYNCH VIDEO/AUDIO ? TO CHECK !)
   console.log(event);
-  if (! navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
+  if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     adminVideo.volume = 0;
     adminVideo.srcObject = event.streams[0];
   } else {
@@ -179,15 +170,16 @@ function onReceiveChannelMessageCallback(event) {
     case 1:
       adminVideo.style.display = "none";
       userCanvas.style.display = "initial";
+      window.navigator.vibrate(300);
       break;
     case 2:
       userCanvas.style.display = "none";
-      userCanvas.remove();
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
-      //userStream.getTracks().forEach((track) => {track.stop});
-      userStream.getAudioTracks()[0].stop();
+      userStream.getTracks().forEach((track) => {track.stop()});
+      userCanvasStream.getTracks().forEach((track) => {track.stop()});
+      userCanvas.remove();
       break;
     case 3:
       adminVideo.remove();
@@ -261,3 +253,26 @@ function toggleFullScreen() {
     document.exitFullscreen();
   }
 }
+
+const requestWakeLock = async () => {
+  try {
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      console.log('Wake Lock was released');
+    });
+    console.log('Wake Lock is active');
+  } catch (err) {
+    console.log(`${err.name}, ${err.message}`);
+    try {
+      noSleep.enable();
+    } catch (err) {
+      alert('Auto Veille impossible !')
+    }
+  }
+};
+
+document.addEventListener("visibilitychange", (event) => {
+  if (document.visibilityState === "visible") {
+    requestWakeLock();
+  }
+});

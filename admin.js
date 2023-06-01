@@ -50,10 +50,10 @@ socket.on("offer", function (offer, clientId) {
 
   //console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
-
   let videoelement = document.getElementById("adminVideos");
   videoelement = videoelement.getElementsByTagName("video")[0];
   adminStream = videoelement.captureStream();
+  console.log(adminStream);
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
@@ -119,7 +119,7 @@ socket.on("offer", function (offer, clientId) {
 function OnIceCandidateFunction(event) {
     console.log("Candidate");
     if (event.candidate) {
-      socket.emit("candidate", event.candidate, roomName);
+      socket.emit("candidate", event.candidate, roomName, currentClientId);
     }
   }
   
@@ -245,8 +245,12 @@ function stop(event){
   const clientId = event.target.name.substring(3);
   let client = clientS.find(t=>t.clientId==clientId);
   let ind = clientS.findIndex(t=>t.clientId==clientId);
-  client.rtcDataSendChannel.close();
-  client.rtcPeerConnection.close();
+  try{
+    client.rtcPeerConnection.close();
+    client.rtcDataSendChannel.close();
+  } catch (error) {
+    console.error(error);
+  }
   let videoelement = document.getElementsByName('video' + clientId)[0];
   videoelement.pause();
   adminVideos.appendChild(videoelement);
@@ -262,7 +266,11 @@ function removeAllChildNodes(parent) {
 }
 
 function changeBackgroundColor(event){
-  data = {"scene": 4};
-  clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+  try {
+    data = {"scene": 4};
+    clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+  } catch (error) {
+    console.error(error);
+  }
   iterKey++;
 }
