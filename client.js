@@ -13,7 +13,7 @@ let rtcPeerConnection;
 let receiveChannel;
 let sendChannel;
 let userStream;
-let userCanvasStream = userCanvas.captureStream(0);
+let userCanvasStream = userCanvas.captureStream(0); // BECAUSE ON SAFARI, NEED TO HAVE VIDEO STREAM TO RECEIVE A VIDEO STREAM !
 let wakeLock = null;
 let noSleep = new NoSleep();
 
@@ -29,6 +29,17 @@ const offerOptions = {
   offerToReceiveAudio: 1,
   offerToReceiveVideo: 1,
   voiceActivityDetection: false
+};
+
+const constraints = {
+  audio: {
+    sampleRate: 44100,
+    sampleSize: 16,
+    noiseSuppression: false,
+    echoCancellation: true,
+    channelCount: 1
+},
+  video: false,
 };
 
 socket.emit("join", roomName, false);
@@ -69,15 +80,12 @@ socket.on("create", function () {
   }
 
   navigator.mediaDevices
-    .getUserMedia({
-      audio: true,
-      video: false,
-    })
+    .getUserMedia(constraints)
     .then(function (stream) {
       /* use the stream */
       userStream = stream;
+      
       const audioTracks = userStream.getAudioTracks();
-
       if (audioTracks.length > 0) {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
       }
@@ -223,14 +231,23 @@ function webrtcStateChange(ev){
         break;
       case "disconnected":
         console.log("Disconnecting…");
+        atablee.style.display = "none";
         ev.currentTarget.close();
+        userStream.getTracks().forEach((track) => {track.stop()});
+        userCanvasStream.getTracks().forEach((track) => {track.stop()});
         break;
       case "closed":
         console.log("Offline");
+        atablee.style.display = "none";
+        userStream.getTracks().forEach((track) => {track.stop()});
+        userCanvasStream.getTracks().forEach((track) => {track.stop()});
         break;
       case "failed":
         console.log("Error");
+        atablee.style.display = "none";
         ev.currentTarget.close();
+        userStream.getTracks().forEach((track) => {track.stop()});
+        userCanvasStream.getTracks().forEach((track) => {track.stop()});
         break;
       default:
         console.log("Unknown");
@@ -266,7 +283,7 @@ const requestWakeLock = async () => {
     try {
       noSleep.enable();
     } catch (err) {
-      alert('Auto Veille impossible !')
+      alert('Auto Veille impossible !');
     }
   }
 };
