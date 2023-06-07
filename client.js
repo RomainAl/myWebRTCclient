@@ -84,7 +84,7 @@ socket.on("create", function () {
     .then(function (stream) {
       /* use the stream */
       userStream = stream;
-      
+
       const audioTracks = userStream.getAudioTracks();
       if (audioTracks.length > 0) {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
@@ -149,7 +149,6 @@ function OnIceCandidateFunction(event) {
 
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
 function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO VIDEO FILTER DESYNCH VIDEO/AUDIO ? TO CHECK !)
-  console.log(event);
   if (!navigator.userAgent.includes('Chrome') && navigator.userAgent.includes('Safari')) {
     adminVideo.volume = 0;
     adminVideo.srcObject = event.streams[0];

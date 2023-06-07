@@ -1,37 +1,5 @@
-/*@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
-  #atablee {
-    transform: rotate(-90deg);
-    transform-origin: left top;
-    width: 100vh;
-    height: 100vw;
-    overflow-x: hidden;
-    position: absolute;
-    top: 100%;
-    left: 0;
-  }
+/*input[type="range"]{
+  margin-left: 30px;
+  transform-origin: center left;
+  transform: rotate(270deg);
 }*/
-
-
-
-audio {
-/*border-radius: 90px;*/
-width: 250px;
-height: 45px;
-margin-top: 5px;
-margin-bottom: 5px;
-}
-
-audio::-webkit-media-controls-mute-button {
-display: none !important;
-}
-
-audio::-webkit-media-controls-volume-slider {
-display: none !important;
-}
-
-audio::-webkit-media-controls-volume-control-container.closed {
-display: none !important;
-}
-audio::-webkit-media-controls-volume-control-container{
-display: none !important;
-}
