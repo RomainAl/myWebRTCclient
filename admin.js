@@ -43,7 +43,15 @@ let iceServers = {
 };
 
 //{ sinkId: "bf0b1c065616b8f37f0736b78109cbe7501b4be048e518c02ff7a7c3e09000a9" }
+//dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
 const ctx = new AudioContext();
+//ctx.destination.channelInterpretation = 'discrete';
+ctx.destination.channelCount = ctx.destination.maxChannelCount;
+let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
+merger.connect(ctx.destination);
+let ch = 0;
+//merger.channelInterpretation = 'discrete';
+console.log(merger);
 console.log(ctx);
 let source;
 let gainNode;
@@ -283,8 +291,6 @@ function OnTrackFunction(event) {
     gain.onchange = changeGain;
     clientdiv.appendChild(gain);
     source = ctx.createMediaStreamSource(event.streams[0]);
-    const splitter = ctx.createChannelSplitter(1);
-    source.connect(splitter);
     gainNode = ctx.createGain();
     gainNode.gain.value = gain.value;
     analyser = ctx.createAnalyser();
@@ -310,11 +316,13 @@ function OnTrackFunction(event) {
       eq.gain.value = 0;
       filters.push(eq);
     });
-    splitter.connect(filters[0]);
+    const splitter = ctx.createChannelSplitter(1);
+    source.connect(splitter).connect(filters[0]);
     for(var i = 0; i < filters.length - 1; i++) {
         filters[i].connect(filters[i+1]);
       }
-    filters[filters.length - 1].connect(gainNode).connect(panNode).connect(analyser).connect(ctx.destination);
+    filters[filters.length - 1].connect(gainNode).connect(analyser).connect(merger, 0, ch % ctx.destination.maxChannelCount);
+    ch++;
     const streamVisualizer = new MyWebAudio(source, analyser, canvas, false);
     streamVisualizer.start();
 
