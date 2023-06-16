@@ -7,7 +7,7 @@ let fullscreen = document.getElementById("fullscreen");
 fullscreen.onclick = toggleFullScreen;
 
 adminVideo.style.display = "none";
-
+navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; 
 let roomName = "atablee";
 let rtcPeerConnection;
 let receiveChannel;
@@ -177,7 +177,6 @@ function onReceiveChannelMessageCallback(event) {
     case 1:
       adminVideo.style.display = "none";
       userCanvas.style.display = "initial";
-      window.navigator.vibrate(300);
       break;
     case 2:
       userCanvas.style.display = "none";
@@ -193,6 +192,7 @@ function onReceiveChannelMessageCallback(event) {
       break;
     case 4:
       atablee.style.background = "white";
+      if (navigator.vibrate){ navigator.vibrate([400, 0, 300, 0, 200, 0, 100].map(function(x) { return (x+200) * Math.random(); })); }
       setTimeout(()=>{atablee.style.background = "black";}, 100);
       break;
     case 5:

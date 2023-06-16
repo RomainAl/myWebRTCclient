@@ -1,7 +1,7 @@
 const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
-for (i = 0; i < 15; i++){
+for (let i = 0; i < 15; i++){
   videoelement = document.createElement("video");
   videoelement.src = './videos/video03.mp4';
   videoelement.type="video/mp4";
@@ -44,14 +44,15 @@ let iceServers = {
 
 //{ sinkId: "bf0b1c065616b8f37f0736b78109cbe7501b4be048e518c02ff7a7c3e09000a9" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
-const ctx = new AudioContext();
-//ctx.destination.channelInterpretation = 'discrete';
+const ctx = new AudioContext({ sinkId: "22e3cbaff6f7e6ff19f8c45388d97a8081deec18db221df3bb174dd3317fcd78" });
+ctx.destination.channelInterpretation = 'discrete';
 ctx.destination.channelCount = ctx.destination.maxChannelCount;
 let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
+merger.channelInterpretation = 'discrete';
 merger.connect(ctx.destination);
+console.log("Channel number: " + ctx.destination.maxChannelCount);
 let ch = 0;
 //merger.channelInterpretation = 'discrete';
-console.log(merger);
 console.log(ctx);
 let source;
 let gainNode;
@@ -63,7 +64,6 @@ const compressor = new DynamicsCompressorNode(ctx, {
   attack: 0,
   release: 0.25,
 });
-let panNode;
 let filters = [];
 const filtersFreq = [200, 1500, 3500, 10000, 12000, 15000, 18000, 22050];
 filtersFreq.forEach(function(freq, i) {
@@ -84,7 +84,7 @@ setInterval(() => {
     if (clientS.length > 0) {
       let rbitrate = 0;
       let sbitrate = 0;
-      for (i = 0; i < clientS.length; i++){
+      for (let i = 0; i < clientS.length; i++){
         let clientId = clientS[i].clientId;
         let divStats = document.getElementsByName('divStats' + clientId)[0];
         let statsPrev = {
@@ -100,9 +100,9 @@ setInterval(() => {
               let stats = dumpStats(results, statsPrev);
               rbitrate += stats.rabitrate + stats.rvbitrate;
               sbitrate += stats.sabitrate + stats.svbitrate;
-              divStats.innerHTML = 'RA = ' + stats.rabitrate + ' kbits/sec<br>';
+              divStats.innerHTML = 'RA = ' + stats.rabitrate + ' kbits/sec  //  ';
               divStats.innerHTML += 'RV = ' + stats.rvbitrate + ' kbits/sec<br>';
-              divStats.innerHTML += 'SA = ' + stats.sabitrate + ' kbits/sec<br>';
+              divStats.innerHTML += 'SA = ' + stats.sabitrate + ' kbits/sec  //  ';
               divStats.innerHTML += 'SV = ' + stats.svbitrate + ' kbits/sec<br>';
               //divStats.innerHTML += stats.all;
               divStats.setAttribute('data-t', stats.t);
@@ -110,8 +110,8 @@ setInterval(() => {
               divStats.setAttribute('data-rvB', stats.rvB);
               divStats.setAttribute('data-saB', stats.saB);
               divStats.setAttribute('data-svB', stats.svB);
-              divGStats.innerHTML = 'R = ' + rbitrate + ' kbits/sec<br>';
-              divGStats.innerHTML += 'S = ' + sbitrate + ' kbits/sec<br>';
+              divGStats.innerHTML = 'R = ' + rbitrate + ' kbits/sec  //  ';
+              divGStats.innerHTML += 'S = ' + sbitrate + ' kbits/sec';
             });
       }
     }
@@ -239,8 +239,8 @@ socket.on("offer", function (offer, clientId) {
         div: document.getElementsByName('div'+clientId)[0],
         source: source,
         gainNode: gainNode,
-        panNode: panNode,
-        filters: filters
+        filters: filters,
+        analyser: analyser
       };
       clientS.push(client);
   })
@@ -266,6 +266,14 @@ function OnTrackFunction(event) {
     let clientdiv = document.createElement("div");
     medias.appendChild(clientdiv);
     clientdiv.style.border = "double";
+    clientdiv.style.borderRadius = "20px";
+    clientdiv.style.display = "flex";
+    clientdiv.style.flexDirection = "column";
+    clientdiv.style.alignItems = "center";
+    clientdiv.style.alignContent = "space-around";
+    //clientdiv.style.justifyContent = "space-around";
+    clientdiv.style.justifySelf = "stretch";
+    clientdiv.style.padding = "10px";
     clientdiv.setAttribute("name", 'div' + currentClientId);
     let audio = document.createElement("audio");
     audio.setAttribute("name", 'audio' + currentClientId);
@@ -280,6 +288,7 @@ function OnTrackFunction(event) {
     }
     canvas = document.createElement("canvas");
     canvas.setAttribute("name", 'canvas' + currentClientId);
+    canvas.width = 250;
     clientdiv.appendChild(canvas);
     let gain = document.createElement('input');
     gain.setAttribute("name", 'input'+currentClientId);
@@ -296,18 +305,7 @@ function OnTrackFunction(event) {
     analyser = ctx.createAnalyser();
     analyser.minDecibels = -140;
     analyser.maxDecibels = 0;
-    let pan = document.createElement('input');
-    pan.setAttribute("name", 'input'+currentClientId);
-    pan.style.background = "red";
-    pan.type = 'range';
-    pan.min = -1;
-    pan.max = 1;
-    pan.value = 0.0;
-    pan.step = 0.1;
-    pan.onchange = changePan;
-    clientdiv.appendChild(pan);
-    panNode = ctx.createStereoPanner();
-    panNode.pan.setValueAtTime(pan.value, ctx.currentTime);
+
     filters = [];
     filtersFreq.forEach(function(freq, i) {
       var eq = ctx.createBiquadFilter();
@@ -318,11 +316,26 @@ function OnTrackFunction(event) {
     });
     const splitter = ctx.createChannelSplitter(1);
     source.connect(splitter).connect(filters[0]);
-    for(var i = 0; i < filters.length - 1; i++) {
+    for(let i = 0; i < filters.length - 1; i++) {
         filters[i].connect(filters[i+1]);
       }
-    filters[filters.length - 1].connect(gainNode).connect(analyser).connect(merger, 0, ch % ctx.destination.maxChannelCount);
+    filters[filters.length - 1].connect(gainNode).connect(analyser).connect(merger, 0, ch);
+    let btn_chan = document.createElement("div");
+    clientdiv.appendChild(btn_chan);
+    for (let i=0; i<ctx.destination.maxChannelCount; i++){
+      let button = document.createElement("button");
+      button.setAttribute("name", 'btn'+ currentClientId);
+      if (ch % ctx.destination.maxChannelCount==i){
+        button.style.background='green';
+      } else {
+        button.style.background='white';
+      }
+      button.innerText = i+1;
+      button.onclick = changeChan;
+      btn_chan.appendChild(button);
+    }
     ch++;
+    ch = ch % ctx.destination.maxChannelCount;
     const streamVisualizer = new MyWebAudio(source, analyser, canvas, false);
     streamVisualizer.start();
 
@@ -332,23 +345,27 @@ function OnTrackFunction(event) {
       videoMaster.setAttribute("name", 'video' + currentClientId);
       videoMaster.display = "inline";
       clientdiv.appendChild(videoMaster);
-      for (i=0;i<NVideo;i++){
+      let btn_videos = document.createElement("div");
+      clientdiv.appendChild(btn_videos);
+      for (let i=0;i<NVideo;i++){
         let button = document.createElement("button");
         button.setAttribute("name", 'btn'+ currentClientId);
         button.innerText = i+1;
         button.onclick = changeVid;
-        clientdiv.appendChild(button);
+        btn_videos.appendChild(button);
       }
-      let button = document.createElement("button");
-      button.setAttribute("name", 'btn'+ currentClientId);
-      button.innerText = "STOP";
-      button.onclick = stop;
-      clientdiv.appendChild(button);
-
-      let divStats = document.createElement("div");
-      divStats.setAttribute("name", 'divStats'+ currentClientId);
-      clientdiv.appendChild(divStats);
     }
+
+    let divStats = document.createElement("div");
+    divStats.setAttribute("name", 'divStats'+ currentClientId);
+    clientdiv.appendChild(divStats);
+
+    let button = document.createElement("button");
+    button.setAttribute("name", 'btn'+ currentClientId);
+    button.innerText = "STOP";
+    button.onclick = stop;
+    button.style.background = "red";
+    clientdiv.appendChild(button);
   };
 }
 
@@ -388,7 +405,7 @@ function sendData(event) {
       console.log("Error : no scene found !")
   }
   
-  for (i = 0; i < clientS.length; i++){
+  for (let i = 0; i < clientS.length; i++){
     if (clientS[i].rtcDataSendChannel.readyState === 'open') {
       clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
     }
@@ -422,6 +439,16 @@ function changeVid(event){
     audioSender.replaceTrack(audioTrack);
     });
 }
+function changeChan(event){
+  const clientId = event.target.name.substring(3);
+  let client = clientS.find(t=>t.clientId==clientId);
+  client.analyser.disconnect(0);
+  client.gainNode.connect(client.analyser).connect(merger, 0, parseInt(event.target.innerText)-1);
+  for (const child of event.target.parentElement.children) {
+    child.style.background = "white";
+  }
+  event.target.style.background = "green";
+}
 
 function changeGain(event){
   const clientId = event.target.name.substring(5);
@@ -429,15 +456,8 @@ function changeGain(event){
   client.gainNode.gain.value = event.target.value;
 }
 
-function changePan(event){
-  const clientId = event.target.name.substring(5);
-  let client = clientS.find(t=>t.clientId==clientId);
-  client.panNode.pan.value = event.target.value;
-}
-
 function changeEQ(event){
-  console.log(event.target.name);
-  for (i = 0; i < clientS.length; i++){
+  for (let i = 0; i < clientS.length; i++){
     if (clientS[i].rtcDataSendChannel.readyState === 'open') {
       clientS[i].filters[event.target.name].gain.value = event.target.value;
     }
@@ -481,86 +501,3 @@ function changeBackgroundColor(event){
   }
   iterKey++;
 }
-/*function StreamVisualizer(remoteStream, canvas, doSound) {
-  //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
-  this.canvas = canvas;
-  this.drawContext = this.canvas.getContext('2d');
-
-  // cope with browser differences
-  if (typeof AudioContext === 'function') {
-    this.context = new AudioContext();
-  } else if (typeof webkitAudioContext === 'function') {
-    this.context = new webkitAudioContext(); // eslint-disable-line new-cap
-  } else {
-    alert('Sorry! Web Audio is not supported by this browser');
-  }
-
-  // Create a MediaStreamAudioSourceNode from the remoteStream
-  this.source = this.context.createMediaStreamSource(remoteStream);
-
-  this.analyser = this.context.createAnalyser();
-  this.analyser.minDecibels = -140;
-  this.analyser.maxDecibels = 0;
-  this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
-  this.times = new Uint8Array(this.analyser.frequencyBinCount);
-
-  this.source.connect(this.analyser);
-  if (doSound){
-    this.source.connect(this.context.destination);
-  }
-  this.startTime = 0;
-  this.startOffset = 0;
-}
-
-StreamVisualizer.prototype.start = function() {
-  requestAnimationFrame(this.draw.bind(this));
-};
-
-StreamVisualizer.prototype.draw = function() {
-  let barWidth;
-  let offset;
-  let height;
-  let percent;
-  let value;
-  this.analyser.smoothingTimeConstant = SMOOTHING;
-  this.analyser.fftSize = FFT_SIZE;
-
-  // Get the frequency data from the currently playing music
-  this.analyser.getByteFrequencyData(this.freqs);
-  this.analyser.getByteTimeDomainData(this.times);
-
-
-  //this.canvas.width = WIDTH;
-  //this.canvas.height = HEIGHT;
-  this.drawContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  // Draw the frequency domain chart.
-  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
-    value = this.freqs[i];
-    percent = value / 256;
-    height = this.canvas.height * percent;
-    offset = this.canvas.height - height - 1;
-    barWidth = this.canvas.width / this.analyser.frequencyBinCount;
-    let hue = i/this.analyser.frequencyBinCount * 360;
-    this.drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-    this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
-  }
-
-  // Draw the time domain chart.
-  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
-    value = this.times[i];
-    percent = value / 256;
-    height = this.canvas.height * percent;
-    offset = this.canvas.height - height - 1;
-    barWidth = this.canvas.width/this.analyser.frequencyBinCount;
-    this.drawContext.fillStyle = 'black';
-    this.drawContext.fillRect(i * barWidth, offset, 3, 5);
-  }
-
-  requestAnimationFrame(this.draw.bind(this));
-};
-
-StreamVisualizer.prototype.getFrequencyValue = function(freq) {
-  let nyquist = this.context.sampleRate/2;
-  let index = Math.round(freq/nyquist * this.freqs.length);
-  return this.freqs[index];
-};*/
