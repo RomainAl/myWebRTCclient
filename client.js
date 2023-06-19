@@ -181,7 +181,7 @@ function onReceiveChannelMessageCallback(event) {
     case 2:
       userCanvas.style.display = "none";
       adminVideo.style.display = "initial";
-      adminVideo.volume = 0;
+      adminVideo.volume = 1;
       adminVideo.play();
       userStream.getTracks().forEach((track) => {track.stop()});
       userCanvasStream.getTracks().forEach((track) => {track.stop()});
