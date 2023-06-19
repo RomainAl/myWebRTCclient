@@ -3,8 +3,8 @@ const socket = io.connect("https://192.168.10.2:1337");
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
 let atablee = document.getElementById("atablee");
-let fullscreen = document.getElementById("fullscreen");
-fullscreen.onclick = toggleFullScreen;
+//let fullscreen = document.getElementById("fullscreen");
+//fullscreen.onclick = toggleFullScreen;
 
 adminVideo.style.display = "none";
 navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; 
@@ -42,23 +42,22 @@ const constraints = {
   video: false,
 };
 
-socket.emit("join", roomName, false);
+const startButton = document.getElementById( 'startButton' );
+  startButton.addEventListener( 'click', function () {
+  
+  init();
+  
+} );
+
+function init() {
+  const overlay = document.getElementById( 'overlay' );
+  overlay.remove();
+  requestWakeLock();
+  socket.emit("join", roomName, false);
+};
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
-
-  requestWakeLock();
-  //console.log(navigator.mediaDevices.enumerateDevices());
-  /*if (navigator.wakeLock != undefined){
-    navigator.wakeLock.request("screen")
-    .then(lock => {
-      setTimeout(()=>Lock.release(), 60*60*1000);
-    })
-    .catch(err => {alert(`WakeLock impossible: ${err.name}`)})
-  } else {
-    //alert("No WakeLock in this browser !");
-    console.log("No WakeLock in this browser !");
-  };*/
 
   if (navigator.mediaDevices.getUserMedia === undefined) {
     navigator.mediaDevices.getUserMedia = function(constraints) {
@@ -176,12 +175,13 @@ function onReceiveChannelMessageCallback(event) {
       break;
     case 1:
       adminVideo.style.display = "none";
+      adminVideo.volume = 0;
       userCanvas.style.display = "initial";
       break;
     case 2:
       userCanvas.style.display = "none";
       adminVideo.style.display = "initial";
-      adminVideo.volume = 1;
+      adminVideo.volume = 0;
       adminVideo.play();
       userStream.getTracks().forEach((track) => {track.stop()});
       userCanvasStream.getTracks().forEach((track) => {track.stop()});
@@ -275,14 +275,17 @@ const requestWakeLock = async () => {
     wakeLock = await navigator.wakeLock.request('screen');
     wakeLock.addEventListener('release', () => {
       console.log('Wake Lock was released');
+      //alert("desative lock");
     });
     console.log('Wake Lock is active');
+    //alert("ok lock");
   } catch (err) {
     console.log(`${err.name}, ${err.message}`);
     try {
       noSleep.enable();
+      //alert("active lock2");
     } catch (err) {
-      alert('Auto Veille impossible !');
+      //alert('Auto Veille impossible !');
     }
   }
 };

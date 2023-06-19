@@ -44,7 +44,7 @@ let iceServers = {
 
 //{ sinkId: "bf0b1c065616b8f37f0736b78109cbe7501b4be048e518c02ff7a7c3e09000a9" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
-const ctx = new AudioContext({ sinkId: "22e3cbaff6f7e6ff19f8c45388d97a8081deec18db221df3bb174dd3317fcd78" });
+const ctx = new AudioContext();
 ctx.destination.channelInterpretation = 'discrete';
 ctx.destination.channelCount = ctx.destination.maxChannelCount;
 let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
