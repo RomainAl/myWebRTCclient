@@ -288,9 +288,7 @@ window.addEventListener('dblclick', () =>
 })
 
 function changeFullScreen(){
-
   const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
-
   if(!fullscreenElement)
   {
       if(document.documentElement.requestFullscreen)
