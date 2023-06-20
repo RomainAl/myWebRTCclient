@@ -1,10 +1,13 @@
-const socket = io.connect("https://192.168.10.2:1337");
+let socket;
+try {
+  socket = io.connect("https://192.168.10.2:1337");
+} catch(err){
+  alert(err);
+}
 
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
 let atablee = document.getElementById("atablee");
-//let fullscreen = document.getElementById("fullscreen");
-//fullscreen.onclick = toggleFullScreen;
 
 adminVideo.style.display = "none";
 navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; 
@@ -53,6 +56,7 @@ function init() {
   const overlay = document.getElementById( 'overlay' );
   overlay.remove();
   requestWakeLock();
+  changeFullScreen();
   socket.emit("join", roomName, false);
 };
 
@@ -254,38 +258,19 @@ function webrtcStateChange(ev){
     }
 };
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    toggleFullScreen();
-  }
-}, false);
-
-function toggleFullScreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.webkitRequestFullscreen();
-    //let myScreenOrientation = window.screen.orientation;
-    //myScreenOrientation.lock("portrait-primary");
-  } else {
-    document.exitFullscreen();
-  }
-}
 
 const requestWakeLock = async () => {
   try {
     wakeLock = await navigator.wakeLock.request('screen');
     wakeLock.addEventListener('release', () => {
       console.log('Wake Lock was released');
-      //alert("desative lock");
     });
     console.log('Wake Lock is active');
-    //alert("ok lock");
   } catch (err) {
     console.log(`${err.name}, ${err.message}`);
     try {
       noSleep.enable();
-      //alert("active lock2");
     } catch (err) {
-      //alert('Auto Veille impossible !');
     }
   }
 };
@@ -295,3 +280,36 @@ document.addEventListener("visibilitychange", (event) => {
     requestWakeLock();
   }
 });
+
+window.addEventListener('dblclick', () =>
+{
+    changeFullScreen();
+})
+
+function changeFullScreen(){
+
+  const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
+
+  if(!fullscreenElement)
+  {
+      if(document.documentElement.requestFullscreen)
+      {
+        document.documentElement.requestFullscreen()
+      }
+      else if(document.documentElement.webkitRequestFullscreen)
+      {
+        document.documentElement.webkitRequestFullscreen()
+      }
+  }
+  else
+  {
+      if(document.exitFullscreen)
+      {
+          document.exitFullscreen()
+      }
+      else if(document.webkitExitFullscreen)
+      {
+          document.webkitExitFullscreen()
+      }
+  }
+}
