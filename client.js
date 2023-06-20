@@ -2,7 +2,7 @@ let socket;
 try {
   socket = io.connect("https://192.168.10.2:1337");
 } catch(err){
-  alert('E2 : ' + err);
+  alert(err);
 }
 
 let userCanvas = document.getElementById("canvas");
@@ -56,7 +56,12 @@ function init() {
   const overlay = document.getElementById( 'overlay' );
   overlay.remove();
   requestWakeLock();
-  changeFullScreen();
+  try{
+    changeFullScreen();
+  }
+  catch(err){
+    alert(err);
+  }
   socket.emit("join", roomName, false);
 };
 
