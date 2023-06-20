@@ -2,7 +2,7 @@ let socket;
 try {
   socket = io.connect("https://192.168.10.2:1337");
 } catch(err){
-  alert(err);
+  alert('E2 : ' + err);
 }
 
 let userCanvas = document.getElementById("canvas");
