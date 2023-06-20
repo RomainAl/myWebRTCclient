@@ -64,7 +64,9 @@ const compressor = new DynamicsCompressorNode(ctx, {
   attack: 0,
   release: 0.25,
 });
+
 let filters = [];
+let cutFreq;
 const filtersFreq = [200, 1500, 3500, 10000, 12000, 15000, 18000, 22050];
 filtersFreq.forEach(function(freq, i) {
   let eqin = document.createElement('input');
@@ -240,6 +242,7 @@ socket.on("offer", function (offer, clientId) {
         source: source,
         gainNode: gainNode,
         filters: filters,
+        cutFreq: cutFreq,
         analyser: analyser
       };
       clientS.push(client);
@@ -314,12 +317,29 @@ function OnTrackFunction(event) {
       eq.gain.value = 0;
       filters.push(eq);
     });
+
+    let cutFreq_f = document.createElement('input');
+    cutFreq_f.setAttribute("name", 'input'+currentClientId);
+    cutFreq_f.type = 'range';
+    cutFreq_f.min = 0;
+    cutFreq_f.max = 22050;
+    cutFreq_f.value = 0;
+    cutFreq_f.step = 100;
+    
+    cutFreq_f.onchange = changeCutFreq;
+    clientdiv.appendChild(cutFreq_f);
+
+    cutFreq = ctx.createBiquadFilter();
+    cutFreq.frequency.value = cutFreq_f.value;
+    cutFreq.type = "peaking";
+    cutFreq.gain.value = -40;
+
     const splitter = ctx.createChannelSplitter(1);
     source.connect(splitter).connect(filters[0]);
     for(let i = 0; i < filters.length - 1; i++) {
         filters[i].connect(filters[i+1]);
       }
-    filters[filters.length - 1].connect(gainNode).connect(analyser).connect(merger, 0, ch);
+    filters[filters.length - 1].connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
     let btn_chan = document.createElement("div");
     clientdiv.appendChild(btn_chan);
     for (let i=0; i<ctx.destination.maxChannelCount; i++){
@@ -454,6 +474,14 @@ function changeGain(event){
   const clientId = event.target.name.substring(5);
   let client = clientS.find(t=>t.clientId==clientId);
   client.gainNode.gain.value = event.target.value;
+}
+
+function changeCutFreq(event){
+  const clientId = event.target.name.substring(5);
+  let client = clientS.find(t=>t.clientId==clientId);
+  client.cutFreq.frequency.value = event.target.value;
+  console.log(event.target.value);
+  console.log(client);
 }
 
 function changeEQ(event){
