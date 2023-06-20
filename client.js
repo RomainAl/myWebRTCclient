@@ -271,6 +271,7 @@ const requestWakeLock = async () => {
     try {
       noSleep.enable();
     } catch (err) {
+      alert('Impossible de couper la veille automatiquement !')
     }
   }
 };
