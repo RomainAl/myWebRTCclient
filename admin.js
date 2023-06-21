@@ -65,20 +65,7 @@ const compressor = new DynamicsCompressorNode(ctx, {
   release: 0.25,
 });
 
-let filters = [];
 let cutFreq;
-const filtersFreq = [200, 1500, 3500, 10000, 12000, 15000, 18000, 22050];
-filtersFreq.forEach(function(freq, i) {
-  let eqin = document.createElement('input');
-  eqin.setAttribute("name", i);
-  eqin.type = 'range';
-  eqin.min = -30;
-  eqin.max = 30;
-  eqin.value = 0.0;
-  eqin.step = 0.1;
-  eqin.onchange = changeEQ;
-  document.getElementById("EQ").appendChild(eqin);
-});
 
 // Display statistics
 setInterval(() => {
@@ -241,7 +228,6 @@ socket.on("offer", function (offer, clientId) {
         div: document.getElementsByName('div'+clientId)[0],
         source: source,
         gainNode: gainNode,
-        filters: filters,
         cutFreq: cutFreq,
         analyser: analyser
       };
@@ -309,15 +295,6 @@ function OnTrackFunction(event) {
     analyser.minDecibels = -140;
     analyser.maxDecibels = 0;
 
-    filters = [];
-    filtersFreq.forEach(function(freq, i) {
-      var eq = ctx.createBiquadFilter();
-      eq.frequency.value = freq;
-      eq.type = "peaking";
-      eq.gain.value = 0;
-      filters.push(eq);
-    });
-
     let cutFreq_f = document.createElement('input');
     cutFreq_f.setAttribute("name", 'input'+currentClientId);
     cutFreq_f.type = 'range';
@@ -335,11 +312,7 @@ function OnTrackFunction(event) {
     cutFreq.gain.value = -40;
 
     const splitter = ctx.createChannelSplitter(1);
-    source.connect(splitter).connect(filters[0]);
-    for(let i = 0; i < filters.length - 1; i++) {
-        filters[i].connect(filters[i+1]);
-      }
-    filters[filters.length - 1].connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
+    source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
     let btn_chan = document.createElement("div");
     clientdiv.appendChild(btn_chan);
     for (let i=0; i<ctx.destination.maxChannelCount; i++){
@@ -484,14 +457,6 @@ function changeCutFreq(event){
   console.log(client);
 }
 
-function changeEQ(event){
-  for (let i = 0; i < clientS.length; i++){
-    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
-      clientS[i].filters[event.target.name].gain.value = event.target.value;
-    }
-  }
-}
-
 function stop(event){
   const clientId = event.target.name.substring(3);
   removeClient(clientId);
@@ -521,11 +486,16 @@ function removeAllChildNodes(parent) {
 }
 
 function changeBackgroundColor(event){
-  try {
-    data = {"scene": 4};
-    clientS[iterKey % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
-  } catch (error) {
-    console.error(error);
+  if  (event.code == "Space"){
+    let randNumber = Math.max(Math.round(Math.random()*clientS.length), 1);
+    try {
+      data = {"scene": 4};
+      for (let i = 0; i < randNumber; i++){
+        clientS[(iterKey+i) % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    iterKey+=randNumber;
   }
-  iterKey++;
 }
