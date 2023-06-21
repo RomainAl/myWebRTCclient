@@ -1,9 +1,13 @@
 let socket;
 try {
   socket = io.connect("https://192.168.10.2:1337");
+  alert("ok socket");
 } catch(err){
   alert(err);
 }
+console.log(socket);
+alert(socket.connected);
+alert(socket.id);
 
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
@@ -55,14 +59,15 @@ const startButton = document.getElementById( 'startButton' );
 function init() {
   const overlay = document.getElementById( 'overlay' );
   overlay.remove();
-  requestWakeLock();
-  try{
-    changeFullScreen();
-  }
-  catch(err){
-    alert(err);
-  }
-  socket.emit("join", roomName, false);
+  try{requestWakeLock();} catch(err){alert(err);};
+  alert("Done - Wake Lock");
+  try{changeFullScreen();} catch(err){alert(err);};
+  alert("Done - FullScren");
+  try{socket.emit("join", roomName, false);} catch(err){alert(err);};
+  alert("Done - Socket");
+  console.log(socket);
+  alert(socket.connected);
+  alert(socket.id);
 };
 
 // Triggered when a room is succesfully created.
