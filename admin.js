@@ -34,6 +34,7 @@ document.addEventListener('keydown', changeBackgroundColor);
 const NVideo = 9;
 const roomName = "atablee";
 let currentClientId;
+let currentAdminId;
 
 let iceServers = {
   iceServers: [
@@ -159,7 +160,8 @@ function dumpStats(results, statsPrev) {
 
 socket.emit("join", roomName, true);
 
-socket.on("create", function () {
+socket.on("create", function (id) {
+  currentAdminId = id;
 });
 
 socket.on("offer", function (offer, clientId) {
@@ -239,6 +241,15 @@ socket.on("offer", function (offer, clientId) {
 
 });
 
+socket.on("disconnect", (reason) => {
+  alert("SOCKET DECONNNECTION !");
+  console.log(reason);
+  if (reason === "io server disconnect") {
+    // the disconnection was initiated by the server, you need to reconnect manually
+    socket.connect();
+  }
+  // else the socket will automatically try to reconnect
+});
 
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
 function OnIceCandidateFunction(event) {
