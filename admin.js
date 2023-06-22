@@ -1,4 +1,4 @@
-const socket = io.connect("https://192.168.10.2:1337");
+const socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
 
 const adminVideos = document.getElementById("adminVideos");
 for (let i = 0; i < 15; i++){
