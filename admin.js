@@ -14,11 +14,13 @@ for (let i = 0; i < 15; i++){
   adminVideos.appendChild(videoelement);
 }
 const btn_reload = document.getElementById('btn_reload');
+const btn_reco = document.getElementById('btn_reco');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
 
 btn_reload.onclick = sendData;
+btn_reco.onclick = sendData;
 btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
 btn_scene3.onclick = sendData;
@@ -399,6 +401,10 @@ function sendData(event) {
   switch (event.srcElement.id){
     case "btn_reload":
       data = {"scene": 0};
+      break;
+    case "btn_reco":
+      socket.connect();
+      socket.emit("join", roomName, true);
       break;
     case "btn_scene1":
       data = {"scene": 1};
