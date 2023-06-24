@@ -1,9 +1,10 @@
 const socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
+//const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
 for (let i = 0; i < 15; i++){
   videoelement = document.createElement("video");
-  videoelement.src = './videos/video03.mp4';
+  videoelement.src = './videos/video01.mp4';
   videoelement.type="video/mp4";
   videoelement.width = 250;
   videoelement.playsinline = true;
@@ -160,8 +161,11 @@ function dumpStats(results, statsPrev) {
 
 socket.emit("join", roomName, true);
 
-socket.on("create", function (id) {
+/*socket.on("create", function (id) {
   currentAdminId = id;
+});*/
+
+socket.on("create", function () {
 });
 
 socket.on("offer", function (offer, clientId) {
@@ -242,12 +246,12 @@ socket.on("offer", function (offer, clientId) {
 });
 
 socket.on("disconnect", (reason) => {
-  alert("SOCKET DECONNNECTION !");
   console.log(reason);
   if (reason === "io server disconnect") {
     // the disconnection was initiated by the server, you need to reconnect manually
     socket.connect();
   }
+  socket.emit("join", roomName, true);
   // else the socket will automatically try to reconnect
 });
 
@@ -400,6 +404,10 @@ function sendData(event) {
       data = {"scene": 1};
       break;
     case "btn_scene2":
+      let videoelement = document.getElementsByName('video' + clientId)[0];
+      for (let i = 0; i < videoelement.length(); i++){
+        videoelement[i].play();
+      }
       data = {"scene": 2};
       break;
     case "btn_scene3":
