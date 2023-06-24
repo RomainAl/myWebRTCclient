@@ -35,7 +35,6 @@ document.addEventListener('keydown', changeBackgroundColor);
 const NVideo = 9;
 const roomName = "atablee";
 let currentClientId;
-let currentAdminId;
 
 let iceServers = {
   iceServers: [
@@ -172,6 +171,7 @@ socket.on("offer", function (offer, clientId) {
 
   console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
+  console.log('Offer receive from = '+clientId);
   let videoelement = document.getElementById("adminVideos");
   videoelement = videoelement.getElementsByTagName("video")[0];
   let adminStream = videoelement.captureStream();
@@ -221,7 +221,7 @@ socket.on("offer", function (offer, clientId) {
   .then((answer) => {
       rtcPeerConnection.setLocalDescription(answer);
       socket.emit("answer", answer, clientId);
-      console.log('answer sent');
+      console.log('answer sent to : ' + clientId);
       sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
       sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
@@ -404,10 +404,6 @@ function sendData(event) {
       data = {"scene": 1};
       break;
     case "btn_scene2":
-      let videoelement = document.getElementsByName('video' + clientId)[0];
-      for (let i = 0; i < videoelement.length(); i++){
-        videoelement[i].play();
-      }
       data = {"scene": 2};
       break;
     case "btn_scene3":
