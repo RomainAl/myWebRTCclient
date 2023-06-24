@@ -48,8 +48,11 @@ const constraints = {
 
 const startButton = document.getElementById( 'startButton' );
   startButton.addEventListener( 'click', function () {
-  
-  init();
+  if (startButton.innerText == "OK ?"){
+    startButton.innerText = "PLAY"
+  } else {
+    init();
+  }
   
 } );
 
