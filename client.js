@@ -47,12 +47,13 @@ const constraints = {
 };
 
 const startButton = document.getElementById( 'startButton' );
-  startButton.addEventListener( 'click', function () {
-  if (startButton.innerText == "OK ?"){
+startButton.addEventListener( 'click', function () {
+  /*if (startButton.innerText == "OK ?"){
     startButton.innerText = "PLAY"
   } else {
     init();
-  }
+  }*/
+  init();
   
 } );
 

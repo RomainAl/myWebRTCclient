@@ -13,12 +13,14 @@ for (let i = 0; i < 15; i++){
   videoelement.volume = 1;
   adminVideos.appendChild(videoelement);
 }
+const btn_start = document.getElementById('btn_start');
 const btn_reload = document.getElementById('btn_reload');
 const btn_reco = document.getElementById('btn_reco');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
 
+btn_start.onclick = startContext;
 btn_reload.onclick = sendData;
 btn_reco.onclick = sendData;
 btn_scene1.onclick = sendData;
@@ -47,28 +49,33 @@ let iceServers = {
 
 //{ sinkId: "bf0b1c065616b8f37f0736b78109cbe7501b4be048e518c02ff7a7c3e09000a9" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
-const ctx = new AudioContext();
-ctx.destination.channelInterpretation = 'discrete';
-ctx.destination.channelCount = ctx.destination.maxChannelCount;
-let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
-merger.channelInterpretation = 'discrete';
-merger.connect(ctx.destination);
-console.log("Channel number: " + ctx.destination.maxChannelCount);
+let ctx;
+
+let merger;
 let ch = 0;
-//merger.channelInterpretation = 'discrete';
-console.log(ctx);
 let source;
 let gainNode;
 let analyser;
-const compressor = new DynamicsCompressorNode(ctx, {
+/*const compressor = new DynamicsCompressorNode(ctx, {
   threshold: -50,
   knee: 40,
   ratio: 12,
   attack: 0,
   release: 0.25,
-});
-
+});*/
 let cutFreq;
+
+function startContext(event) {
+  ctx = new AudioContext();
+  ctx.destination.channelInterpretation = 'discrete';
+  ctx.destination.channelCount = ctx.destination.maxChannelCount;
+  merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
+  merger.channelInterpretation = 'discrete';
+  merger.connect(ctx.destination);
+  console.log("Channel number: " + ctx.destination.maxChannelCount);
+  //merger.channelInterpretation = 'discrete';
+  console.log(ctx);
+}
 
 // Display statistics
 setInterval(() => {
