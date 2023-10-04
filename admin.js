@@ -52,19 +52,8 @@ console.log(navigator.mediaDevices.enumerateDevices());
 
 //{ sinkId: "124e612f375942fd133185c04186d1a26bc79eda5e4fc75317b508430d00e4ea" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
-<<<<<<< HEAD
-const ctx = new AudioContext({ sinkId: "4499eec8f64dc96d295456ed2f1efdb0d4cb015c430fdb8d75f15dbc28b94b5f" });
-ctx.destination.channelInterpretation = 'discrete';
-ctx.destination.channelCount = ctx.destination.maxChannelCount;
-let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
-merger.channelInterpretation = 'discrete';
-merger.connect(ctx.destination);
-console.log("Channel number: " + ctx.destination.maxChannelCount);
-=======
 let ctx;
-
 let merger;
->>>>>>> 8d79fe159aa40a74b43064536b01bf61852475f4
 let ch = 0;
 let source;
 let gainNode;
