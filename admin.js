@@ -14,12 +14,14 @@ for (let i = 0; i < 15; i++){
   videoelement.volume = 1;
   adminVideos.appendChild(videoelement);
 }
+const btn_start = document.getElementById('btn_start');
 const btn_reload = document.getElementById('btn_reload');
 const btn_reco = document.getElementById('btn_reco');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
 
+btn_start.onclick = startContext;
 btn_reload.onclick = sendData;
 btn_reco.onclick = sendData;
 btn_scene1.onclick = sendData;
@@ -50,6 +52,7 @@ console.log(navigator.mediaDevices.enumerateDevices());
 
 //{ sinkId: "124e612f375942fd133185c04186d1a26bc79eda5e4fc75317b508430d00e4ea" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
+<<<<<<< HEAD
 const ctx = new AudioContext({ sinkId: "4499eec8f64dc96d295456ed2f1efdb0d4cb015c430fdb8d75f15dbc28b94b5f" });
 ctx.destination.channelInterpretation = 'discrete';
 ctx.destination.channelCount = ctx.destination.maxChannelCount;
@@ -57,21 +60,35 @@ let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
 merger.channelInterpretation = 'discrete';
 merger.connect(ctx.destination);
 console.log("Channel number: " + ctx.destination.maxChannelCount);
+=======
+let ctx;
+
+let merger;
+>>>>>>> 8d79fe159aa40a74b43064536b01bf61852475f4
 let ch = 0;
-//merger.channelInterpretation = 'discrete';
-console.log(ctx);
 let source;
 let gainNode;
 let analyser;
-const compressor = new DynamicsCompressorNode(ctx, {
+/*const compressor = new DynamicsCompressorNode(ctx, {
   threshold: -50,
   knee: 40,
   ratio: 12,
   attack: 0,
   release: 0.25,
-});
-
+});*/
 let cutFreq;
+
+function startContext(event) {
+  ctx = new AudioContext();
+  ctx.destination.channelInterpretation = 'discrete';
+  ctx.destination.channelCount = ctx.destination.maxChannelCount;
+  merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
+  merger.channelInterpretation = 'discrete';
+  merger.connect(ctx.destination);
+  console.log("Channel number: " + ctx.destination.maxChannelCount);
+  //merger.channelInterpretation = 'discrete';
+  console.log(ctx);
+}
 
 // Display statistics
 setInterval(() => {
