@@ -81,6 +81,7 @@ function startContext(event) {
 
 // Display statistics
 setInterval(() => {
+  
   try{
     if (clientS.length > 0) {
       let rbitrate = 0;
