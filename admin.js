@@ -1,4 +1,5 @@
-const socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
+//const socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
+const socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
 //const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
@@ -45,9 +46,11 @@ let iceServers = {
   ],
 };
 
-//{ sinkId: "bf0b1c065616b8f37f0736b78109cbe7501b4be048e518c02ff7a7c3e09000a9" }
+console.log(navigator.mediaDevices.enumerateDevices());
+
+//{ sinkId: "124e612f375942fd133185c04186d1a26bc79eda5e4fc75317b508430d00e4ea" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
-const ctx = new AudioContext();
+const ctx = new AudioContext({ sinkId: "4499eec8f64dc96d295456ed2f1efdb0d4cb015c430fdb8d75f15dbc28b94b5f" });
 ctx.destination.channelInterpretation = 'discrete';
 ctx.destination.channelCount = ctx.destination.maxChannelCount;
 let merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
@@ -171,7 +174,6 @@ socket.on("create", function () {
 
 socket.on("offer", function (offer, clientId) {
 
-  console.log(navigator.mediaDevices.enumerateDevices());
   currentClientId = clientId;
   console.log('Offer receive from = '+clientId);
   let videoelement = document.getElementById("adminVideos");
@@ -519,4 +521,131 @@ function changeBackgroundColor(event){
     }
     iterKey+=randNumber;
   }
+}
+
+
+/// MIDI SETTINGS :
+var log = console.log.bind(console), keyData = document.getElementById('key_data'), 
+				deviceInfoInputs = document.getElementById('inputs'), deviceInfoOutputs = document.getElementById('outputs'), midi;
+        
+// request MIDI access
+if(navigator.requestMIDIAccess){
+  navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
+}
+else {
+  alert("No MIDI support in your browser.");
+}
+
+// midi functions
+function onMIDISuccess(midiAccess){
+	midi = midiAccess;
+	var inputs = midi.inputs.values();
+	// loop through all inputs
+	for(var input = inputs.next(); input && !input.done; input = inputs.next()){
+		// listen for midi messages
+		input.value.onmidimessage = onMIDIMessage;
+
+		listInputs(input);
+	}
+	// listen for connect/disconnect message
+	midi.onstatechange = onStateChange;
+
+	showMIDIPorts(midi);
+}
+
+function onMIDIMessage(event){
+	data = event.data,
+	cmd = data[0] >> 4,
+	channel = data[0] & 0xf,
+	type = data[0] & 0xf0, // channel agnostic message type. Thanks, Phil Burk.
+	note = data[1],
+	velocity = data[2];
+	// with pressure and tilt off
+	// note off: 128, cmd: 8 
+	// note on: 144, cmd: 9
+	// pressure / tilt on
+	// pressure: 176, cmd 11: 
+	// bend: 224, cmd: 14
+	// log('MIDI data', data);
+	/*switch(type){
+		case 144: // noteOn message 
+			noteOn(note, velocity);
+			break;
+		case 128: // noteOff message 
+			noteOff(note, velocity);
+			break;
+	}*/
+	
+	log('data', data, 'cmd', cmd, 'channel', channel);
+	logger(keyData, 'key data', data);
+
+  try {
+    data = {"scene": 4};
+    switch (note){
+      case 60 :
+        clientS[0].rtcDataSendChannel.send(JSON.stringify(data));
+        break;
+      case 61 :
+        clientS[1].rtcDataSendChannel.send(JSON.stringify(data));
+        break;
+      case 30 :
+        clientS[0].gainNode.gain.value = velocity;
+        break
+    }
+  } catch (error) {
+    console.error(error);
+  }
+
+}
+
+function logger(container, label, data){
+	messages = label + " [channel: " + (data[0] & 0xf) + ", cmd: " + (data[0] >> 4) + ", type: " + (data[0] & 0xf0) + " , note: " + data[1] + " , velocity: " + data[2] + "]";
+	container.textContent = messages;
+}
+
+function onMIDIFailure(e){
+	log("No access to MIDI devices or your browser doesn't support WebMIDI API. Please use WebMIDIAPIShim " + e);
+}
+
+// MIDI utility functions
+function showMIDIPorts(midiAccess){
+	var inputs = midiAccess.inputs,
+			outputs = midiAccess.outputs, 
+			html;
+	html = '<h4>MIDI Inputs:</h4><div class="info">';
+	inputs.forEach(function(port){
+		html += '<p>' + port.name + '<p>';
+		html += '<p class="small">connection: ' + port.connection + '</p>';
+		html += '<p class="small">state: ' + port.state + '</p>';
+		html += '<p class="small">manufacturer: ' + port.manufacturer + '</p>';
+		if(port.version){
+			html += '<p class="small">version: ' + port.version + '</p>';
+		}
+	});
+	deviceInfoInputs.innerHTML = html + '</div>';
+
+	html = '<h4>MIDI Outputs:</h4><div class="info">';
+	outputs.forEach(function(port){
+		html += '<p>' + port.name + '<br>';
+		html += '<p class="small">manufacturer: ' + port.manufacturer + '</p>';
+		if(port.version){
+			html += '<p class="small">version: ' + port.version + '</p>';
+		}
+	});
+	deviceInfoOutputs.innerHTML = html + '</div>';
+}
+
+function onStateChange(event){
+	showMIDIPorts(midi);
+	var port = event.port, state = port.state, name = port.name, type = port.type;
+	if(type == "input")
+		log("name", name, "port", port, "state", state);
+
+}
+
+function listInputs(inputs){
+	var input = inputs.value;
+		log("Input port : [ type:'" + input.type + "' id: '" + input.id + 
+				"' manufacturer: '" + input.manufacturer + "' name: '" + input.name + 
+				"' version: '" + input.version + "']");
 }
