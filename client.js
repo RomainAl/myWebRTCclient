@@ -4,7 +4,7 @@ try {
   //socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
   socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
   //socket = io.connect("https://192.168.10.2:1337");
-  console.log("lulu");
+  console.log("lulu ok");
 } catch(err){
   alert(err);
 }
