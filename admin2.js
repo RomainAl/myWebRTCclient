@@ -4,18 +4,7 @@ const socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
 console.log("lulu ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 
-const adminVideos = document.getElementById("adminVideos");
-for (let i = 0; i < 15; i++){
-  videoelement = document.createElement("video");
-  videoelement.src = './videos/video1.mp4';
-  videoelement.type="video/mp4";
-  videoelement.width = 250;
-  videoelement.playsinline = true;
-  videoelement.loop = true;
-  videoelement.controls = true;
-  videoelement.volume = 1;
-  adminVideos.appendChild(videoelement);
-}
+
 const btn_start = document.getElementById('btn_start');
 const btn_reload = document.getElementById('btn_reload');
 const btn_reco = document.getElementById('btn_reco');
@@ -39,7 +28,6 @@ let receiveChannel;
 let iterKey = 0;
 document.addEventListener('keydown', changeBackgroundColor);
 
-const NVideo = 21;
 const roomName = "atablee";
 let currentClientId;
 
@@ -81,97 +69,6 @@ function startContext(event) {
   console.log(ctx);
 }
 
-// Display statistics
-setInterval(() => {
-
-  try{
-    if (clientS.length > 0) {
-      let rbitrate = 0;
-      let sbitrate = 0;
-      for (let i = 0; i < clientS.length; i++){
-        let clientId = clientS[i].clientId;
-        let divStats = document.getElementsByName('divStats' + clientId)[0];
-        let statsPrev = {
-          t: divStats.getAttribute('data-t'),
-          raB: divStats.getAttribute('data-raB'),
-          rvB: divStats.getAttribute('data-rvB'),
-          saB: divStats.getAttribute('data-saB'),
-          svB: divStats.getAttribute('data-svB')
-        }
-        clientS[i].rtcPeerConnection
-            .getStats(null)
-            .then((results)=>{
-              let stats = dumpStats(results, statsPrev);
-              rbitrate += stats.rabitrate + stats.rvbitrate;
-              sbitrate += stats.sabitrate + stats.svbitrate;
-              divStats.innerHTML = 'RA = ' + stats.rabitrate + ' kbits/sec  //  ';
-              divStats.innerHTML += 'RV = ' + stats.rvbitrate + ' kbits/sec<br>';
-              divStats.innerHTML += 'SA = ' + stats.sabitrate + ' kbits/sec  //  ';
-              divStats.innerHTML += 'SV = ' + stats.svbitrate + ' kbits/sec<br>';
-              //divStats.innerHTML += stats.all;
-              divStats.setAttribute('data-t', stats.t);
-              divStats.setAttribute('data-raB', stats.raB);
-              divStats.setAttribute('data-rvB', stats.rvB);
-              divStats.setAttribute('data-saB', stats.saB);
-              divStats.setAttribute('data-svB', stats.svB);
-              divGStats.innerHTML = 'R = ' + rbitrate + ' kbits/sec  //  ';
-              divGStats.innerHTML += 'S = ' + sbitrate + ' kbits/sec';
-            });
-      }
-    }
-  } catch(err){
-    console.log(err);
-  }
-}, 5000);
-
-function dumpStats(results, statsPrev) {
-  let bytes = 0;
-  let stats = {
-    t: Date.now(),
-    rabitrate: 0,
-    rvbitrate: 0,
-    sabitrate: 0,
-    svbitrate: 0,
-    raB: 0,
-    rvB: 0,
-    saB: 0,
-    svB: 0,
-    all: ''
-  }
-  results.forEach(res => {
-    if (res.type === 'inbound-rtp' && res.mediaType === 'audio') {
-      stats.raB = res.bytesReceived;
-      stats.rabitrate = Math.floor(8 * (stats.raB - statsPrev.raB) / (stats.t - statsPrev.t));
-    } else if (res.type === 'inbound-rtp' && res.mediaType === 'video') {
-      stats.rvB = res.bytesReceived;
-      stats.rvbitrate = Math.floor(8 * (stats.rvB - statsPrev.rvB) / (stats.t - statsPrev.t));
-    } else if (res.type === 'outbound-rtp' && res.mediaType === 'audio') {
-      stats.saB = res.bytesSent;
-      stats.sabitrate = Math.floor(8 * (stats.saB - statsPrev.saB) / (stats.t - statsPrev.t));
-    } else if (res.type === 'outbound-rtp' && res.mediaType === 'video') {
-      stats.svB = res.bytesSent;
-      stats.svbitrate = Math.floor(8 * (stats.svB - statsPrev.svB) / (stats.t - statsPrev.t));
-    }
-    
-    stats.all += '<h3>Report type=';
-    stats.all += res.type;
-    stats.all += '</h3>\n';
-    stats.all += `id ${res.id}<br>`;
-    stats.all += `time ${res.timestamp}<br>`;
-    Object.keys(res).forEach(k => {
-      if (k !== 'timestamp' && k !== 'type' && k !== 'id') {
-        if (typeof res[k] === 'object') {
-          stats.all += `${k}: ${JSON.stringify(res[k])}<br>`;
-        } else {
-          stats.all += `${k}: ${res[k]}<br>`;
-        }
-      }
-    });
-  });
-
-  return stats;
-}
-
 socket.emit("join", roomName, true);
 
 /*socket.on("create", function (id) {
@@ -185,15 +82,15 @@ socket.on("offer", function (offer, clientId) {
 
   currentClientId = clientId;
   console.log('Offer receive from = '+clientId);
-  let videoelement = document.getElementById("adminVideos");
-  videoelement = videoelement.getElementsByTagName("video")[0];
-  let adminStream = videoelement.captureStream();
+  //let videoelement = document.getElementById("adminVideos");
+  //videoelement = videoelement.getElementsByTagName("video")[0];
+  //let adminStream = videoelement.captureStream();
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
   rtcPeerConnection.setRemoteDescription(offer);
-  adminStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, adminStream));
-  rtcPeerConnection.ondatachannel = receiveChannelCallback;
+  //adminStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, adminStream));
+  //rtcPeerConnection.ondatachannel = receiveChannelCallback;
   rtcPeerConnection.onconnectionstatechange = (ev) => {
     let client;
     switch(ev.currentTarget.connectionState) {
@@ -205,24 +102,24 @@ socket.on("offer", function (offer, clientId) {
         break;
       case "connected":
         console.log("Online");
-        client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-        client.div.style.borderColor = "green";
+        //client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
+        //client.div.style.borderColor = "green";
         break;
       case "disconnected":
         console.log("Disconnecting…");
-        client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-        client.div.style.borderColor = "red";
+        //client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
+        //client.div.style.borderColor = "red";
         //removeClient(clientId);
-        ev.currentTarget.close();
+        //ev.currentTarget.close();
         break;
       case "closed":
         console.log("Offline");
         break;
       case "failed":
         console.log("Error");
-        client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-        client.div.style.borderColor = "red";
-        ev.currentTarget.close();
+        //client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
+        //client.div.style.borderColor = "red";
+        //ev.currentTarget.close();
         break;
       default:
         console.log("Unknown");
@@ -235,12 +132,12 @@ socket.on("offer", function (offer, clientId) {
       rtcPeerConnection.setLocalDescription(answer);
       socket.emit("answer", answer, clientId);
       console.log('answer sent to : ' + clientId);
-      sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
-      sendChannel.onopen = onSendChannelStateChange;
+      //sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+      /*sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
-      sendChannel.onclose = onSendChannelStateChange;
+      sendChannel.onclose = onSendChannelStateChange;*/
       let client = {
-        rtcDataSendChannel: sendChannel,
+        //rtcDataSendChannel: sendChannel,
         rtcPeerConnection: rtcPeerConnection,
         clientId : clientId,
         rtcPeerCoID: rtcPeerConnection.remoteDescription.sdp.slice(9, 29),
@@ -360,8 +257,8 @@ function OnTrackFunction(event) {
     const streamVisualizer = new MyWebAudio(source, analyser, canvas, false);
     streamVisualizer.start();
 
-    let videoMaster = document.getElementById("adminVideos");
-    videoMaster = videoMaster.getElementsByTagName("video")[0];
+    //let videoMaster = document.getElementById("adminVideos");
+    /*videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
       videoMaster.setAttribute("name", 'video' + currentClientId);
       videoMaster.display = "inline";
@@ -375,7 +272,7 @@ function OnTrackFunction(event) {
         button.onclick = changeVid;
         btn_videos.appendChild(button);
       }
-    }
+    }*/
 
     let divStats = document.createElement("div");
     divStats.setAttribute("name", 'divStats'+ currentClientId);
@@ -450,7 +347,7 @@ function onSendChannelMessageCallback(event) {
 function changeVid(event){
   const clientId = event.target.name.substring(3);
   let videoelement = document.getElementsByName('video' + clientId)[0];
-  videoelement.src = './videos/video'+event.target.innerText+'.mp4';
+  videoelement.src = './videos/video0'+event.target.innerText+'.mp4';
   videoelement.type="video/mp4";
   videoelement.play()
   .then(() => {
@@ -530,131 +427,4 @@ function changeBackgroundColor(event){
     }
     iterKey+=randNumber;
   }
-}
-
-
-/// MIDI SETTINGS :
-var log = console.log.bind(console), keyData = document.getElementById('key_data'), 
-				deviceInfoInputs = document.getElementById('inputs'), deviceInfoOutputs = document.getElementById('outputs'), midi;
-        
-// request MIDI access
-if(navigator.requestMIDIAccess){
-  navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
-}
-else {
-  alert("No MIDI support in your browser.");
-}
-
-// midi functions
-function onMIDISuccess(midiAccess){
-	midi = midiAccess;
-	var inputs = midi.inputs.values();
-	// loop through all inputs
-	for(var input = inputs.next(); input && !input.done; input = inputs.next()){
-		// listen for midi messages
-		input.value.onmidimessage = onMIDIMessage;
-
-		listInputs(input);
-	}
-	// listen for connect/disconnect message
-	midi.onstatechange = onStateChange;
-
-	showMIDIPorts(midi);
-}
-
-function onMIDIMessage(event){
-	data = event.data,
-	cmd = data[0] >> 4,
-	channel = data[0] & 0xf,
-	type = data[0] & 0xf0, // channel agnostic message type. Thanks, Phil Burk.
-	note = data[1],
-	velocity = data[2];
-	// with pressure and tilt off
-	// note off: 128, cmd: 8 
-	// note on: 144, cmd: 9
-	// pressure / tilt on
-	// pressure: 176, cmd 11: 
-	// bend: 224, cmd: 14
-	// log('MIDI data', data);
-	/*switch(type){
-		case 144: // noteOn message 
-			noteOn(note, velocity);
-			break;
-		case 128: // noteOff message 
-			noteOff(note, velocity);
-			break;
-	}*/
-	
-	log('data', data, 'cmd', cmd, 'channel', channel);
-	logger(keyData, 'key data', data);
-
-  try {
-    data = {"scene": 4};
-    switch (note){
-      case 60 :
-        clientS[0].rtcDataSendChannel.send(JSON.stringify(data));
-        break;
-      case 61 :
-        clientS[1].rtcDataSendChannel.send(JSON.stringify(data));
-        break;
-      case 30 :
-        clientS[0].gainNode.gain.value = velocity;
-        break
-    }
-  } catch (error) {
-    console.error(error);
-  }
-
-}
-
-function logger(container, label, data){
-	messages = label + " [channel: " + (data[0] & 0xf) + ", cmd: " + (data[0] >> 4) + ", type: " + (data[0] & 0xf0) + " , note: " + data[1] + " , velocity: " + data[2] + "]";
-	container.textContent = messages;
-}
-
-function onMIDIFailure(e){
-	log("No access to MIDI devices or your browser doesn't support WebMIDI API. Please use WebMIDIAPIShim " + e);
-}
-
-// MIDI utility functions
-function showMIDIPorts(midiAccess){
-	var inputs = midiAccess.inputs,
-			outputs = midiAccess.outputs, 
-			html;
-	html = '<h4>MIDI Inputs:</h4><div class="info">';
-	inputs.forEach(function(port){
-		html += '<p>' + port.name + '<p>';
-		html += '<p class="small">connection: ' + port.connection + '</p>';
-		html += '<p class="small">state: ' + port.state + '</p>';
-		html += '<p class="small">manufacturer: ' + port.manufacturer + '</p>';
-		if(port.version){
-			html += '<p class="small">version: ' + port.version + '</p>';
-		}
-	});
-	deviceInfoInputs.innerHTML = html + '</div>';
-
-	html = '<h4>MIDI Outputs:</h4><div class="info">';
-	outputs.forEach(function(port){
-		html += '<p>' + port.name + '<br>';
-		html += '<p class="small">manufacturer: ' + port.manufacturer + '</p>';
-		if(port.version){
-			html += '<p class="small">version: ' + port.version + '</p>';
-		}
-	});
-	deviceInfoOutputs.innerHTML = html + '</div>';
-}
-
-function onStateChange(event){
-	showMIDIPorts(midi);
-	var port = event.port, state = port.state, name = port.name, type = port.type;
-	if(type == "input")
-		log("name", name, "port", port, "state", state);
-
-}
-
-function listInputs(inputs){
-	var input = inputs.value;
-		log("Input port : [ type:'" + input.type + "' id: '" + input.id + 
-				"' manufacturer: '" + input.manufacturer + "' name: '" + input.name + 
-				"' version: '" + input.version + "']");
 }

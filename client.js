@@ -142,6 +142,7 @@ socket.on("create", function () {
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
   rtcPeerConnection.setRemoteDescription(answer);
+  console.log('answer received');
 });
 
 // Triggered on receiving an ice candidate from the peer.
