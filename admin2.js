@@ -44,8 +44,10 @@ console.log(navigator.mediaDevices.enumerateDevices());
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
 let ctx;
 let merger;
+let bitcrush;
 let ch = 0;
 let source;
+let audio;
 let gainNode;
 let analyser;
 /*const compressor = new DynamicsCompressorNode(ctx, {
@@ -57,16 +59,15 @@ let analyser;
 });*/
 let cutFreq;
 
+//source = new Tone.Player("https://s3-us-west-1.amazonaws.com/leesamples/samples/Natural+Sounds/Birdsong.mp3").connect(bitcrush); 
+
 function startContext(event) {
-  ctx = new AudioContext();
-  ctx.destination.channelInterpretation = 'discrete';
-  ctx.destination.channelCount = ctx.destination.maxChannelCount;
-  merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
-  merger.channelInterpretation = 'discrete';
-  merger.connect(ctx.destination);
-  console.log("Channel number: " + ctx.destination.maxChannelCount);
+  
   //merger.channelInterpretation = 'discrete';
   console.log(ctx);
+  Tone.start();
+
+  console.log(source);
 }
 
 socket.emit("join", roomName, true);
@@ -189,11 +190,11 @@ function OnTrackFunction(event) {
     clientdiv.style.justifySelf = "stretch";
     clientdiv.style.padding = "10px";
     clientdiv.setAttribute("name", 'div' + currentClientId);
-    let audio = document.createElement("audio");
+    audio = document.createElement("audio");
     audio.setAttribute("name", 'audio' + currentClientId);
-    audio.controls = false;
+    audio.controls = true;
     audio.autoplay = true;
-    audio.muted = true;
+    audio.muted = false;
     clientdiv.appendChild(audio);
     
     if (audio.srcObject !== event.streams[0]) {
@@ -213,13 +214,11 @@ function OnTrackFunction(event) {
     gain.step = 0.1;
     gain.onchange = changeGain;
     clientdiv.appendChild(gain);
-    source = ctx.createMediaStreamSource(event.streams[0]);
-    gainNode = ctx.createGain();
-    gainNode.gain.value = gain.value;
-    analyser = ctx.createAnalyser();
+    gainNode = new Tone.Gain(gain.value)
+    analyser = new Tone.Analyser();
     analyser.minDecibels = -140;
     analyser.maxDecibels = 0;
-
+    bitcrush = new Tone.BitCrusher(1).toDestination();
     let cutFreq_f = document.createElement('input');
     cutFreq_f.setAttribute("name", 'input'+currentClientId);
     cutFreq_f.type = 'range';
@@ -231,16 +230,17 @@ function OnTrackFunction(event) {
     cutFreq_f.onchange = changeCutFreq;
     clientdiv.appendChild(cutFreq_f);
 
-    cutFreq = ctx.createBiquadFilter();
+    /*cutFreq = ctx.createBiquadFilter();
     cutFreq.frequency.value = cutFreq_f.value;
     cutFreq.type = "peaking";
-    cutFreq.gain.value = -40;
+    cutFreq.gain.value = -40;*/
 
-    const splitter = ctx.createChannelSplitter(1);
-    source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
+    /*const splitter = ctx.createChannelSplitter(1);
+    source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);*/
+    //source.connect(gainNode).connect(analyser).connect(merger, 0, ch);
     let btn_chan = document.createElement("div");
     clientdiv.appendChild(btn_chan);
-    for (let i=0; i<ctx.destination.maxChannelCount; i++){
+    /*for (let i=0; i<ctx.destination.maxChannelCount; i++){
       let button = document.createElement("button");
       button.setAttribute("name", 'btn'+ currentClientId);
       if (ch % ctx.destination.maxChannelCount==i){
@@ -253,9 +253,9 @@ function OnTrackFunction(event) {
       btn_chan.appendChild(button);
     }
     ch++;
-    ch = ch % ctx.destination.maxChannelCount;
-    const streamVisualizer = new MyWebAudio(source, analyser, canvas, false);
-    streamVisualizer.start();
+    ch = ch % ctx.destination.maxChannelCount;*/
+    //const streamVisualizer = new MyWebAudio(source, analyser, canvas, false);
+    //streamVisualizer.start();
 
     //let videoMaster = document.getElementById("adminVideos");
     /*videoMaster = videoMaster.getElementsByTagName("video")[0];
@@ -387,8 +387,8 @@ function changeCutFreq(event){
 }
 
 function stop(event){
-  const clientId = event.target.name.substring(3);
-  removeClient(clientId);
+  bitcrush = new Tone.BitCrusher(1).toDestination();
+  source = Tone.context.createMediaElementSource(audio).connect(bitcrush);
 }
 
 function removeClient(clientId){

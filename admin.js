@@ -56,6 +56,7 @@ console.log(navigator.mediaDevices.enumerateDevices());
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
 let ctx;
 let merger;
+let bitcrusher;
 let ch = 0;
 let source;
 let gainNode;
@@ -70,9 +71,18 @@ let analyser;
 let cutFreq;
 
 function startContext(event) {
+  console.log(navigator.mediaDevices.enumerateDevices());
   ctx = new AudioContext();
   ctx.destination.channelInterpretation = 'discrete';
   ctx.destination.channelCount = ctx.destination.maxChannelCount;
+  /*ctx.audioWorklet.addModule('bypass-processor.js')
+    .then(() => {
+      console.log(bitcrusher);
+      bitcrusher = new AudioWorkletNode(ctx, 'bypass-processor');
+      console.log(bitcrusher);
+    })
+    .catch((err)=>{console.log("tamere "+err)});*/
+    
   merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
   merger.channelInterpretation = 'discrete';
   merger.connect(ctx.destination);
