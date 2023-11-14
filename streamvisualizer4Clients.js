@@ -25,35 +25,15 @@
 const SMOOTHING = 0.0;
 const FFT_SIZE = 256;
 
-function StreamVisualizer4Clients(remoteStream, canvas, doSound) {
+function StreamVisualizer4Clients(analyser, canvas, doSound) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
   this.canvas = canvas;
   this.drawContext = this.canvas.getContext('2d');
+  this.analyser = analyser;
 
-  // cope with browser differences
-  if (typeof AudioContext === 'function') {
-    this.context = new AudioContext();
-  } else if (typeof webkitAudioContext === 'function') {
-    this.context = new webkitAudioContext(); // eslint-disable-line new-cap
-  } else {
-    alert('Sorry! Web Audio is not supported by this browser');
-  }
-
-  // Create a MediaStreamAudioSourceNode from the remoteStream
-  this.source = this.context.createMediaStreamSource(remoteStream);
-  //console.log('Created Web Audio source from remote stream: ', this.source);
-
-  this.analyser = this.context.createAnalyser();
-  //  this.analyser.connect(this.context.destination);
-  this.analyser.minDecibels = -140;
-  this.analyser.maxDecibels = 0;
   //this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
 
-  this.source.connect(this.analyser);
-  if (doSound){
-    this.source.connect(this.context.destination);
-  }
   this.startTime = 0;
   this.startOffset = 0;
 }
@@ -104,10 +84,4 @@ StreamVisualizer4Clients.prototype.draw = function() {
   }
 
   requestAnimationFrame(this.draw.bind(this));
-};
-
-StreamVisualizer4Clients.prototype.getFrequencyValue = function(freq) {
-  let nyquist = this.context.sampleRate/2;
-  let index = Math.round(freq/nyquist * this.freqs.length);
-  return this.freqs[index];
 };
