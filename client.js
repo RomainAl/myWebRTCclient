@@ -26,10 +26,50 @@ let context;
 let analyser;
 let source;
 let filter;
-let sampler;
 let myPeer;
-const delayExportURL = "export/delay.export.json";
-const samplerExportURL = "export/sampler.export.json";
+const displayAllEffectsParams = false;
+let effects = [
+  {
+    name: "delay",
+    device: {},
+    div: {},
+    userParams: [
+    {
+      name: "input",
+      title: "DELAY",
+      defaultValue: 0.0,
+      param: {}
+    },
+    {
+      name: "time",
+      title: "TIME",
+      defaultValue: null,
+      param: {}
+    }
+    ],
+  },
+  {
+    name: "downsample",
+    device: {},
+    div: {},
+    userParams: [
+    {
+      name: "down-sample",
+      title: "Down-sample",
+      defaultValue: null,
+      param: {}
+    }],
+  },
+  {
+    name: "filter",
+    device: {},
+    div: {},
+    userParams: []
+  }
+];
+
+const delayExportURL = "effects/delay.export.json";
+const samplerExportURL = "effects/sampler.export.json";
 
 
 // Contains the stun server URL we will be using.
@@ -83,10 +123,8 @@ function init() {
   filter.type = 'highpass';
   filter.frequency.setValueAtTime(1500, context.currentTime + 1);
   filter.connect(myPeer);*/
-  delay_Setup(delayExportURL).then(()=>{
-    sampler_Setup(samplerExportURL).then(()=>{
+  effects_Setup(effects).then(()=>{
       socket.emit("join", roomName, false);
-    });
   });
 };
 
@@ -118,7 +156,8 @@ socket.on("create", function () {
       /* use the stream */
       source = context.createMediaStreamSource(stream);
       source.connect(analyser);
-      analyser.connect(sampler.node);
+      //analyser.connect(myPeer);
+      analyser.connect(effects[effects.length-1].device.node);
 
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length > 0) {
@@ -222,7 +261,7 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
-      userStream.getTracks().forEach((track) => {track.stop()});
+      myPeer.stream.getTracks().forEach((track) => {track.stop()});
       userCanvasStream.getTracks().forEach((track) => {track.stop()});
       userCanvas.remove();
       break;
@@ -271,20 +310,20 @@ function webrtcStateChange(ev){
         console.log("Disconnecting…");
         atablee.style.display = "none";
         ev.currentTarget.close();
-        userStream.getTracks().forEach((track) => {track.stop()});
+        myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
         break;
       case "closed":
         console.log("Offline");
         atablee.style.display = "none";
-        userStream.getTracks().forEach((track) => {track.stop()});
+        myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
         break;
       case "failed":
         console.log("Error");
         atablee.style.display = "none";
         ev.currentTarget.close();
-        userStream.getTracks().forEach((track) => {track.stop()});
+        myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
         break;
       default:
@@ -348,198 +387,83 @@ function changeFullScreen(){
   }
 }
 
-async function delay_Setup(patchExportURL) {
+async function effects_Setup(effects) {
   let response, patcher;
-  try {
-      response = await fetch(patchExportURL);
-      patcher = await response.json();
-      console.log(encodeURIComponent(patcher.desc.meta.rnboversion));
-      console.log("taaaamere");
-      if (!window.RNBO) {
-          // Load RNBO script dynamically
-          // Note that you can skip this by knowing the RNBO version of your patch
-          // beforehand and just include it using a <script> tag
-          await loadRNBOScript(patcher.desc.meta.rnboversion);
-          console.log("papa");
-      }
+  for (i=0; i<effects.length;i++){
+    try {
+        response = await fetch("effects/" + effects[i].name + ".export.json");
+        patcher = await response.json();
+        console.log(encodeURIComponent(patcher.desc.meta.rnboversion));
+        console.log("taaaamere");
+        if (!window.RNBO) {
+            // Load RNBO script dynamically
+            // Note that you can skip this by knowing the RNBO version of your patch
+            // beforehand and just include it using a <script> tag
+            await loadRNBOScript(patcher.desc.meta.rnboversion);
+            console.log("papa");
+        }
 
-  } catch (err) {
-      const errorContext = {
-          error: err
-      };
-      if (response && (response.status >= 300 || response.status < 200)) {
-          errorContext.header = `Couldn't load patcher export bundle`,
-          errorContext.description = `Check app.js to see what file it's trying to load. Currently it's` +
-          ` trying to load "${patchExportURL}". If that doesn't` + 
-          ` match the name of the file you exported from RNBO, modify` + 
-          ` patchExportURL in app.js.`;
-      }
-      if (typeof guardrails === "function") {
-          guardrails(errorContext);
-      } else {
-          throw err;
-      }
-      return;
-  }
+    } catch (err) {
+        const errorContext = {
+            error: err
+        };
+        if (response && (response.status >= 300 || response.status < 200)) {
+            errorContext.header = `Couldn't load patcher export bundle`,
+            errorContext.description = `Check app.js to see what file it's trying to load. Currently it's` +
+            ` trying to load "${patchExportURL}". If that doesn't` + 
+            ` match the name of the file you exported from RNBO, modify` + 
+            ` patchExportURL in app.js.`;
+        }
+        if (typeof guardrails === "function") {
+            guardrails(errorContext);
+        } else {
+            throw err;
+        }
+        return;
+    }
+    
+    // (Optional) Fetch the dependencies
+    let dependencies = [];
+    try {
+        const dependenciesResponse = await fetch("effects/dependencies.json");
+        dependencies = await dependenciesResponse.json();
 
-  // (Optional) Fetch the dependencies
-  let dependencies = [];
-  try {
-      const dependenciesResponse = await fetch("export/dependencies.json");
-      dependencies = await dependenciesResponse.json();
+        // Prepend "export" to any file dependenciies
+        dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "export/" + d.file }) : d);
+    } catch (e) {}
 
-      // Prepend "export" to any file dependenciies
-      dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "export/" + d.file }) : d);
-  } catch (e) {}
+    // Create the device
+    try {
+        effects[i].device = await RNBO.createDevice({ context, patcher });
+        console.log(RNBO);
+        console.log("maman");
+    } catch (err) {
+        if (typeof guardrails === "function") {
+            guardrails({ error: err });
+        } else {
+            throw err;
+        }
+        return;
+    }
 
-  // Create the device
-  try {
-      delay = await RNBO.createDevice({ context, patcher });
-      console.log(RNBO);
-      console.log("maman");
-  } catch (err) {
-      if (typeof guardrails === "function") {
-          guardrails({ error: err });
-      } else {
-          throw err;
-      }
-      return;
-  }
+    // (Optional) Load the samples
+    if (dependencies.length)
+        await effects[i].device.loadDataBufferDependencies(dependencies);
 
-  // (Optional) Load the samples
-  if (dependencies.length)
-      await delay.loadDataBufferDependencies(dependencies);
+    // Connect the device to the web audio graph
+    if (i > 0){
+      effects[i].device.node.connect(effects[i-1].device.node);
+    } else {
+      effects[i].device.node.connect(myPeer);
+    }
+    
+    console.log(effects[i].device);
+    console.log(effects[i].device.node);
+    console.log("petitfrere");
 
-  // Connect the device to the web audio graph
-  delay.node.connect(myPeer);
-  console.log(delay);
-  console.log(delay.node);
-  console.log("petitfrere");
+    makeGUI(effects[i].device, effects[i].userParams);
 
-  makeGUI_Delay(delay);
-
-  /*// (Optional) Extract the name and rnbo version of the patcher from the description
-  document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
-
-  // (Optional) Automatically create sliders for the device parameters
-  makeSliders(device);
-
-  // (Optional) Create a form to send messages to RNBO inputs
-  makeInportForm(device);
-
-  // (Optional) Attach listeners to outports so you can log messages from the RNBO patcher
-  attachOutports(device);
-
-  // (Optional) Load presets, if any
-  loadPresets(device, patcher);
-
-  // (Optional) Connect MIDI inputs
-  makeMIDIKeyboard(device);
-
-  document.body.onclick = () => {
-      context.resume();
-  }*/
-
-  // Skip if you're not using guardrails.js
-  /*if (typeof guardrails === "function")
-      guardrails();*/
-}
-
-async function sampler_Setup(patchExportURL) {
-  let response, patcher;
-  try {
-      response = await fetch(patchExportURL);
-      patcher = await response.json();
-      console.log(encodeURIComponent(patcher.desc.meta.rnboversion));
-      console.log("taaaamere");
-      if (!window.RNBO) {
-          // Load RNBO script dynamically
-          // Note that you can skip this by knowing the RNBO version of your patch
-          // beforehand and just include it using a <script> tag
-          await loadRNBOScript(patcher.desc.meta.rnboversion);
-          console.log("papa");
-      }
-
-  } catch (err) {
-      const errorContext = {
-          error: err
-      };
-      if (response && (response.status >= 300 || response.status < 200)) {
-          errorContext.header = `Couldn't load patcher export bundle`,
-          errorContext.description = `Check app.js to see what file it's trying to load. Currently it's` +
-          ` trying to load "${patchExportURL}". If that doesn't` + 
-          ` match the name of the file you exported from RNBO, modify` + 
-          ` patchExportURL in app.js.`;
-      }
-      if (typeof guardrails === "function") {
-          guardrails(errorContext);
-      } else {
-          throw err;
-      }
-      return;
-  }
-
-  // (Optional) Fetch the dependencies
-  let dependencies = [];
-  try {
-      const dependenciesResponse = await fetch("export/dependencies.json");
-      dependencies = await dependenciesResponse.json();
-
-      // Prepend "export" to any file dependenciies
-      dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "export/" + d.file }) : d);
-  } catch (e) {}
-
-  // Create the device
-  try {
-    sampler = await RNBO.createDevice({ context, patcher });
-      console.log(RNBO);
-      console.log("maman");
-  } catch (err) {
-      if (typeof guardrails === "function") {
-          guardrails({ error: err });
-      } else {
-          throw err;
-      }
-      return;
-  }
-
-  // (Optional) Load the samples
-  if (dependencies.length)
-      await sampler.loadDataBufferDependencies(dependencies);
-
-  // Connect the device to the web audio graph
-  sampler.node.connect(delay.node);
-  console.log(sampler);
-  console.log(sampler.node);
-  console.log("petitfrere");
-
-  makeGUI_Sampler(sampler);
-
-  /*// (Optional) Extract the name and rnbo version of the patcher from the description
-  document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
-
-  // (Optional) Automatically create sliders for the device parameters
-  makeSliders(device);
-
-  // (Optional) Create a form to send messages to RNBO inputs
-  makeInportForm(device);
-
-  // (Optional) Attach listeners to outports so you can log messages from the RNBO patcher
-  attachOutports(device);
-
-  // (Optional) Load presets, if any
-  loadPresets(device, patcher);
-
-  // (Optional) Connect MIDI inputs
-  makeMIDIKeyboard(device);
-
-  document.body.onclick = () => {
-      context.resume();
-  }*/
-
-  // Skip if you're not using guardrails.js
-  /*if (typeof guardrails === "function")
-      guardrails();*/
+  };
 }
 
 function loadRNBOScript(version) {
@@ -560,149 +484,160 @@ function loadRNBOScript(version) {
   });
 }
 
-function makeGUI_Delay(device) {
+function makeGUI(device, userParams) {
   let pdiv = document.getElementById("effects-params");
-
   // This will allow us to ignore parameter update events while dragging the slider.
   let isDraggingSlider = false;
   let uiElements = {};
 
-  // INPUT : 
-  let param_input = device.parameters.find(t=>t.name=='input');
-  param_input.value = 0.0;
-  let label = document.createElement("label");
-  let slider = document.createElement("input");
-  let sliderContainer = document.createElement("div");
-  sliderContainer.appendChild(label);
-  sliderContainer.appendChild(slider);
-  // Add a name for the label
-  label.setAttribute("name", param_input.name);
-  label.setAttribute("for", param_input.name);
-  label.setAttribute("class", "param-label");
-  label.textContent = 'DELAY EFFECT :';
-  // Make each slider reflect its parameter
-  slider.setAttribute("type", "checkbox");
-  slider.setAttribute("class", "param-checkbox");
-  slider.setAttribute("id", param_input.id);
-  slider.setAttribute("name", param_input.name);
-  slider.setAttribute("value", param_input.value);
-  slider.addEventListener('change', function() {
-    if (this.checked) {
-      param_input.value = 1.0;
-    } else {
-      param_input.value = 0.0;
-    }
-  });
-  pdiv.appendChild(sliderContainer);
+  if (!displayAllEffectsParams){
 
-  // TIME :
-  let param_input2 = device.parameters.find(t=>t.name=='time');
-  label = document.createElement("label");
-  slider = document.createElement("input");
-  sliderContainer = document.createElement("div");
-  sliderContainer.appendChild(label);
-  sliderContainer.appendChild(slider);
-  // Add a name for the label
-  label.setAttribute("name", param_input2.name);
-  label.setAttribute("for", param_input2.name);
-  label.setAttribute("class", "param-label");
-  label.textContent = 'TIME :';
-  // Make each slider reflect its parameter
-  slider.setAttribute("type", "range");
-  slider.setAttribute("class", "param-slider");
-  slider.setAttribute("id", param_input2.id);
-  slider.setAttribute("name", param_input2.name);
-  slider.setAttribute("min", param_input2.min);
-  slider.setAttribute("max", param_input2.max);
-  if (param_input.steps > 1) {
-      slider.setAttribute("step", (param_input2.max - param_input2.min) / (param_input2.steps - 1));
-  } else {
-      slider.setAttribute("step", (param_input2.max - param_input2.min) / 1000.0);
-  }
-  slider.setAttribute("value", param_input2.value);
-  slider.addEventListener("input", () => {
-    console.log("baba");
-      let value = Number.parseFloat(slider.value);
-      param_input2.value = value;
-  });
-  pdiv.appendChild(sliderContainer);
-  device.parameters.forEach(param => {
-    console.log(param);
-    // Subpatchers also have params. If we want to expose top-level
-    // params only, the best way to determine if a parameter is top level
-    // or not is to exclude parameters with a '/' in them.
-    // You can uncomment the following line if you don't want to include subpatcher params
-    
-    //if (param.id.includes("/")) return;
+    userParams.forEach((userParam)=>{
+      let param = device.parameters.find(t=>t.name==userParam.name);
+      if (userParam.defaultValue!==null){
+        param.value = userParam.defaultValue;
+      };
+      if (){
 
-    // Create a label, an input slider and a value display
-    let label = document.createElement("label");
-    let slider = document.createElement("input");
-    let text = document.createElement("input");
-    let sliderContainer = document.createElement("div");
-    sliderContainer.appendChild(label);
-    sliderContainer.appendChild(slider);
-    sliderContainer.appendChild(text);
+      } else {
+        // Create a label, an input slider and a value display
+        let label = document.createElement("label");
+        let slider = document.createElement("input");
+        let text = document.createElement("input");
+        let sliderContainer = document.createElement("div");
+        sliderContainer.appendChild(label);
+        sliderContainer.appendChild(slider);
+        sliderContainer.appendChild(text);
 
-    // Add a name for the label
-    label.setAttribute("name", param.name);
-    label.setAttribute("for", param.name);
-    label.setAttribute("class", "param-label");
-    label.textContent = `${param.name}: `;
+        // Add a name for the label
+        label.setAttribute("name", param.name);
+        label.setAttribute("for", param.name);
+        label.setAttribute("class", "param-label");
+        label.textContent = `${param.name}: `;
 
-    // Make each slider reflect its parameter
-    slider.setAttribute("type", "range");
-    slider.setAttribute("class", "param-slider");
-    slider.setAttribute("id", param.id);
-    slider.setAttribute("name", param.name);
-    slider.setAttribute("min", param.min);
-    slider.setAttribute("max", param.max);
-    if (param.steps > 1) {
-        slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
-    } else {
-        slider.setAttribute("step", (param.max - param.min) / 1000.0);
-    }
-    slider.setAttribute("value", param.value);
-
-    // Make a settable text input display for the value
-    text.setAttribute("value", param.value.toFixed(1));
-    text.setAttribute("type", "text");
-
-    // Make each slider control its parameter
-    slider.addEventListener("pointerdown", () => {
-        isDraggingSlider = true;
-    });
-    slider.addEventListener("pointerup", () => {
-        isDraggingSlider = false;
-        slider.value = param.value;
-        text.value = param.value.toFixed(1);
-    });
-    slider.addEventListener("input", () => {
-        let value = Number.parseFloat(slider.value);
-        param.value = value;
-    });
-
-    // Make the text box input control the parameter value as well
-    text.addEventListener("keydown", (ev) => {
-        if (ev.key === "Enter") {
-            let newValue = Number.parseFloat(text.value);
-            if (isNaN(newValue)) {
-                text.value = param.value;
-            } else {
-                newValue = Math.min(newValue, param.max);
-                newValue = Math.max(newValue, param.min);
-                text.value = newValue;
-                param.value = newValue;
-            }
+        // Make each slider reflect its parameter
+        slider.setAttribute("type", "range");
+        slider.setAttribute("class", "param-slider");
+        slider.setAttribute("id", param.id);
+        slider.setAttribute("name", param.name);
+        slider.setAttribute("min", param.min);
+        slider.setAttribute("max", param.max);
+        if (param.steps > 1) {
+            slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
+        } else {
+            slider.setAttribute("step", (param.max - param.min) / 1000.0);
         }
+        slider.setAttribute("value", param.value);
+
+        // Make a settable text input display for the value
+        text.setAttribute("value", param.value.toFixed(1));
+        text.setAttribute("type", "text");
+
+        // Make each slider control its parameter
+        slider.addEventListener("pointerdown", () => {
+            isDraggingSlider = true;
+        });
+        slider.addEventListener("pointerup", () => {
+            isDraggingSlider = false;
+            slider.value = param.value;
+            text.value = param.value.toFixed(1);
+        });
+        slider.addEventListener("input", () => {
+            let value = Number.parseFloat(slider.value);
+            param.value = value;
+        });
+      }
+
+      // Store the slider and text by name so we can access them later
+      uiElements[param.id] = { slider };
+
+      // Add the slider element
+      pdiv.appendChild(sliderContainer);
     });
 
-    // Store the slider and text by name so we can access them later
-    uiElements[param.id] = { slider, text };
+  } else {
+    device.parameters.forEach(param => {
+      // Subpatchers also have params. If we want to expose top-level
+      // params only, the best way to determine if a parameter is top level
+      // or not is to exclude parameters with a '/' in them.
+      // You can uncomment the following line if you don't want to include subpatcher params
+      
+      //if (param.id.includes("/")) return;
 
-    // Add the slider element
-    pdiv.appendChild(sliderContainer);
-});
+      // Create a label, an input slider and a value display
+      let label = document.createElement("label");
+      let slider = document.createElement("input");
+      let text = document.createElement("input");
+      let sliderContainer = document.createElement("div");
+      sliderContainer.appendChild(label);
+      sliderContainer.appendChild(slider);
+      sliderContainer.appendChild(text);
+
+      // Add a name for the label
+      label.setAttribute("name", param.name);
+      label.setAttribute("for", param.name);
+      label.setAttribute("class", "param-label");
+      label.textContent = `${param.name}: `;
+
+      // Make each slider reflect its parameter
+      slider.setAttribute("type", "range");
+      slider.setAttribute("class", "param-slider");
+      slider.setAttribute("id", param.id);
+      slider.setAttribute("name", param.name);
+      slider.setAttribute("min", param.min);
+      slider.setAttribute("max", param.max);
+      if (param.steps > 1) {
+          slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
+      } else {
+          slider.setAttribute("step", (param.max - param.min) / 1000.0);
+      }
+      slider.setAttribute("value", param.value);
+
+      // Make a settable text input display for the value
+      text.setAttribute("value", param.value.toFixed(1));
+      text.setAttribute("type", "text");
+
+      // Make each slider control its parameter
+      slider.addEventListener("pointerdown", () => {
+          isDraggingSlider = true;
+      });
+      slider.addEventListener("pointerup", () => {
+          isDraggingSlider = false;
+          slider.value = param.value;
+          text.value = param.value.toFixed(1);
+      });
+      slider.addEventListener("input", () => {
+          let value = Number.parseFloat(slider.value);
+          param.value = value;
+      });
+
+      // Make the text box input control the parameter value as well
+      text.addEventListener("keydown", (ev) => {
+          if (ev.key === "Enter") {
+              let newValue = Number.parseFloat(text.value);
+              if (isNaN(newValue)) {
+                  text.value = param.value;
+              } else {
+                  newValue = Math.min(newValue, param.max);
+                  newValue = Math.max(newValue, param.min);
+                  text.value = newValue;
+                  param.value = newValue;
+              }
+          }
+      });
+
+      // Store the slider and text by name so we can access them later
+      uiElements[param.id] = { slider };
+
+      // Add the slider element
+      pdiv.appendChild(sliderContainer);
+    });
+  };
+  // Listen to parameter changes from the device
+  device.parameterChangeEvent.subscribe(param => {
+    if (!isDraggingSlider)
+        uiElements[param.id].slider.value = param.value;
+  });
 }
 
 function makeGUI_Sampler(device) {
