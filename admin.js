@@ -478,7 +478,7 @@ function changeChan(event){
   const clientId = event.target.name.substring(3);
   let client = clientS.find(t=>t.clientId==clientId);
   client.analyser.disconnect(0);
-  client.gainNode.connect(client.analyser).connect(merger, 0, parseInt(event.target.innerText)-1);
+  client.analyser.connect(merger, 0, parseInt(event.target.innerText)-1);
   for (const child of event.target.parentElement.children) {
     child.style.background = "white";
   }
