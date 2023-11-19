@@ -497,9 +497,7 @@ function makeGUI(device, userParams) {
       if (userParam.defaultValue!==null){
         param.value = userParam.defaultValue;
       };
-      if (false===true){
 
-      } else {
         // Create a label, an input slider and a value display
         let label = document.createElement("label");
         let slider = document.createElement("input");
@@ -546,7 +544,7 @@ function makeGUI(device, userParams) {
             let value = Number.parseFloat(slider.value);
             param.value = value;
         });
-      }
+      
 
       // Store the slider and text by name so we can access them later
       uiElements[param.id] = { slider };
