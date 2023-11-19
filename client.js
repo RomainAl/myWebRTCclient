@@ -497,7 +497,7 @@ function makeGUI(device, userParams) {
       if (userParam.defaultValue!==null){
         param.value = userParam.defaultValue;
       };
-      if (){
+      if (false===true){
 
       } else {
         // Create a label, an input slider and a value display
