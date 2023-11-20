@@ -448,7 +448,7 @@ async function effects_Setup(effects) {
   let response, patcher;
   for (i=0; i<effects.length;i++){
     try {
-        response = await fetch("effects/" + effects[i].name + ".export.json");
+        response = await fetch("./effects/" + effects[i].name + ".export.json");
         patcher = await response.json();
         console.log(encodeURIComponent(patcher.desc.meta.rnboversion));
         console.log("taaaamere");
