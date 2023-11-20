@@ -18,15 +18,21 @@ GUI.style.visibility = "hidden";
 let atablee = document.getElementById("atablee");
 let btn_fullscreen = document.getElementById("btn_fullscreen");
 let btn_rec = document.getElementById("btn_rec");
+btn_rec.style.background = "transparent";
+btn_rec.onclick = recfunction;
 let btn_effects = document.getElementById("btn_effects");
 btn_fullscreen.onclick = changeFullScreen;
+btn_effects.disabled = true;
+btn_effects.style.borderColor = "#5c5c5c";
 btn_effects.onclick = (ev)=>{
+  let sampler = effects.find(t=>t.name == "sampler");
+  console.log(sampler.device.parameters.find(param=>param.name=="rand_play").value);
   if (effectsPan.style.visibility == "visible"){
     effectsPan.style.visibility = "hidden";
-    //ev.target.style.background = "transparent";
+    btn_effects.style.background = "transparent";
   } else {
     effectsPan.style.visibility = "visible";
-    //ev.target.style.background = "red";
+    btn_effects.style.backgroundColor = "#5c5c5c";
   }
 }
 // let btn_test = document.getElementById("btn_test");
@@ -93,6 +99,15 @@ let effects = [
     }],
   },
   {
+    name: "sampler",
+    title: "PITCH",
+    device: {},
+    div: {},
+    activ: false,
+    visible: false,
+    userParams: [],
+  },
+  {
     name: "filter",
     title: "FILTER",
     device: {},
@@ -102,10 +117,6 @@ let effects = [
     userParams: []
   }
 ];
-
-const delayExportURL = "effects/delay.export.json";
-const samplerExportURL = "effects/sampler.export.json";
-
 
 // Contains the stun server URL we will be using.
 let iceServers = {
@@ -193,6 +204,8 @@ socket.on("create", function () {
       effects_Setup(effects)
       .then(()=>{
         nodeConnection();
+        btn_effects.disabled = false;
+        btn_effects.style.borderColor = "white";
         //effectsPan.style.visibility = "visible";
       })
       .catch(function (err) {
@@ -298,11 +311,11 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "none";
       adminVideo.volume = 0;
       userCanvas.style.display = "initial";
-      effectsPan.style.visibility = "visible";
+      GUI.style.visibility = "visible";
       break;
     case 2:
       userCanvas.style.display = "none";
-      effectsPan.style.visibility = "collapse";
+      GUI.style.visibility = "hidden";
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
@@ -407,22 +420,26 @@ function changeFullScreen(){
   {
       if(document.documentElement.requestFullscreen)
       {
-        document.documentElement.requestFullscreen()
+        document.documentElement.requestFullscreen();
+        btn_fullscreen.style.backgroundColor = "#5c5c5c";
       }
       else if(document.documentElement.webkitRequestFullscreen)
       {
-        document.documentElement.webkitRequestFullscreen()
+        document.documentElement.webkitRequestFullscreen();
+        btn_fullscreen.style.backgroundColor = "#5c5c5c";
       }
   }
   else
   {
       if(document.exitFullscreen)
       {
-          document.exitFullscreen()
+          document.exitFullscreen();
+          btn_fullscreen.style.backgroundColor = "transparent";
       }
       else if(document.webkitExitFullscreen)
       {
-          document.webkitExitFullscreen()
+          document.webkitExitFullscreen();
+          btn_fullscreen.style.backgroundColor = "transparent";
       }
   }
 }
@@ -581,9 +598,10 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
         label.setAttribute("for", param.name);
         label.setAttribute("class", "param-label");
         label.textContent = `${param.name}`;
-
+        console.log(effect_title);
+        console.log(param)
         if (param.steps == 2){
-          
+
           slider.setAttribute("type", "checkbox");
           slider.setAttribute("class", "param-checkbox");
           slider.setAttribute("id", param.id);
@@ -709,10 +727,13 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
     });
   };
   // Listen to parameter changes from the device
-  device.parameterChangeEvent.subscribe(param => {
+
+  // TODO
+  /*device.parameterChangeEvent.subscribe(param => {
     if (!isDraggingSlider)
         uiElements[param.id].slider.value = param.value;
-  });
+  });*/
+
 }
 
 function testBtn(ev){
@@ -726,7 +747,7 @@ function onoffEffect(ev){
    const divs = document.getElementsByName(ev.target.id+"div");
    console.log(divs);
    divs.forEach((div) => {
-    div.style.display = (ev.target.checked) ? "block" : "none";
+    div.style.display = (ev.target.checked) ? "flex" : "none";
    })
 }
 
@@ -750,4 +771,33 @@ function nodeConnection(){
     }
     analyser.connect(f_effects[f_effects.length-1].device.node);
   };
+}
+
+function recfunction(ev){
+  let sampler = effects.find(t=>t.name == "sampler");
+  if (btn_rec.style.background == "transparent"){
+    btn_rec.style.backgroundColor = "red";
+    sampler.activ = true;
+    sampler.device.parameters.find(param=>param.name=="size").value = 10.0
+    sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
+    sampler.device.parameters.find(param=>param.name=="rec").value = 1.0;
+    setTimeout(()=>{
+      console.log("tamereee");
+      sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
+      sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
+      sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
+      sampler.device.parameters.find(param=>param.name=="rec").value = 0.0;
+      btn_rec.style.backgroundColor = "#5c5c5c";
+    }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
+  } else {
+    sampler.activ = false;
+    sampler.device.parameters.find(param=>param.name=="rec").value = 0.0;
+    sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
+    sampler.device.parameters.find(param=>param.name=="out_gain").value = 0.0;
+    //sampler.device.parameters.find(param=>param.name=="rand_play").value = 0.0;
+    sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
+    sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
+    btn_rec.style.background = "transparent";
+  }
+  nodeConnection();
 }
