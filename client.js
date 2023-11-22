@@ -3,6 +3,7 @@ try {
   //socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
   //socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
   socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
+  console.log(socket);
   //socket = io.connect("https://192.168.10.2:1337");
   console.log("lulu ok");
 } catch(err){
@@ -13,13 +14,15 @@ let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
 let effectsPan = document.getElementById("effects-params");
 effectsPan.style.visibility = "hidden";
-let GUI = document.getElementById("GUI");
-GUI.style.visibility = "hidden";
+let myGUI = document.getElementById("GUI");
+myGUI.style.display = "none";
 let atablee = document.getElementById("atablee");
 let btn_fullscreen = document.getElementById("btn_fullscreen");
 let btn_rec = document.getElementById("btn_rec");
 btn_rec.style.background = "transparent";
 btn_rec.onclick = recfunction;
+let rec = document.getElementById("rec");
+let trash = document.getElementById("trash");
 let btn_effects = document.getElementById("btn_effects");
 btn_fullscreen.onclick = changeFullScreen;
 btn_effects.disabled = true;
@@ -27,6 +30,8 @@ btn_effects.style.borderColor = "#5c5c5c";
 btn_effects.onclick = (ev)=>{
   let sampler = effects.find(t=>t.name == "sampler");
   console.log(sampler.device.parameters.find(param=>param.name=="rand_play").value);
+  console.log(sampler.device.parameters.find(param=>param.name=="loop_start_point").value);
+   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
   if (effectsPan.style.visibility == "visible"){
     effectsPan.style.visibility = "hidden";
     btn_effects.style.background = "transparent";
@@ -60,7 +65,7 @@ const displayAllEffectsParams = false;
 let effects = [
   {
     name: "delay",
-    title: "DELAY",
+    title: "DELAY TIME",
     device: {},
     div: {},
     activ: false,
@@ -84,7 +89,7 @@ let effects = [
   },
   {
     name: "downsample",
-    title: "DOWNSAMPLE",
+    title: "DOWN SAMPLE",
     device: {},
     div: {},
     activ: false,
@@ -105,7 +110,14 @@ let effects = [
     div: {},
     activ: false,
     visible: false,
-    userParams: [],
+    userParams: [
+      {
+        name: "pitch",
+        title: "SPEED",
+        defaultValue: 1.0,
+        param: {},
+        visible: true
+      }],
   },
   {
     name: "filter",
@@ -206,12 +218,10 @@ socket.on("create", function () {
         nodeConnection();
         btn_effects.disabled = false;
         btn_effects.style.borderColor = "white";
-        //effectsPan.style.visibility = "visible";
       })
       .catch(function (err) {
         console.log(`${err.name}, ${err.message}`);
         analyser.connect(myPeer);
-        //effectsPan.style.visibility = "collapse";
       })
 
       const audioTracks = stream.getAudioTracks();
@@ -220,7 +230,7 @@ socket.on("create", function () {
       }
       const streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
       streamVisualizer4Clients.start();
-      GUI.style.visibility = "visible";
+      myGUI.style.display = "flex";
 
     })
     .catch(function (err) {
@@ -311,11 +321,11 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "none";
       adminVideo.volume = 0;
       userCanvas.style.display = "initial";
-      GUI.style.visibility = "visible";
+      myGUI.style.display = "flex";
       break;
     case 2:
       userCanvas.style.display = "none";
-      GUI.style.visibility = "hidden";
+      myGUI.style.display = "none";
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
@@ -516,9 +526,11 @@ async function effects_Setup(effects) {
     
     console.log(effects[i].device);
     console.log(effects[i].device.node);
-    console.log("petitfrere");
+
     if (effects[i].visible){
       makeGUI(effects[i].device, effects[i].userParams, effects[i].title, effects[i].activ);
+    } else if (effects[i].name == "sampler"){
+      makeSamplerGUI(effects[i].device, effects[i].userParams, effects[i].title, effects[i].activ);
     }
 
   };
@@ -569,7 +581,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
   label.appendChild(div);
   label.appendChild(span);
   input.setAttribute("id", effect_title);
-  input.checked - effect_activ;
+  input.checked = effect_activ;
   input.onchange = onoffEffect;
   sliderContainer.appendChild(label);
 
@@ -581,70 +593,19 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
       let param = device.parameters.find(t=>t.name==userParam.name);
       if (userParam.defaultValue!==null){
         param.value = userParam.defaultValue;
+      } else {
+        effects.find(t=>t.title == effect_title).userParams.find(t=>t.name==userParam.name).defaultValue = param.value;
       };
-      
       if (userParam.visible){
         // PARAMS :
-        let label = document.createElement("label");
-        let slider = document.createElement("input");
-        let sliderContainer = document.createElement("div");
-        sliderContainer.appendChild(slider);
-        //sliderContainer.appendChild(label);
-        sliderContainer.setAttribute("name", effect_title + "div");
-        sliderContainer.setAttribute("class", "div_slider");
-        sliderContainer.style.display = "none";
-        // Add a name for the label
-        label.setAttribute("name", param.name);
-        label.setAttribute("for", param.name);
-        label.setAttribute("class", "param-label");
-        label.textContent = `${param.name}`;
-        console.log(effect_title);
-        console.log(param)
-        if (param.steps == 2){
-
-          slider.setAttribute("type", "checkbox");
-          slider.setAttribute("class", "param-checkbox");
-          slider.setAttribute("id", param.id);
-          slider.setAttribute("name", param.name);
-          slider.checked = param.value;
-          slider.addEventListener("change", () => {
-            param.value = (slider.checked) ? 1.0 : 0.0;
-          });
-
-        } else {
-
-          // Make each slider reflect its parameter
-          slider.setAttribute("type", "range");
-          slider.setAttribute("class", "param-slider");
-          slider.setAttribute("id", param.id);
-          slider.setAttribute("name", param.name);
-          slider.setAttribute("min", param.min);
-          slider.setAttribute("max", param.max);
-          if (param.steps > 1) {
-              slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
-          } else {
-              slider.setAttribute("step", (param.max - param.min) / 1000.0);
-          }
-          slider.setAttribute("value", param.value);
-
-          // Make each slider control its parameter
-          slider.addEventListener("pointerdown", () => {
-              isDraggingSlider = true;
-          });
-          slider.addEventListener("pointerup", () => {
-              isDraggingSlider = false;
-              slider.value = param.value;
-          });
-          slider.addEventListener("input", () => {
-              let value = Number.parseFloat(slider.value);
-              param.value = value;
-            });
-        }
+        let paramGUI = createParamGUI(param, effect_title);
+      
         // Store the slider and text by name so we can access them later
+        let slider = paramGUI.slider;
         uiElements[param.id] = { slider };
 
         // Add the slider element
-        effect_div.appendChild(sliderContainer);
+        effect_div.appendChild(paramGUI.sliderContainer);
       };
     });
 
@@ -729,11 +690,143 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
   // Listen to parameter changes from the device
 
   // TODO
-  /*device.parameterChangeEvent.subscribe(param => {
-    if (!isDraggingSlider)
+  device.parameterChangeEvent.subscribe(param => {
+    console.log(param);
+    if (!isDraggingSlider){
+      try{
         uiElements[param.id].slider.value = param.value;
-  });*/
+      } catch (err){
+        console.log("uiElements " + err);
+      }
+    }
+  });
 
+}
+
+function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
+  let effect_div = document.createElement("div");
+  effect_div.setAttribute("class", "effect_div");
+  effect_div.setAttribute("id", "sampler_div");
+  effect_div.style.display = "none";
+  let pdiv = document.getElementById("effects-params");
+  pdiv.appendChild(effect_div);
+  // This will allow us to ignore parameter update events while dragging the slider.
+  let isDraggingSlider = false;
+  let uiElements = {};
+
+  userParams.forEach((userParam)=>{
+    let param = device.parameters.find(t=>t.name==userParam.name);
+    if (userParam.defaultValue!==null){
+      param.value = userParam.defaultValue;
+    };
+    
+    if (userParam.visible){
+      let sliderContainer = document.createElement("div");
+
+      let label = document.createElement("label");
+      let input = document.createElement("input");
+      let div = document.createElement("div");
+      let span = document.createElement("span");
+      label.setAttribute("class", "toggle");
+      input.setAttribute("class", "toggle-checkbox");
+      input.setAttribute("type", "checkbox");
+      div.setAttribute("class", "toggle-switch");
+      span.setAttribute("class", "toggle-label");
+      span.textContent = userParam.title;
+      label.appendChild(input);
+      label.appendChild(div);
+      label.appendChild(span);
+      input.setAttribute("id", userParam.name);
+      input.checked = effect_activ;
+      input.onchange = onoffSampler;
+      sliderContainer.appendChild(label);
+    
+      effect_div.appendChild(sliderContainer);
+
+      // PARAMS :
+      let paramGUI = createParamGUI(param, param.name);
+    
+      // Store the slider and text by name so we can access them later
+      let slider = paramGUI.slider;
+      uiElements[param.id] = { slider };
+
+      // Add the slider element
+      effect_div.appendChild(paramGUI.sliderContainer);
+    };
+  });
+  // Listen to parameter changes from the device
+
+  // TODO
+  device.parameterChangeEvent.subscribe(param => {
+    console.log(param);
+    if (!isDraggingSlider){
+      try{
+          uiElements[param.id].slider.value = param.value;
+      } catch (err){
+        console.log("uiElements " + err);
+      }
+    }
+  });
+
+}
+
+
+function createParamGUI(param, effect_title){
+  let sliderContainer = document.createElement("div");
+  sliderContainer.setAttribute("name", effect_title + "div");
+  sliderContainer.setAttribute("class", "div_slider");
+  sliderContainer.style.display = "none";
+  let label = document.createElement("label");
+  let slider = document.createElement("input");
+  sliderContainer.appendChild(slider);
+  // Add a name for the label
+  label.setAttribute("name", param.name);
+  label.setAttribute("for", param.name);
+  label.setAttribute("class", "param-label");
+  label.textContent = `${param.name}`;
+  console.log(param)
+  if (param.steps == 2){
+
+    slider.setAttribute("type", "checkbox");
+    slider.setAttribute("class", "param-checkbox");
+    slider.setAttribute("id", param.id);
+    slider.setAttribute("name", param.name);
+    slider.checked = param.value;
+    slider.addEventListener("change", () => {
+      param.value = (slider.checked) ? 1.0 : 0.0;
+    });
+
+  } else {
+
+    // Make each slider reflect its parameter
+    slider.setAttribute("type", "range");
+    slider.setAttribute("class", "param-slider");
+    slider.setAttribute("id", param.id);
+    slider.setAttribute("name", param.name);
+    slider.setAttribute("min", param.min);
+    slider.setAttribute("max", param.max);
+    if (param.steps > 1) {
+        slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
+    } else {
+        slider.setAttribute("step", (param.max - param.min) / 1000.0);
+    }
+    slider.setAttribute("value", param.value);
+
+    // Make each slider control its parameter
+    slider.addEventListener("pointerdown", () => {
+        isDraggingSlider = true;
+    });
+    slider.addEventListener("pointerup", () => {
+        isDraggingSlider = false;
+        slider.value = param.value;
+    });
+    slider.addEventListener("input", () => {
+        let value = Number.parseFloat(slider.value);
+        param.value = value;
+      });
+
+    return {sliderContainer, slider};
+  }
 }
 
 function testBtn(ev){
@@ -741,14 +834,31 @@ function testBtn(ev){
 }
 
 function onoffEffect(ev){
-   console.log("onoffeffect");
    effects.find(t=>t.title===ev.target.id).activ = ev.target.checked;
+   if (!ev.target.checked){
+    // TODO INITIALISATION
+   }
    nodeConnection();
    const divs = document.getElementsByName(ev.target.id+"div");
-   console.log(divs);
    divs.forEach((div) => {
     div.style.display = (ev.target.checked) ? "flex" : "none";
    })
+}
+
+function onoffSampler(ev){
+  if (!ev.target.checked){
+    // TODO : REINIT
+    // let sampler = effects.find(t=>t.name == "sampler")
+    // console.log("YAAAAAA1")
+    // console.log(sampler.device.param.find(t=>t.name == ev.target.id).value)
+    // console.log(sampler.userParams.find(t=>t.name = ev.target.id).defaultValue)
+    // console.log("YAAAAAA2")
+   }
+  const divs = document.getElementsByName(ev.target.id+"div");
+  console.log(ev.target.id);
+  divs.forEach((div) => {
+   div.style.display = (ev.target.checked) ? "flex" : "none";
+  })
 }
 
 function nodeConnection(){
@@ -781,6 +891,9 @@ function recfunction(ev){
     sampler.device.parameters.find(param=>param.name=="size").value = 10.0
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
     sampler.device.parameters.find(param=>param.name=="rec").value = 1.0;
+    document.getElementById("sampler_div").style.display = "flex";
+    rec.style.display = "none";
+    trash.style.display = "inline";
     setTimeout(()=>{
       console.log("tamereee");
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
@@ -790,6 +903,9 @@ function recfunction(ev){
       btn_rec.style.backgroundColor = "#5c5c5c";
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else {
+    rec.style.display = "inline";
+    trash.style.display = "none";
+    document.getElementById("sampler_div").style.display = "none";
     sampler.activ = false;
     sampler.device.parameters.find(param=>param.name=="rec").value = 0.0;
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
@@ -799,5 +915,6 @@ function recfunction(ev){
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
     btn_rec.style.background = "transparent";
   }
+  sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
   nodeConnection();
 }
