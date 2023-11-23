@@ -60,7 +60,7 @@ body
 	align-items: center;
 	justify-content: center;
 	flex-direction: column;
-	background: rgba(0,0,0,0);
+	background: rgba(0,0,0,0.5);
 }
 
 	#overlay button {
@@ -258,7 +258,6 @@ label {
 
   input[type="range"] {
     color: #ffffff;
-    border-radius: 45%;
     --thumb-height: 1.975em;
     --thumb-width: .5em;
     --clip-edges: 0.0125em;

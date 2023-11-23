@@ -14,22 +14,25 @@
         <canvas id="canvas"></canvas>
         <video id="video" playsinline></video>
     </div>
-    <div id="GUI">
+    <div id="GUI" style="display: none">
         <div id="effects-params">
             <!-- <button id="btn_test">TEST</button> -->
         </div>
         <div id="Btns">
             <button id="btn_effects"><i class="fa-solid fa-gear" style="color: #ffffff;"></i></button>
             <button id="btn_rec"><i id="rec" class="fa-solid fa-record-vinyl" style="color: #ffffff;"></i><i id="trash" class="fa-solid fa-xmark fa-lg" style="color: #ffffff; display: none"></i></button>
-            <button id="btn_fullscreen"><i class="fa-solid fa-up-right-and-down-left-from-center" style="color: #ffffff;"></i></button>
+            <button id="btn_fullscreen"><i id="fs1" class="fa-solid fa-up-right-and-down-left-from-center" style="color: #ffffff;"></i><i id="fs2" class="fa-solid fa-down-left-and-up-right-to-center" style="color: #ffffff; display: none"></i></button>
             <!-- <button id="btn_test">TEST</button> -->
         </div>
     </div>
     <div id="overlay">
-        <h2 id="titre">Bienvenue dans l'expérience<br>@TABLÉE</h2>
-        <p>. Monte ton volume . <br>. Monte ta luminosité . <br>
-             . Et allume ton micro :</p>
-        <button id="startButton"><i class="fa-solid fa-microphone fa-2xl" style="color: #ffffff;"></i></button>
+        <div id="titles">
+            <h2 >Bienvenue dans l'expérience<br>@TABLÉE</h2>
+            <p>. Monte ton volume . <br>. Monte ta luminosité . <br>
+                . Et allume ton micro :</p>
+        </div>
+        <p id="err"; style="display: none"><i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #ffffff;"></i><br><br><br>Accès impossible à ton micro... <br> Mais tu peux rester pour la suite ! </p>
+        <button id="startButton"><i id="microon" class="fa-solid fa-microphone fa-2xl" style="color: #ffffff;"></i><i id="microoff" class="fa-solid fa-microphone-slash fa-2xl" style="color: #ffffff; display: none"></i></button>
     </div>
     <!-- <script src="https://192.168.10.2:1337/socket.io/socket.io.min.js"></script> -->
     <script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>

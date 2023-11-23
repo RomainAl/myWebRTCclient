@@ -40,6 +40,7 @@ btn_effects.onclick = (ev)=>{
     btn_effects.style.backgroundColor = "#5c5c5c";
   }
 }
+let timer_rec = 0;
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
 // btn_test.onclick = testBtn;
@@ -157,18 +158,10 @@ const constraints = {
 
 const startButton = document.getElementById( 'startButton' );
 startButton.addEventListener( 'click', function () {
-  /*if (startButton.innerText == "OK ?"){
-    startButton.innerText = "PLAY"
-  } else {
-    init();
-  }*/
   init();
-  
 } );
 
 function init() {
-  const overlay = document.getElementById( 'overlay' );
-  overlay.remove();
   requestWakeLock();
   //changeFullScreen();
   context = new AudioContext();
@@ -177,10 +170,6 @@ function init() {
   analyser = context.createAnalyser();
   analyser.minDecibels = -140;
   analyser.maxDecibels = 0;
-  /*filter = context.createBiquadFilter();
-  filter.type = 'highpass';
-  filter.frequency.setValueAtTime(1500, context.currentTime + 1);
-  filter.connect(myPeer);*/
   socket.emit("join", roomName, false);
 };
 
@@ -212,7 +201,7 @@ socket.on("create", function () {
       /* use the stream */
       source = context.createMediaStreamSource(stream);
       source.connect(analyser);
-    
+
       effects_Setup(effects)
       .then(()=>{
         nodeConnection();
@@ -230,16 +219,18 @@ socket.on("create", function () {
       }
       const streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
       streamVisualizer4Clients.start();
+      document.getElementById( 'overlay' ).remove();
       myGUI.style.display = "flex";
 
     })
     .catch(function (err) {
-      /* handle the error */
-      alert(`Impossible de prendre le micro: ${err.name}`);
+      document.getElementById( 'titles' ).remove();
+      document.getElementById( 'err' ).style.display = "inline-block";
+      document.getElementById( 'microon' ).style.display = "none";
+      document.getElementById( 'microoff' ).style.display = "inline-block";
       console.log(err);
     })
     .then(function(){
-
       rtcPeerConnection = new RTCPeerConnection(iceServers);
       rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
       rtcPeerConnection.ontrack = OnTrackFunction;
@@ -326,6 +317,7 @@ function onReceiveChannelMessageCallback(event) {
     case 2:
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
+      document.getElementById("overlay").remove();
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
@@ -335,6 +327,7 @@ function onReceiveChannelMessageCallback(event) {
       break;
     case 3:
       adminVideo.remove();
+      document.getElementById("overlay").remove();
       break;
     case 4:
       atablee.style.background = "white";
@@ -432,11 +425,15 @@ function changeFullScreen(){
       {
         document.documentElement.requestFullscreen();
         btn_fullscreen.style.backgroundColor = "#5c5c5c";
+        document.getElementById("fs2").style.display = 'inline-block';
+        document.getElementById("fs1").style.display = 'none';
       }
       else if(document.documentElement.webkitRequestFullscreen)
       {
         document.documentElement.webkitRequestFullscreen();
         btn_fullscreen.style.backgroundColor = "#5c5c5c";
+        document.getElementById("fs2").style.display = 'inline-block';
+        document.getElementById("fs1").style.display = 'none';
       }
   }
   else
@@ -445,11 +442,15 @@ function changeFullScreen(){
       {
           document.exitFullscreen();
           btn_fullscreen.style.backgroundColor = "transparent";
+          document.getElementById("fs1").style.display = 'inline-block';
+          document.getElementById("fs2").style.display = 'none';
       }
       else if(document.webkitExitFullscreen)
       {
           document.webkitExitFullscreen();
           btn_fullscreen.style.backgroundColor = "transparent";
+          document.getElementById("fs1").style.display = 'inline-block';
+          document.getElementById("fs2").style.display = 'none';
       }
   }
 }
@@ -894,7 +895,7 @@ function recfunction(ev){
     document.getElementById("sampler_div").style.display = "flex";
     rec.style.display = "none";
     trash.style.display = "inline";
-    setTimeout(()=>{
+    timer_rec = setTimeout(()=>{
       console.log("tamereee");
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
@@ -903,6 +904,7 @@ function recfunction(ev){
       btn_rec.style.backgroundColor = "#5c5c5c";
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else {
+
     rec.style.display = "inline";
     trash.style.display = "none";
     document.getElementById("sampler_div").style.display = "none";
