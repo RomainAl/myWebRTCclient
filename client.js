@@ -3,9 +3,7 @@ try {
   //socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
   //socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
   socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
-  console.log(socket);
   //socket = io.connect("https://192.168.10.2:1337");
-  console.log("lulu ok");
 } catch(err){
   alert(err);
 }
@@ -29,9 +27,7 @@ btn_effects.disabled = true;
 btn_effects.style.borderColor = "#5c5c5c";
 btn_effects.onclick = (ev)=>{
   let sampler = effects.find(t=>t.name == "sampler");
-  console.log(sampler.device.parameters.find(param=>param.name=="rand_play").value);
-  console.log(sampler.device.parameters.find(param=>param.name=="loop_start_point").value);
-   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
+  sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
   if (effectsPan.style.visibility == "visible"){
     effectsPan.style.visibility = "hidden";
     btn_effects.style.background = "transparent";
@@ -40,7 +36,7 @@ btn_effects.onclick = (ev)=>{
     btn_effects.style.backgroundColor = "#5c5c5c";
   }
 }
-let timer_rec = 0;
+
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
 // btn_test.onclick = testBtn;
@@ -163,10 +159,10 @@ startButton.addEventListener( 'click', function () {
 
 function init() {
   requestWakeLock();
-  //changeFullScreen();
+  changeFullScreen();
   context = new AudioContext();
-  console.log(context);
-  myPeer = context.createMediaStreamDestination();
+  //myPeer = context.createMediaStreamDestination();
+  myPeer = context.destination;
   analyser = context.createAnalyser();
   analyser.minDecibels = -140;
   analyser.maxDecibels = 0;
@@ -198,7 +194,7 @@ socket.on("create", function () {
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then(function (stream) {
-      /* use the stream */
+
       source = context.createMediaStreamSource(stream);
       source.connect(analyser);
 
@@ -461,14 +457,11 @@ async function effects_Setup(effects) {
     try {
         response = await fetch("./effects/" + effects[i].name + ".export.json");
         patcher = await response.json();
-        console.log(encodeURIComponent(patcher.desc.meta.rnboversion));
-        console.log("taaaamere");
         if (!window.RNBO) {
             // Load RNBO script dynamically
             // Note that you can skip this by knowing the RNBO version of your patch
             // beforehand and just include it using a <script> tag
             await loadRNBOScript(patcher.desc.meta.rnboversion);
-            console.log("papa");
         }
 
     } catch (err) {
@@ -503,8 +496,6 @@ async function effects_Setup(effects) {
     // Create the device
     try {
         effects[i].device = await RNBO.createDevice({ context, patcher });
-        console.log(RNBO);
-        console.log("maman");
     } catch (err) {
         if (typeof guardrails === "function") {
             guardrails({ error: err });
@@ -524,9 +515,6 @@ async function effects_Setup(effects) {
     } else {
       effects[i].device.node.connect(myPeer);
     }
-    
-    console.log(effects[i].device);
-    console.log(effects[i].device.node);
 
     if (effects[i].visible){
       makeGUI(effects[i].device, effects[i].userParams, effects[i].title, effects[i].activ);
@@ -692,12 +680,11 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
 
   // TODO
   device.parameterChangeEvent.subscribe(param => {
-    console.log(param);
     if (!isDraggingSlider){
       try{
         uiElements[param.id].slider.value = param.value;
       } catch (err){
-        console.log("uiElements " + err);
+        console.log("uiElements :" + err);
       }
     }
   });
@@ -757,14 +744,12 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
   });
   // Listen to parameter changes from the device
 
-  // TODO
   device.parameterChangeEvent.subscribe(param => {
-    console.log(param);
     if (!isDraggingSlider){
       try{
           uiElements[param.id].slider.value = param.value;
       } catch (err){
-        console.log("uiElements " + err);
+        console.log("uiElements : " + err);
       }
     }
   });
@@ -785,7 +770,6 @@ function createParamGUI(param, effect_title){
   label.setAttribute("for", param.name);
   label.setAttribute("class", "param-label");
   label.textContent = `${param.name}`;
-  console.log(param)
   if (param.steps == 2){
 
     slider.setAttribute("type", "checkbox");
@@ -831,7 +815,6 @@ function createParamGUI(param, effect_title){
 }
 
 function testBtn(ev){
-    console.log("tamere");
 }
 
 function onoffEffect(ev){
@@ -856,7 +839,6 @@ function onoffSampler(ev){
     // console.log("YAAAAAA2")
    }
   const divs = document.getElementsByName(ev.target.id+"div");
-  console.log(ev.target.id);
   divs.forEach((div) => {
    div.style.display = (ev.target.checked) ? "flex" : "none";
   })
@@ -866,16 +848,12 @@ function nodeConnection(){
   analyser.disconnect(0);
   effects.forEach((effect)=>{effect.device.node.disconnect(0)});
   let f_effects = effects.filter(t=>t.activ==true);
-  console.log(f_effects);
   if (f_effects.length == 0){
-    console.log("only1");
     analyser.connect(myPeer);
   } else if (f_effects.length == 1){
-    console.log("only2");
     f_effects[0].device.node.connect(myPeer);
     analyser.connect(f_effects[0].device.node);
   } else {
-    console.log("only3");
     f_effects[0].device.node.connect(myPeer);
     for (i = 1; i < f_effects.length; i++){
       f_effects[i].device.node.connect(f_effects[i-1].device.node);
@@ -896,7 +874,6 @@ function recfunction(ev){
     rec.style.display = "none";
     trash.style.display = "inline";
     timer_rec = setTimeout(()=>{
-      console.log("tamereee");
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
@@ -904,7 +881,8 @@ function recfunction(ev){
       btn_rec.style.backgroundColor = "#5c5c5c";
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else {
-
+    console.log(timer_rec);
+    clearTimeout(timer_rec);
     rec.style.display = "inline";
     trash.style.display = "none";
     document.getElementById("sampler_div").style.display = "none";
