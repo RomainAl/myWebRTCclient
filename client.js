@@ -167,6 +167,7 @@ function init() {
   context = new AudioContext();
   console.log(context);
   myPeer = context.createMediaStreamDestination();
+  myPeer.connect(context.destination);
   analyser = context.createAnalyser();
   analyser.minDecibels = -140;
   analyser.maxDecibels = 0;
