@@ -174,7 +174,7 @@ let effects = [
   },
   {
     name: "sampler",
-    title: "PITCH",
+    title: "SAMPLER",
     device: {},
     div: {},
     activ: false,
@@ -187,7 +187,8 @@ let effects = [
         param: {},
         visible: true,
         type: "real"
-      },{
+      },
+      {
         name: "metro_speed",
         title: "RANDOM PLAY",
         defaultValue: null,
@@ -198,7 +199,7 @@ let effects = [
       {
         name: "size",
         title: "SIZE",
-        defaultValue: 30.0,
+        defaultValue: 10.0,
         param: {},
         visible: false,
         type: "real"
@@ -251,7 +252,6 @@ function init() {
   context = new AudioContext();
   //myPeer = context.createMediaStreamDestination();
   myPeer = context.destination;
-  console.log(myPeer);
   analyser = context.createAnalyser();
   analyser.minDecibels = -140;
   analyser.maxDecibels = 0;
@@ -907,19 +907,24 @@ function onoffSampler(ev){
   switch (ev.target.id){
     case "metro_speed":
       let sampler = effects.find(t=>t.name == "sampler");
-        if (!ev.target.checked){
-          sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
+      if (!ev.target.checked){
+        sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
+        sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
+        setTimeout(()=>{
           sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
-        } else {
-          sampler.device.parameters.find(param=>param.name=="rand_play").value = 0.0;
-        }
+        }, 100.0);
+      } else {
+        sampler.device.parameters.find(param=>param.name=="rand_play").value = 0.0;
+      }
+      break;
     default:
       if (!ev.target.checked){
         let sampler = effects.find(t=>t.name == "sampler")
-        sampler.device.parameters.find(t=>t.name == ev.target.id).value = sampler.userParams.find(t=>t.name = ev.target.id).defaultValue;
-       }
-       break;
+        sampler.device.parameters.find(t=>t.name == ev.target.id).value = sampler.userParams.find(t=>t.name == ev.target.id).defaultValue;
+      }
+      break;
   }
+  console.log("name = " + ev.target.id);
   const divs = document.getElementsByName(ev.target.id+"div");
   divs.forEach((div) => {
    div.style.display = (ev.target.checked) ? "flex" : "none";
@@ -964,7 +969,7 @@ function recfunction(ev){
     recTimeCount = Date.now();
     btn_rec.style.backgroundColor = "#FF0000";
     sampler.activ = true;
-    sampler.device.parameters.find(param=>param.name=="size").value = 10.0
+    sampler.device.parameters.find(param=>param.name=="size").value = sampler.userParams.find(t=>t.name == "size").defaultValue;
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
     sampler.device.parameters.find(param=>param.name=="rec").value = 1.0;
     document.getElementById("sampler_div").style.display = "flex";
@@ -981,6 +986,11 @@ function recfunction(ev){
       trash.style.display = "inline";
       mystop.style.display = "none";
       recTimeCount = 0;
+      document.getElementById("metro_speed").checked = false;
+      const divs = document.getElementsByName("metro_speeddiv");
+      divs.forEach((div) => {
+       div.style.display = "none";
+      })
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else if (recTimeCount != 0){
     rec.style.display = "none";
@@ -998,6 +1008,11 @@ function recfunction(ev){
       trash.style.display = "inline";
       mystop.style.display = "none";
       recTimeCount = 0;
+      document.getElementById("metro_speed").checked = false;
+      const divs = document.getElementsByName("metro_speeddiv");
+      divs.forEach((div) => {
+       div.style.display = "none";
+      })
     }, 100.0);
   } else {
     recTimeCount = 0;
@@ -1014,6 +1029,12 @@ function recfunction(ev){
     sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
     btn_rec.style.background = "transparent";
+
+    document.getElementById("metro_speed").checked = false;
+    const divs = document.getElementsByName("metro_speeddiv");
+    divs.forEach((div) => {
+     div.style.display = "none";
+    })
   }
   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
   nodeConnection();
