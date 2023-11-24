@@ -22,8 +22,8 @@
 //const HEIGHT = 100;
 
 // Interesting parameters to tweak!
-const SMOOTHING = 0.0;
-const FFT_SIZE = 256;
+const SMOOTHING = 1.0;
+const FFT_SIZE = 1024*4;
 
 function StreamVisualizer4Clients(analyser, canvas, doSound) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
@@ -34,7 +34,6 @@ function StreamVisualizer4Clients(analyser, canvas, doSound) {
 
   //this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
-
   this.startTime = 0;
   this.startOffset = 0;
 }
@@ -60,7 +59,6 @@ StreamVisualizer4Clients.prototype.draw = function() {
   //this.analyser.getByteFrequencyData(this.freqs);
   this.analyser.getByteTimeDomainData(this.times);
 
-
   //this.canvas.width = WIDTH;
   //this.canvas.height = HEIGHT;
   this.drawContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -78,14 +76,14 @@ StreamVisualizer4Clients.prototype.draw = function() {
 
   
   // Draw the time domain chart.
-  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
+  for (let i = 0; i < this.analyser.frequencyBinCount/8; i++) {
     value = this.times[i];
     percent = value / 256;
-    height = this.canvas.height * percent;
-    offset = this.canvas.height - height - 1;
-    barWidth = this.canvas.width/this.analyser.frequencyBinCount;
+    height = this.canvas.height * percent * 6
+    offset = this.canvas.height*3.5 - height - 1;
+    barWidth = 8*this.canvas.width/this.analyser.frequencyBinCount;
     this.drawContext.fillStyle = this.mycolor;
-    this.drawContext.fillRect(i * barWidth, offset, 5, 2);
+    this.drawContext.fillRect(i * barWidth, offset, 3, 3);
   }
 
   requestAnimationFrame(this.draw.bind(this));
