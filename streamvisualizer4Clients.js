@@ -30,6 +30,7 @@ function StreamVisualizer4Clients(analyser, canvas, doSound) {
   this.canvas = canvas;
   this.drawContext = this.canvas.getContext('2d');
   this.analyser = analyser;
+  this.mycolor = 'white';
 
   //this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
@@ -40,6 +41,10 @@ function StreamVisualizer4Clients(analyser, canvas, doSound) {
 
 StreamVisualizer4Clients.prototype.start = function() {
   requestAnimationFrame(this.draw.bind(this));
+};
+
+StreamVisualizer4Clients.prototype.setColor = function(col) {
+  this.mycolor = col;
 };
 
 StreamVisualizer4Clients.prototype.draw = function() {
@@ -79,7 +84,7 @@ StreamVisualizer4Clients.prototype.draw = function() {
     height = this.canvas.height * percent;
     offset = this.canvas.height - height - 1;
     barWidth = this.canvas.width/this.analyser.frequencyBinCount;
-    this.drawContext.fillStyle = 'white';
+    this.drawContext.fillStyle = this.mycolor;
     this.drawContext.fillRect(i * barWidth, offset, 5, 2);
   }
 

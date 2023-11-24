@@ -7,6 +7,7 @@ try {
 } catch(err){
   alert(err);
 }
+let streamVisualizer4Clients;
 
 let userCanvas = document.getElementById("canvas");
 let adminVideo = document.getElementById("video");
@@ -304,7 +305,8 @@ socket.on("create", function () {
       if (audioTracks.length > 0) {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
       }
-      const streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
+      streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
+      console.log(streamVisualizer4Clients);
       streamVisualizer4Clients.start();
       document.getElementById( 'overlay' ).remove();
       myGUI.style.display = "flex";
@@ -966,6 +968,7 @@ let recTimeCount = 0;
 function recfunction(ev){
   let sampler = effects.find(t=>t.name == "sampler");
   if ((btn_rec.style.background == "transparent") && (recTimeCount==0)){
+    streamVisualizer4Clients.setColor('red');
     recTimeCount = Date.now();
     btn_rec.style.backgroundColor = "#FF0000";
     sampler.activ = true;
@@ -977,6 +980,7 @@ function recfunction(ev){
     trash.style.display = "none";
     mystop.style.display = "inline";
     timer_rec = setTimeout(()=>{
+      streamVisualizer4Clients.setColor('white');
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
@@ -990,9 +994,10 @@ function recfunction(ev){
       const divs = document.getElementsByName("metro_speeddiv");
       divs.forEach((div) => {
        div.style.display = "none";
-      })
+      });
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else if (recTimeCount != 0){
+    streamVisualizer4Clients.setColor('white');
     rec.style.display = "none";
     trash.style.display = "inline";
     mystop.style.display = "none";
@@ -1012,9 +1017,10 @@ function recfunction(ev){
       const divs = document.getElementsByName("metro_speeddiv");
       divs.forEach((div) => {
        div.style.display = "none";
-      })
+      });
     }, 100.0);
   } else {
+    streamVisualizer4Clients.setColor('white');
     recTimeCount = 0;
     clearTimeout(timer_rec);
     rec.style.display = "inline";
@@ -1034,7 +1040,7 @@ function recfunction(ev){
     const divs = document.getElementsByName("metro_speeddiv");
     divs.forEach((div) => {
      div.style.display = "none";
-    })
+    });
   }
   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
   nodeConnection();
