@@ -20,7 +20,10 @@
         </div>
         <div id="Btns">
             <button id="btn_effects"><i class="fa-solid fa-gear" style="color: #ffffff;"></i></button>
-            <button id="btn_rec"><i id="rec" class="fa-solid fa-record-vinyl" style="color: #ffffff;"></i><i id="trash" class="fa-solid fa-xmark fa-lg" style="color: #ffffff; display: none"></i></button>
+            <button id="btn_rec">
+                <i id="rec" class="fa-solid fa-circle fa-lg" style="color: #FF0000;"></i>
+                <i id="stop" class="fa-solid fa-square fa-lg" style="color: #FFFFFF;  display: none"></i>
+                <i id="trash" class="fa-solid fa-circle-xmark fa-lg" style="color: #ffffff; display: none"></i></button>
             <button id="btn_fullscreen"><i id="fs1" class="fa-solid fa-up-right-and-down-left-from-center" style="color: #ffffff;"></i><i id="fs2" class="fa-solid fa-down-left-and-up-right-to-center" style="color: #ffffff; display: none"></i></button>
             <!-- <button id="btn_test">TEST</button> -->
         </div>
@@ -33,7 +36,6 @@
         </div>
         <p id="err"; style="display: none"><i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #ffffff;"></i><br><br><br>Accès impossible à ton micro... <br> Mais tu peux rester pour la suite ! </p>
         <button id="startButton"><i id="microon" class="fa-solid fa-microphone fa-2xl" style="color: #ffffff;"></i><i id="microoff" class="fa-solid fa-microphone-slash fa-2xl" style="color: #ffffff; padding: 15px 0; display: none"></i></button>
-    
     </div>
     <!-- <script src="https://192.168.10.2:1337/socket.io/socket.io.min.js"></script> -->
     <script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>

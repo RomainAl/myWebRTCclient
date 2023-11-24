@@ -20,14 +20,15 @@ let btn_rec = document.getElementById("btn_rec");
 btn_rec.style.background = "transparent";
 btn_rec.onclick = recfunction;
 let rec = document.getElementById("rec");
+let mystop = document.getElementById("stop");
 let trash = document.getElementById("trash");
 let btn_effects = document.getElementById("btn_effects");
 btn_fullscreen.onclick = changeFullScreen;
 btn_effects.disabled = true;
+btn_rec.disabled = true;
 btn_effects.style.borderColor = "#5c5c5c";
+btn_rec.style.borderColor = "#5c5c5c";
 btn_effects.onclick = (ev)=>{
-  let sampler = effects.find(t=>t.name == "sampler");
-  sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
   if (effectsPan.style.visibility == "visible"){
     effectsPan.style.visibility = "hidden";
     btn_effects.style.background = "transparent";
@@ -36,7 +37,6 @@ btn_effects.onclick = (ev)=>{
     btn_effects.style.backgroundColor = "#5c5c5c";
   }
 }
-
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
 // btn_test.onclick = testBtn;
@@ -73,14 +73,16 @@ let effects = [
       title: "IN",
       defaultValue: 1.0,
       param: {},
-      visible: false
+      visible: false,
+      type: "bool"
     },
     {
       name: "time",
       title: "TIME",
       defaultValue: null,
       param: {},
-      visible: true
+      visible: true,
+      type: "real"
     }
     ],
   },
@@ -97,8 +99,78 @@ let effects = [
       title: "DOWN-SAMPLE",
       defaultValue: null,
       param: {},
-      visible: true
+      visible: true,
+      type: "real"
     }],
+  },
+  {
+    name: "reverb",
+    title: "REVERB",
+    device: {},
+    div: {},
+    activ: false,
+    visible: true,
+    userParams: [
+      {
+        name: "decay",
+        title: "DECAY",
+        defaultValue: null,
+        param: {},
+        visible: true,
+        type: "real"
+      },{
+        name: "mix",
+        title: "MIX",
+        defaultValue: 100.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },
+    ],
+  }/*,
+  {
+    name: "pitchshift",
+    title: "PITCH SHIFTER",
+    device: {},
+    div: {},
+    activ: false,
+    visible: true,
+    userParams: [
+      {
+        name: "transp",
+        title: "TRANSPOSITION",
+        defaultValue: null,
+        param: {},
+        visible: true,
+        type: "real"
+      },
+      {
+        name: "mix",
+        title: "MIX",
+        defaultValue: 100.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },
+    ],
+  }*/,
+  {
+    name: "freeze",
+    title: "FREEZE AUTO",
+    device: {},
+    div: {},
+    activ: false,
+    visible: true,
+    userParams: [
+      {
+        name: "auto",
+        title: "AUTO",
+        defaultValue: 100.0,
+        param: {},
+        visible: false,
+        type: "bool"
+      },
+    ],
   },
   {
     name: "sampler",
@@ -110,10 +182,26 @@ let effects = [
     userParams: [
       {
         name: "pitch",
-        title: "SPEED",
+        title: "SPEED PLAY",
         defaultValue: 1.0,
         param: {},
-        visible: true
+        visible: true,
+        type: "real"
+      },{
+        name: "metro_speed",
+        title: "RANDOM PLAY",
+        defaultValue: null,
+        param: {},
+        visible: true,
+        type: "real"
+      },
+      {
+        name: "size",
+        title: "SIZE",
+        defaultValue: 30.0,
+        param: {},
+        visible: false,
+        type: "real"
       }],
   },
   {
@@ -163,6 +251,7 @@ function init() {
   context = new AudioContext();
   //myPeer = context.createMediaStreamDestination();
   myPeer = context.destination;
+  console.log(myPeer);
   analyser = context.createAnalyser();
   analyser.minDecibels = -140;
   analyser.maxDecibels = 0;
@@ -203,6 +292,8 @@ socket.on("create", function () {
         nodeConnection();
         btn_effects.disabled = false;
         btn_effects.style.borderColor = "white";
+        btn_rec.disabled = false;
+        btn_rec.style.borderColor = "white";
       })
       .catch(function (err) {
         console.log(`${err.name}, ${err.message}`);
@@ -583,16 +674,16 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
       if (userParam.defaultValue!==null){
         param.value = userParam.defaultValue;
       } else {
-        effects.find(t=>t.title == effect_title).userParams.find(t=>t.name==userParam.name).defaultValue = param.value;
+        userParam.defaultValue = param.value;
       };
       if (userParam.visible){
         // PARAMS :
-        let paramGUI = createParamGUI(param, effect_title);
-      
+        let paramGUI = createParamGUI(param, effect_title, userParam.type);
+        
         // Store the slider and text by name so we can access them later
         let slider = paramGUI.slider;
         uiElements[param.id] = { slider };
-
+        
         // Add the slider element
         effect_div.appendChild(paramGUI.sliderContainer);
       };
@@ -677,17 +768,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
     });
   };
   // Listen to parameter changes from the device
-
-  // TODO
-  device.parameterChangeEvent.subscribe(param => {
-    if (!isDraggingSlider){
-      try{
-        uiElements[param.id].slider.value = param.value;
-      } catch (err){
-        console.log("uiElements :" + err);
-      }
-    }
-  });
+  autoChangeGUI(device, isDraggingSlider, uiElements);
 
 }
 
@@ -706,8 +787,10 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
     let param = device.parameters.find(t=>t.name==userParam.name);
     if (userParam.defaultValue!==null){
       param.value = userParam.defaultValue;
+    } else {
+      userParam.defaultValue = param.value;
     };
-    
+
     if (userParam.visible){
       let sliderContainer = document.createElement("div");
 
@@ -731,33 +814,24 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
     
       effect_div.appendChild(sliderContainer);
 
-      // PARAMS :
-      let paramGUI = createParamGUI(param, param.name);
-    
-      // Store the slider and text by name so we can access them later
-      let slider = paramGUI.slider;
-      uiElements[param.id] = { slider };
-
-      // Add the slider element
-      effect_div.appendChild(paramGUI.sliderContainer);
+      if (userParam.type !== "bool"){
+        // PARAMS :
+        let paramGUI = createParamGUI(param, param.name, userParam.type);
+        // Store the slider and text by name so we can access them later
+        let slider = paramGUI.slider;
+        uiElements[param.id] = { slider };
+        // Add the slider element
+        effect_div.appendChild(paramGUI.sliderContainer);
+      }
     };
   });
   // Listen to parameter changes from the device
-
-  device.parameterChangeEvent.subscribe(param => {
-    if (!isDraggingSlider){
-      try{
-          uiElements[param.id].slider.value = param.value;
-      } catch (err){
-        console.log("uiElements : " + err);
-      }
-    }
-  });
+  autoChangeGUI(device, isDraggingSlider, uiElements);
 
 }
 
 
-function createParamGUI(param, effect_title){
+function createParamGUI(param, effect_title, type){
   let sliderContainer = document.createElement("div");
   sliderContainer.setAttribute("name", effect_title + "div");
   sliderContainer.setAttribute("class", "div_slider");
@@ -770,15 +844,15 @@ function createParamGUI(param, effect_title){
   label.setAttribute("for", param.name);
   label.setAttribute("class", "param-label");
   label.textContent = `${param.name}`;
-  if (param.steps == 2){
+  if (type == "bool"){
 
     slider.setAttribute("type", "checkbox");
     slider.setAttribute("class", "param-checkbox");
     slider.setAttribute("id", param.id);
     slider.setAttribute("name", param.name);
-    slider.checked = param.value;
+    slider.checked = (param.value = param.max) ? true : false;
     slider.addEventListener("change", () => {
-      param.value = (slider.checked) ? 1.0 : 0.0;
+      param.value = (slider.checked) ? param.max : param.min;
     });
 
   } else {
@@ -810,8 +884,8 @@ function createParamGUI(param, effect_title){
         param.value = value;
       });
 
-    return {sliderContainer, slider};
   }
+  return {sliderContainer, slider};
 }
 
 function testBtn(ev){
@@ -830,18 +904,39 @@ function onoffEffect(ev){
 }
 
 function onoffSampler(ev){
-  if (!ev.target.checked){
-    // TODO : REINIT
-    // let sampler = effects.find(t=>t.name == "sampler")
-    // console.log("YAAAAAA1")
-    // console.log(sampler.device.param.find(t=>t.name == ev.target.id).value)
-    // console.log(sampler.userParams.find(t=>t.name = ev.target.id).defaultValue)
-    // console.log("YAAAAAA2")
-   }
+  switch (ev.target.id){
+    case "metro_speed":
+      let sampler = effects.find(t=>t.name == "sampler");
+        if (!ev.target.checked){
+          sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
+          sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
+        } else {
+          sampler.device.parameters.find(param=>param.name=="rand_play").value = 0.0;
+        }
+    default:
+      if (!ev.target.checked){
+        let sampler = effects.find(t=>t.name == "sampler")
+        sampler.device.parameters.find(t=>t.name == ev.target.id).value = sampler.userParams.find(t=>t.name = ev.target.id).defaultValue;
+       }
+       break;
+  }
   const divs = document.getElementsByName(ev.target.id+"div");
   divs.forEach((div) => {
    div.style.display = (ev.target.checked) ? "flex" : "none";
   })
+}
+
+function autoChangeGUI(device, isDraggingSlider, uiElements){
+  device.parameterChangeEvent.subscribe(param => {
+    console.log("Auto change param  :" + param.name);
+    if (!isDraggingSlider){
+      try{
+          uiElements[param.id].slider.value = param.value;
+      } catch (err){
+        console.log("uiElements : " + param.name + err);
+      }
+    }
+  });
 }
 
 function nodeConnection(){
@@ -862,29 +957,54 @@ function nodeConnection(){
   };
 }
 
+let recTimeCount = 0;
 function recfunction(ev){
   let sampler = effects.find(t=>t.name == "sampler");
-  if (btn_rec.style.background == "transparent"){
-    btn_rec.style.backgroundColor = "red";
+  if ((btn_rec.style.background == "transparent") && (recTimeCount==0)){
+    recTimeCount = Date.now();
+    btn_rec.style.backgroundColor = "#FF0000";
     sampler.activ = true;
     sampler.device.parameters.find(param=>param.name=="size").value = 10.0
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;
     sampler.device.parameters.find(param=>param.name=="rec").value = 1.0;
     document.getElementById("sampler_div").style.display = "flex";
     rec.style.display = "none";
-    trash.style.display = "inline";
+    trash.style.display = "none";
+    mystop.style.display = "inline";
     timer_rec = setTimeout(()=>{
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
       sampler.device.parameters.find(param=>param.name=="rec").value = 0.0;
       btn_rec.style.backgroundColor = "#5c5c5c";
+      rec.style.display = "none";
+      trash.style.display = "inline";
+      mystop.style.display = "none";
+      recTimeCount = 0;
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
+  } else if (recTimeCount != 0){
+    rec.style.display = "none";
+    trash.style.display = "inline";
+    mystop.style.display = "none";
+    clearTimeout(timer_rec);
+    sampler.device.parameters.find(param=>param.name=="size").value = Math.floor((Date.now()-recTimeCount)/1000);
+    setTimeout(()=>{
+      sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
+      sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
+      sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
+      sampler.device.parameters.find(param=>param.name=="rec").value = 0.0;
+      btn_rec.style.backgroundColor = "#5c5c5c";
+      rec.style.display = "none";
+      trash.style.display = "inline";
+      mystop.style.display = "none";
+      recTimeCount = 0;
+    }, 100.0);
   } else {
-    console.log(timer_rec);
+    recTimeCount = 0;
     clearTimeout(timer_rec);
     rec.style.display = "inline";
     trash.style.display = "none";
+    mystop.style.display = "none";
     document.getElementById("sampler_div").style.display = "none";
     sampler.activ = false;
     sampler.device.parameters.find(param=>param.name=="rec").value = 0.0;
