@@ -951,21 +951,21 @@ function nodeConnection(mode){
   source.disconnect(0);
   if (mode == "rec"){
     source.connect(analyser);
+    analyser.disconnect(0);
     effects.forEach((effect)=>{effect.device.node.disconnect(0)});
     let f_effects = effects.filter(t=>t.activ==true);
     if (f_effects.length == 0){
       source.connect(myPeer);
     } else if (f_effects.length == 1){
-      f_effects[0].device.node.connect(myPeer);
       source.connect(f_effects[0].device.node);
     } else {
-      f_effects[0].device.node.connect(myPeer);
       for (i = 1; i < f_effects.length; i++){
         f_effects[i].device.node.connect(f_effects[i-1].device.node);
       }
       source.connect(f_effects[f_effects.length-1].device.node);
     };
   } else {
+    analyser.connect(myPeer);
     effects.forEach((effect)=>{effect.device.node.disconnect(0)});
     let f_effects = effects.filter(t=>t.activ==true);
     if (f_effects.length == 0){
