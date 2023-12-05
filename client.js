@@ -211,7 +211,7 @@ let effects = [
     title: "FILTER",
     device: {},
     div: {},
-    activ: true,
+    activ: false,
     visible: false,
     userParams: []
   }
@@ -288,7 +288,6 @@ socket.on("create", function () {
 
       source = context.createMediaStreamSource(stream);
       
-
       effects_Setup(effects)
       .then(()=>{
         nodeConnection();
@@ -503,12 +502,18 @@ const requestWakeLock = async () => {
 
 document.addEventListener("visibilitychange", (event) => {
   if (document.visibilityState === "visible") {
+    context.resume();
     requestWakeLock();
+  } else {
+    context.suspend();
+    btn_fullscreen.style.backgroundColor = "transparent";
+    document.getElementById("fs1").style.display = 'inline-block';
+    document.getElementById("fs2").style.display = 'none';
   }
 });
 
 function changeFullScreen(){
-  const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
+  const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
   if(!fullscreenElement)
   {
       if(document.documentElement.requestFullscreen)
@@ -847,6 +852,7 @@ function createParamGUI(param, effect_title, type){
   label.setAttribute("for", param.name);
   label.setAttribute("class", "param-label");
   label.textContent = `${param.name}`;
+
   if (type == "bool"){
 
     slider.setAttribute("type", "checkbox");
@@ -964,6 +970,9 @@ function nodeConnection(mode){
       }
       source.connect(f_effects[f_effects.length-1].device.node);
     };
+  } else if (mode == "off"){
+    source.disconnect(0);
+    analyser.disconnect(0);
   } else {
     analyser.connect(myPeer);
     effects.forEach((effect)=>{effect.device.node.disconnect(0)});
