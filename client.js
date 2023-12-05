@@ -947,28 +947,46 @@ function autoChangeGUI(device, isDraggingSlider, uiElements){
   });
 }
 
-function nodeConnection(){
+function nodeConnection(mode){
   source.disconnect(0);
-  effects.forEach((effect)=>{effect.device.node.disconnect(0)});
-  let f_effects = effects.filter(t=>t.activ==true);
-  if (f_effects.length == 0){
+  if (mode == "rec"){
     source.connect(analyser);
-  } else if (f_effects.length == 1){
-    f_effects[0].device.node.connect(analyser);
-    source.connect(f_effects[0].device.node);
+    effects.forEach((effect)=>{effect.device.node.disconnect(0)});
+    let f_effects = effects.filter(t=>t.activ==true);
+    if (f_effects.length == 0){
+      source.connect(myPeer);
+    } else if (f_effects.length == 1){
+      f_effects[0].device.node.connect(myPeer);
+      source.connect(f_effects[0].device.node);
+    } else {
+      f_effects[0].device.node.connect(myPeer);
+      for (i = 1; i < f_effects.length; i++){
+        f_effects[i].device.node.connect(f_effects[i-1].device.node);
+      }
+      source.connect(f_effects[f_effects.length-1].device.node);
+    };
   } else {
-    f_effects[0].device.node.connect(analyser);
-    for (i = 1; i < f_effects.length; i++){
-      f_effects[i].device.node.connect(f_effects[i-1].device.node);
-    }
-    source.connect(f_effects[f_effects.length-1].device.node);
+    effects.forEach((effect)=>{effect.device.node.disconnect(0)});
+    let f_effects = effects.filter(t=>t.activ==true);
+    if (f_effects.length == 0){
+      source.connect(analyser);
+    } else if (f_effects.length == 1){
+      f_effects[0].device.node.connect(analyser);
+      source.connect(f_effects[0].device.node);
+    } else {
+      f_effects[0].device.node.connect(analyser);
+      for (i = 1; i < f_effects.length; i++){
+        f_effects[i].device.node.connect(f_effects[i-1].device.node);
+      }
+      source.connect(f_effects[f_effects.length-1].device.node);
+    };
   };
 }
-
 let recTimeCount = 0;
 function recfunction(ev){
   let sampler = effects.find(t=>t.name == "sampler");
   if ((btn_rec.style.background == "transparent") && (recTimeCount==0)){
+    streamVisualizer4Clients.setColor("red");
     recTimeCount = Date.now();
     btn_rec.style.backgroundColor = "#FF0000";
     sampler.activ = true;
@@ -979,7 +997,10 @@ function recfunction(ev){
     rec.style.display = "none";
     trash.style.display = "none";
     mystop.style.display = "inline";
+    nodeConnection("rec");
+
     timer_rec = setTimeout(()=>{
+      streamVisualizer4Clients.setColor("white");
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 0.0;
@@ -994,8 +1015,10 @@ function recfunction(ev){
       divs.forEach((div) => {
        div.style.display = "none";
       });
+      nodeConnection();
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else if (recTimeCount != 0){
+    streamVisualizer4Clients.setColor("white");
     rec.style.display = "none";
     trash.style.display = "inline";
     mystop.style.display = "none";
@@ -1016,8 +1039,10 @@ function recfunction(ev){
       divs.forEach((div) => {
        div.style.display = "none";
       });
+      nodeConnection();
     }, 100.0);
   } else {
+    streamVisualizer4Clients.setColor("white");
     recTimeCount = 0;
     clearTimeout(timer_rec);
     rec.style.display = "inline";
@@ -1038,7 +1063,7 @@ function recfunction(ev){
     divs.forEach((div) => {
      div.style.display = "none";
     });
+    nodeConnection();
   }
   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
-  nodeConnection();
 }
