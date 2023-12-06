@@ -59,6 +59,7 @@ let analyser;
 let source;
 let filter;
 let myPeer;
+let timer_rec;
 const displayAllEffectsParams = false;
 let effects = [
   {
@@ -268,8 +269,8 @@ function init() {
   requestWakeLock();
   changeFullScreen();
   context = new AudioContext();
-  //myPeer = context.createMediaStreamDestination();
-  myPeer = context.destination;
+  myPeer = context.createMediaStreamDestination();
+  //myPeer = context.destination;
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
