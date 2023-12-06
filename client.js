@@ -208,12 +208,29 @@ let effects = [
   },
   {
     name: "filter",
-    title: "FILTER",
+    title: "FILTER (HIGH-CUT)",
     device: {},
     div: {},
-    activ: false,
-    visible: false,
-    userParams: []
+    activ: true,
+    visible: true,
+    userParams: [
+      {
+        name: "hi-cut",
+        title: "hi-cut",
+        defaultValue: 1200.0,
+        param: {},
+        visible: true,
+        type: "real"
+      },
+      {
+        name: "lo-cut",
+        title: "lo-cut",
+        defaultValue: null,
+        param: {},
+        visible: false,
+        type: "real"
+      }
+    ]
   }
 ];
 
@@ -686,7 +703,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
       };
       if (userParam.visible){
         // PARAMS :
-        let paramGUI = createParamGUI(param, effect_title, userParam.type);
+        let paramGUI = createParamGUI(param, effect_title, userParam.type, effect_activ);
         
         // Store the slider and text by name so we can access them later
         let slider = paramGUI.slider;
@@ -824,7 +841,7 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
 
       if (userParam.type !== "bool"){
         // PARAMS :
-        let paramGUI = createParamGUI(param, param.name, userParam.type);
+        let paramGUI = createParamGUI(param, param.name, userParam.type, effect_activ);
         // Store the slider and text by name so we can access them later
         let slider = paramGUI.slider;
         uiElements[param.id] = { slider };
@@ -839,11 +856,15 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
 }
 
 
-function createParamGUI(param, effect_title, type){
+function createParamGUI(param, effect_title, type, activ){
   let sliderContainer = document.createElement("div");
   sliderContainer.setAttribute("name", effect_title + "div");
   sliderContainer.setAttribute("class", "div_slider");
-  sliderContainer.style.display = "none";
+  if (activ){
+    sliderContainer.style.display = "flex";
+  } else {
+    sliderContainer.style.display = "none";
+  };
   let label = document.createElement("label");
   let slider = document.createElement("input");
   sliderContainer.appendChild(slider);
