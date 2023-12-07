@@ -37,6 +37,7 @@ btn_effects.onclick = (ev)=>{
     effectsPan.style.visibility = "visible";
     btn_effects.style.backgroundColor = "#5c5c5c";
   }
+  context.resume(); // TODO
 }
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
@@ -129,7 +130,7 @@ let effects = [
         type: "real"
       },
     ],
-  }/*,
+  },/*
   {
     name: "pitchshift",
     title: "PITCH SHIFTER",
@@ -155,8 +156,8 @@ let effects = [
         type: "real"
       },
     ],
-  }*/,
-  {
+  },*/
+  /*{
     name: "freeze",
     title: "FREEZE AUTO",
     device: {},
@@ -173,6 +174,32 @@ let effects = [
         type: "bool"
       },
     ],
+  },*/
+  {
+    name: "filter",
+    title: "FILTER (HIGH-CUT)",
+    device: {},
+    div: {},
+    activ: true,
+    visible: true,
+    userParams: [
+      {
+        name: "hi-cut",
+        title: "hi-cut",
+        defaultValue: 1200.0,
+        param: {},
+        visible: true,
+        type: "real"
+      },
+      {
+        name: "lo-cut",
+        title: "lo-cut",
+        defaultValue: null,
+        param: {},
+        visible: false,
+        type: "real"
+      }
+    ]
   },
   {
     name: "sampler",
@@ -206,32 +233,6 @@ let effects = [
         visible: false,
         type: "real"
       }],
-  },
-  {
-    name: "filter",
-    title: "FILTER (HIGH-CUT)",
-    device: {},
-    div: {},
-    activ: true,
-    visible: true,
-    userParams: [
-      {
-        name: "hi-cut",
-        title: "hi-cut",
-        defaultValue: 1200.0,
-        param: {},
-        visible: true,
-        type: "real"
-      },
-      {
-        name: "lo-cut",
-        title: "lo-cut",
-        defaultValue: null,
-        param: {},
-        visible: false,
-        type: "real"
-      }
-    ]
   }
 ];
 
@@ -255,7 +256,9 @@ const constraints = {
     sampleSize: 16,
     noiseSuppression: false,
     echoCancellation: false,
-    channelCount: 1
+    channelCount: 1,
+    autoGainControl: true,
+    volume: 1
 },
   video: false,
 };
@@ -269,8 +272,8 @@ function init() {
   requestWakeLock();
   changeFullScreen();
   context = new AudioContext();
-  //myPeer = context.createMediaStreamDestination();
-  myPeer = context.destination;
+  myPeer = context.createMediaStreamDestination();
+  //myPeer = context.destination;
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
@@ -299,15 +302,18 @@ socket.on("create", function () {
       });
     }
   }
+  console.log(navigator.mediaDevices.getSupportedConstraints());
 
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then(function (stream) {
 
       source = context.createMediaStreamSource(stream);
-      
+      console.log(stream.getTracks()[0].getSettings());
+      context.suspend();
       effects_Setup(effects)
       .then(()=>{
+        context.resume();
         nodeConnection("auto");
         btn_effects.disabled = false;
         btn_effects.style.borderColor = "white";
@@ -315,6 +321,7 @@ socket.on("create", function () {
         btn_rec.style.borderColor = "white";
       })
       .catch(function (err) {
+        context.resume();
         console.log(`${err.name}, ${err.message}`);
         source.connect(analyser);
       })
@@ -445,7 +452,7 @@ function onReceiveChannelMessageCallback(event) {
       
       break;
     default :
-      console.log("Pas de scene...")
+      console.log("No scene...")
   }
 }
 
@@ -520,10 +527,10 @@ const requestWakeLock = async () => {
 
 document.addEventListener("visibilitychange", (event) => {
   if (document.visibilityState === "visible") {
-    //context.resume();
+    context.resume();
     requestWakeLock();
   } else {
-    //context.suspend();
+    context.suspend();
     btn_fullscreen.style.backgroundColor = "transparent";
     document.getElementById("fs1").style.display = 'inline-block';
     document.getElementById("fs2").style.display = 'none';
@@ -599,32 +606,13 @@ async function effects_Setup(effects) {
         }
         return;
     }
-    
-    // (Optional) Fetch the dependencies
-    let dependencies = [];
-    try {
-        const dependenciesResponse = await fetch("effects/dependencies.json");
-        dependencies = await dependenciesResponse.json();
-
-        // Prepend "export" to any file dependenciies
-        dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "export/" + d.file }) : d);
-    } catch (e) {}
-
+  
     // Create the device
     try {
         effects[i].device = await RNBO.createDevice({ context, patcher });
     } catch (err) {
-        if (typeof guardrails === "function") {
-            guardrails({ error: err });
-        } else {
-            throw err;
-        }
-        return;
+        alert(err);
     }
-
-    // (Optional) Load the samples
-    if (dependencies.length)
-        await effects[i].device.loadDataBufferDependencies(dependencies);
 
     // Connect the device to the web audio graph
     if (i > 0){
@@ -693,109 +681,28 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
 
   effect_div.appendChild(sliderContainer);
 
-  if (!displayAllEffectsParams){
-
-    userParams.forEach((userParam)=>{
-      let param = device.parameters.find(t=>t.name==userParam.name);
-      if (userParam.defaultValue!==null){
-        param.value = userParam.defaultValue;
-      } else {
-        userParam.defaultValue = param.value;
-      };
-      if (userParam.visible){
-        // PARAMS :
-        let paramGUI = createParamGUI(param, effect_title, userParam.type, effect_activ);
-        
-        // Store the slider and text by name so we can access them later
-        let slider = paramGUI.slider;
-        uiElements[param.id] = { slider };
-        
-        // Add the slider element
-        effect_div.appendChild(paramGUI.sliderContainer);
-      };
-    });
-
-  } else {
-    device.parameters.forEach(param => {
-      // Subpatchers also have params. If we want to expose top-level
-      // params only, the best way to determine if a parameter is top level
-      // or not is to exclude parameters with a '/' in them.
-      // You can uncomment the following line if you don't want to include subpatcher params
+  userParams.forEach((userParam)=>{
+    let param = device.parameters.find(t=>t.name==userParam.name);
+    if (userParam.defaultValue!==null){
+      param.value = userParam.defaultValue;
+    } else {
+      userParam.defaultValue = param.value;
+    };
+    if (userParam.visible){
+      // PARAMS :
+      let paramGUI = createParamGUI(param, effect_title, userParam.type, effect_activ);
       
-      //if (param.id.includes("/")) return;
-
-      // Create a label, an input slider and a value display
-      let label = document.createElement("label");
-      let slider = document.createElement("input");
-      let text = document.createElement("input");
-      let sliderContainer = document.createElement("div");
-      sliderContainer.appendChild(label);
-      sliderContainer.appendChild(slider);
-      sliderContainer.appendChild(text);
-
-      // Add a name for the label
-      label.setAttribute("name", param.name);
-      label.setAttribute("for", param.name);
-      label.setAttribute("class", "param-label");
-      label.textContent = `${param.name}: `;
-
-      // Make each slider reflect its parameter
-      slider.setAttribute("type", "range");
-      slider.setAttribute("class", "param-slider");
-      slider.setAttribute("id", param.id);
-      slider.setAttribute("name", param.name);
-      slider.setAttribute("min", param.min);
-      slider.setAttribute("max", param.max);
-      if (param.steps > 1) {
-          slider.setAttribute("step", (param.max - param.min) / (param.steps - 1));
-      } else {
-          slider.setAttribute("step", (param.max - param.min) / 1000.0);
-      }
-      slider.setAttribute("value", param.value);
-
-      // Make a settable text input display for the value
-      text.setAttribute("value", param.value.toFixed(1));
-      text.setAttribute("type", "text");
-
-      // Make each slider control its parameter
-      slider.addEventListener("pointerdown", () => {
-          isDraggingSlider = true;
-      });
-      slider.addEventListener("pointerup", () => {
-          isDraggingSlider = false;
-          slider.value = param.value;
-          text.value = param.value.toFixed(1);
-      });
-      slider.addEventListener("input", () => {
-          let value = Number.parseFloat(slider.value);
-          param.value = value;
-      });
-
-      // Make the text box input control the parameter value as well
-      text.addEventListener("keydown", (ev) => {
-          if (ev.key === "Enter") {
-              let newValue = Number.parseFloat(text.value);
-              if (isNaN(newValue)) {
-                  text.value = param.value;
-              } else {
-                  newValue = Math.min(newValue, param.max);
-                  newValue = Math.max(newValue, param.min);
-                  text.value = newValue;
-                  param.value = newValue;
-              }
-          }
-      });
-
       // Store the slider and text by name so we can access them later
+      let slider = paramGUI.slider;
       uiElements[param.id] = { slider };
-
+      
       // Add the slider element
-      effect_div.appendChild(sliderContainer);
-    });
-  };
+      effect_div.appendChild(paramGUI.sliderContainer);
+    };
+  });
+
   // Listen to parameter changes from the device
   autoChangeGUI(device, isDraggingSlider, uiElements);
-
 }
 
 function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
@@ -955,7 +862,6 @@ function onoffSampler(ev){
       }
       break;
   }
-  console.log("name = " + ev.target.id);
   const divs = document.getElementsByName(ev.target.id+"div");
   divs.forEach((div) => {
    div.style.display = (ev.target.checked) ? "flex" : "none";
@@ -964,7 +870,6 @@ function onoffSampler(ev){
 
 function autoChangeGUI(device, isDraggingSlider, uiElements){
   device.parameterChangeEvent.subscribe(param => {
-    console.log("Auto change param  :" + param.name);
     if (!isDraggingSlider){
       try{
           uiElements[param.id].slider.value = param.value;
@@ -975,12 +880,12 @@ function autoChangeGUI(device, isDraggingSlider, uiElements){
   });
 }
 
-function nodeConnection(mode){
-  source.disconnect(0);
+function nodeConnection(mode){ // TODO
+  source.disconnect();
   if (mode == "rec"){
     source.connect(analyser);
-    analyser.disconnect(0);
-    effects.forEach((effect)=>{effect.device.node.disconnect(0)});
+    analyser.disconnect();
+    effects.forEach((effect)=>{effect.device.node.disconnect()});
     let f_effects = effects.filter(t=>t.activ==true);
     if (f_effects.length == 0){
       source.connect(myPeer);
@@ -993,11 +898,11 @@ function nodeConnection(mode){
       source.connect(f_effects[f_effects.length-1].device.node);
     };
   } else if (mode == "off"){
-    source.disconnect(0);
-    analyser.disconnect(0);
+    source.disconnect();
+    analyser.disconnect();
   } else {
     analyser.connect(myPeer);
-    effects.forEach((effect)=>{effect.device.node.disconnect(0)});
+    effects.forEach((effect)=>{effect.device.node.disconnect()});
     let f_effects = effects.filter(t=>t.activ==true);
     if (f_effects.length == 0){
       source.connect(analyser);
@@ -1028,7 +933,7 @@ function recfunction(ev){
     rec.style.display = "none";
     trash.style.display = "none";
     mystop.style.display = "inline";
-    nodeConnection("rec");
+    nodeConnection("auto");
 
     timer_rec = setTimeout(()=>{
       streamVisualizer4Clients.setColor("white");
@@ -1097,4 +1002,5 @@ function recfunction(ev){
     nodeConnection("auto");
   }
   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
+  //nodeConnection("auto");
 }
