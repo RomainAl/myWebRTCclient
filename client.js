@@ -308,7 +308,7 @@ socket.on("create", function () {
       
       effects_Setup(effects)
       .then(()=>{
-        nodeConnection();
+        nodeConnection("auto");
         btn_effects.disabled = false;
         btn_effects.style.borderColor = "white";
         btn_rec.disabled = false;
@@ -520,10 +520,10 @@ const requestWakeLock = async () => {
 
 document.addEventListener("visibilitychange", (event) => {
   if (document.visibilityState === "visible") {
-    context.resume();
+    //context.resume();
     requestWakeLock();
   } else {
-    context.suspend();
+    //context.suspend();
     btn_fullscreen.style.backgroundColor = "transparent";
     document.getElementById("fs1").style.display = 'inline-block';
     document.getElementById("fs2").style.display = 'none';
@@ -927,7 +927,7 @@ function onoffEffect(ev){
    if (!ev.target.checked){
     // TODO INITIALISATION
    }
-   nodeConnection();
+   nodeConnection("auto");
    const divs = document.getElementsByName(ev.target.id+"div");
    divs.forEach((div) => {
     div.style.display = (ev.target.checked) ? "flex" : "none";
@@ -969,7 +969,7 @@ function autoChangeGUI(device, isDraggingSlider, uiElements){
       try{
           uiElements[param.id].slider.value = param.value;
       } catch (err){
-        console.log("uiElements : " + param.name + err);
+        // TODO
       }
     }
   });
@@ -1046,7 +1046,7 @@ function recfunction(ev){
       divs.forEach((div) => {
        div.style.display = "none";
       });
-      nodeConnection();
+      nodeConnection("auto");
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else if (recTimeCount != 0){
     streamVisualizer4Clients.setColor("white");
@@ -1070,7 +1070,7 @@ function recfunction(ev){
       divs.forEach((div) => {
        div.style.display = "none";
       });
-      nodeConnection();
+      nodeConnection("auto");
     }, 100.0);
   } else {
     streamVisualizer4Clients.setColor("white");
@@ -1094,7 +1094,7 @@ function recfunction(ev){
     divs.forEach((div) => {
      div.style.display = "none";
     });
-    nodeConnection();
+    nodeConnection("auto");
   }
   sampler.device.parameters.find(param=>param.name=="loop_start_point").value = 1.0;
 }
