@@ -272,8 +272,8 @@ function init() {
   requestWakeLock();
   changeFullScreen();
   context = new AudioContext();
-  myPeer = context.createMediaStreamDestination();
-  //myPeer = context.destination;
+  //myPeer = context.createMediaStreamDestination();
+  myPeer = context.destination;
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
@@ -431,7 +431,7 @@ function onReceiveChannelMessageCallback(event) {
     case 2:
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
-      document.getElementById("overlay").remove();
+      //document.getElementById("overlay").remove(); // TODO
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
@@ -441,7 +441,7 @@ function onReceiveChannelMessageCallback(event) {
       break;
     case 3:
       adminVideo.remove();
-      document.getElementById("overlay").remove();
+      //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
       atablee.style.background = "white";
