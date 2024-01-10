@@ -278,67 +278,7 @@ function init() {
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
   analyser.connect(myPeer);
-  //socket.emit("join", roomName, false);
-  if (navigator.mediaDevices.getUserMedia === undefined) {
-    navigator.mediaDevices.getUserMedia = function(constraints) {
-  
-      // First get ahold of the legacy getUserMedia, if present
-      var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  
-      // Some browsers just don't implement it - return a rejected promise with an error
-      // to keep a consistent interface
-      if (!getUserMedia) {
-        return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
-      }
-  
-      // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-      return new Promise(function(resolve, reject) {
-        getUserMedia.call(navigator, constraints, resolve, reject);
-      });
-    }
-  }
-  console.log(navigator.mediaDevices.getSupportedConstraints());
-
-  navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then(function (stream) {
-
-      source = context.createMediaStreamSource(stream);
-      console.log(stream.getTracks()[0].getSettings());
-      context.suspend();
-      effects_Setup(effects)
-      .then(()=>{
-        context.resume();
-        nodeConnection("auto");
-        btn_effects.disabled = false;
-        btn_effects.style.borderColor = "white";
-        btn_rec.disabled = false;
-        btn_rec.style.borderColor = "white";
-      })
-      .catch(function (err) {
-        context.resume();
-        console.log(`${err.name}, ${err.message}`);
-        source.connect(analyser);
-      })
-
-      const audioTracks = stream.getAudioTracks();
-      if (audioTracks.length > 0) {
-        console.log(`Using Audio device: ${audioTracks[0].label}`);
-      }
-      streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
-      console.log(streamVisualizer4Clients);
-      streamVisualizer4Clients.start();
-      document.getElementById( 'overlay' ).remove();
-      myGUI.style.display = "flex";
-
-    })
-    .catch(function (err) {
-      document.getElementById( 'titles' ).remove();
-      document.getElementById( 'err' ).style.display = "inline-block";
-      document.getElementById( 'microon' ).style.display = "none";
-      document.getElementById( 'microoff' ).style.display = "inline-block";
-      console.log(err);
-    });
+  socket.emit("join", roomName, false);
 };
 
 // Triggered when a room is succesfully created.
