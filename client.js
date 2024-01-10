@@ -2,7 +2,8 @@ let socket;
 try {
   //socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
   //socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
-  socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
+  socket = io.connect("https://mywrtc-unuojesj3q-od.a.run.app");
+  console.log("chr ok");
   //socket = io.connect("https://192.168.10.2:1337");
 } catch(err){
   alert(err);
