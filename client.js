@@ -288,7 +288,6 @@ function init() {
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
-  analyser.connect(myPeer);
   socket.emit("join", roomName, false);
 };
 
@@ -892,50 +891,26 @@ function autoChangeGUI(device, isDraggingSlider, uiElements){
 function nodeConnection(mode){ // TODO
   source.disconnect(0);
   analyser.disconnect(0);
-  //effects[0].device.node.disconnect();
-  //effects.forEach((effect)=>{effect.device.node.disconnect()});
-  // if (mode == "rec"){
-  //   source.connect(analyser);
-  //   analyser.disconnect();
-  //   effects.forEach((effect)=>{effect.device.node.disconnect()});
-  //   console.log(effects);
-  //   let f_effects = effects.filter(t=>t.activ==true);
-  //   if (f_effects.length == 0){
-  //     source.connect(myPeer);
-  //   } else if (f_effects.length == 1){
-  //     source.connect(f_effects[0].device.node);
-  //   } else {
-  //     for (i = 1; i < f_effects.length; i++){
-  //       f_effects[i].device.node.connect(f_effects[i-1].device.node);
-  //     }
-  //     source.connect(f_effects[f_effects.length-1].device.node);
-  //   };
-  // } else if (mode == "off"){
-  //   source.disconnect();
-  //   analyser.disconnect();
-  // } else {
-    //effects.forEach((effect)=>{effect.device.node.disconnect()});
-    effects.filter(t=>t.activ==false).forEach((effect)=>{effect.gain.disconnect()});
-    let f_effects = effects.filter(t=>t.activ==true);
-    console.log(effects);
-    if (f_effects.length == 0){
-      source.connect(analyser);
-      console.log('0 effect');
-    } else if (f_effects.length == 1){
-      f_effects[0].gain.connect(analyser);
-      source.connect(f_effects[0].device.node);
-      console.log('1 effect');
-    } else {
-      console.log(f_effects.length+' effects');
-      f_effects[0].gain.connect(analyser);
-      for (i = 1; i < f_effects.length; i++){
-        f_effects[i].gain.connect(f_effects[i-1].device.node);
-      }
-      source.connect(f_effects[f_effects.length-1].device.node);
-    };
-    console.log('Reco analyser');
-    analyser.connect(myPeer);
-  // };
+  effects.filter(t=>t.activ==false).forEach((effect)=>{effect.gain.disconnect()});
+  let f_effects = effects.filter(t=>t.activ==true);
+  console.log(effects);
+  if (f_effects.length == 0){
+    source.connect(analyser);
+    console.log('0 effect');
+  } else if (f_effects.length == 1){
+    f_effects[0].gain.connect(analyser);
+    source.connect(f_effects[0].device.node);
+    console.log('1 effect');
+  } else {
+    console.log(f_effects.length+' effects');
+    f_effects[0].gain.connect(analyser);
+    for (i = 1; i < f_effects.length; i++){
+      f_effects[i].gain.connect(f_effects[i-1].device.node);
+    }
+    source.connect(f_effects[f_effects.length-1].device.node);
+  };
+  console.log('Reco analyser');
+  analyser.connect(myPeer);
 }
 
 let recTimeCount = 0;
@@ -953,7 +928,13 @@ function recfunction(ev){
     rec.style.display = "none";
     trash.style.display = "none";
     mystop.style.display = "inline";
-    nodeConnection("auto");
+    source.disconnect(0);
+    analyser.disconnect(0);
+    effects.forEach((effect)=>{effect.gain.disconnect()});
+    source.connect(analyser);
+    analyser.connect(sampler.device.node);
+    sampler.gain.connect(myPeer);
+
 
     timer_rec = setTimeout(()=>{
       streamVisualizer4Clients.setColor("white");
