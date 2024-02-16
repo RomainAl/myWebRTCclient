@@ -3,6 +3,7 @@ try {
   //socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
   //socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
   socket = io.connect("https://mywrtc-unuojesj3q-od.a.run.app");
+  //socket = io.connect("https://192.168.10.2:1337");
   console.log("chr ok");
   //socket = io.connect("https://192.168.10.2:1337");
 } catch(err){
@@ -38,7 +39,7 @@ btn_effects.onclick = (ev)=>{
     effectsPan.style.visibility = "visible";
     btn_effects.style.backgroundColor = "#5c5c5c";
   }
-  context.resume(); // TODO
+  //context.resume(); // TODO
 }
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
@@ -55,11 +56,11 @@ let sendChannel;
 let userCanvasStream = userCanvas.captureStream(0); // BECAUSE ON SAFARI, NEED TO HAVE VIDEO STREAM TO RECEIVE A VIDEO STREAM !
 let wakeLock = null;
 let noSleep = new NoSleep();
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
+let AudioContext = window.AudioContext || window.webkitAudioContext;
 let context;
 let analyser;
 let source;
-let filter;
+let gain;
 let myPeer;
 let timer_rec;
 const displayAllEffectsParams = false;
@@ -71,6 +72,7 @@ let effects = [
     div: {},
     activ: false,
     visible: true,
+    gain: null,
     userParams: [
     {
       name: "input",
@@ -97,11 +99,12 @@ let effects = [
     div: {},
     activ: false,
     visible: true,
+    gain: null,
     userParams: [
     {
       name: "down-sample",
       title: "DOWN-SAMPLE",
-      defaultValue: null,
+      defaultValue: 10,
       param: {},
       visible: true,
       type: "real"
@@ -114,6 +117,7 @@ let effects = [
     div: {},
     activ: false,
     visible: true,
+    gain: null,
     userParams: [
       {
         name: "decay",
@@ -131,51 +135,53 @@ let effects = [
         type: "real"
       },
     ],
-  },/*
-  {
-    name: "pitchshift",
-    title: "PITCH SHIFTER",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    userParams: [
-      {
-        name: "transp",
-        title: "TRANSPOSITION",
-        defaultValue: null,
-        param: {},
-        visible: true,
-        type: "real"
-      },
-      {
-        name: "mix",
-        title: "MIX",
-        defaultValue: 100.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },
-    ],
-  },*/
-  /*{
-    name: "freeze",
-    title: "FREEZE AUTO",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    userParams: [
-      {
-        name: "auto",
-        title: "AUTO",
-        defaultValue: 100.0,
-        param: {},
-        visible: false,
-        type: "bool"
-      },
-    ],
-  },*/
+  },
+  // {
+  //   name: "pitchshift",
+  //   title: "PITCH SHIFTER",
+  //   device: {},
+  //   div: {},
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "transp",
+  //       title: "TRANSPOSITION",
+  //       defaultValue: null,
+  //       param: {},
+  //       visible: true,
+  //       type: "real"
+  //     },
+  //     {
+  //       name: "mix",
+  //       title: "MIX",
+  //       defaultValue: 100.0,
+  //       param: {},
+  //       visible: false,
+  //       type: "real"
+  //     },
+  //   ],
+  // },
+  // {
+  //   name: "freeze",
+  //   title: "FREEZE AUTO",
+  //   device: {},
+  //   div: {},
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "auto",
+  //       title: "AUTO",
+  //       defaultValue: 100.0,
+  //       param: {},
+  //       visible: false,
+  //       type: "bool"
+  //     },
+  //   ],
+  // },
   {
     name: "filter",
     title: "FILTER (HIGH-CUT)",
@@ -183,6 +189,7 @@ let effects = [
     div: {},
     activ: true,
     visible: true,
+    gain: null,
     userParams: [
       {
         name: "hi-cut",
@@ -209,6 +216,7 @@ let effects = [
     div: {},
     activ: false,
     visible: false,
+    gain: null,
     userParams: [
       {
         name: "pitch",
@@ -271,9 +279,11 @@ startButton.addEventListener( 'click', function () {
 
 function init() {
   requestWakeLock();
-  changeFullScreen();
+  //changeFullScreen();
   context = new AudioContext();
   //myPeer = context.createMediaStreamDestination();
+  gain = context.createGain();
+  gain.gain.value = 0.1;
   myPeer = context.destination;
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
@@ -324,6 +334,7 @@ socket.on("create", function () {
       .catch(function (err) {
         context.resume();
         console.log(`${err.name}, ${err.message}`);
+        alert('Sorry, impossible for this smartphone to access sound effects !');
         source.connect(analyser);
       })
 
@@ -531,10 +542,10 @@ document.addEventListener("visibilitychange", (event) => {
     context.resume();
     requestWakeLock();
   } else {
-    context.suspend();
     btn_fullscreen.style.backgroundColor = "transparent";
     document.getElementById("fs1").style.display = 'inline-block';
     document.getElementById("fs2").style.display = 'none';
+    context.suspend();
   }
 });
 
@@ -582,12 +593,12 @@ async function effects_Setup(effects) {
     try {
         response = await fetch("./effects/" + effects[i].name + ".export.json");
         patcher = await response.json();
-        if (!window.RNBO) {
+        //if (!window.RNBO) {
             // Load RNBO script dynamically
             // Note that you can skip this by knowing the RNBO version of your patch
             // beforehand and just include it using a <script> tag
             await loadRNBOScript(patcher.desc.meta.rnboversion);
-        }
+        //}
 
     } catch (err) {
         const errorContext = {
@@ -615,12 +626,9 @@ async function effects_Setup(effects) {
         alert(err);
     }
 
+    effects[i].gain = context.createGain();
     // Connect the device to the web audio graph
-    if (i > 0){
-      effects[i].device.node.connect(effects[i-1].device.node);
-    } else {
-      effects[i].device.node.connect(myPeer);
-    }
+    effects[i].device.node.connect(effects[i].gain);
 
     if (effects[i].visible){
       makeGUI(effects[i].device, effects[i].userParams, effects[i].title, effects[i].activ);
@@ -882,43 +890,54 @@ function autoChangeGUI(device, isDraggingSlider, uiElements){
 }
 
 function nodeConnection(mode){ // TODO
-  source.disconnect();
-  if (mode == "rec"){
-    source.connect(analyser);
-    analyser.disconnect();
-    effects.forEach((effect)=>{effect.device.node.disconnect()});
+  source.disconnect(0);
+  analyser.disconnect(0);
+  //effects[0].device.node.disconnect();
+  //effects.forEach((effect)=>{effect.device.node.disconnect()});
+  // if (mode == "rec"){
+  //   source.connect(analyser);
+  //   analyser.disconnect();
+  //   effects.forEach((effect)=>{effect.device.node.disconnect()});
+  //   console.log(effects);
+  //   let f_effects = effects.filter(t=>t.activ==true);
+  //   if (f_effects.length == 0){
+  //     source.connect(myPeer);
+  //   } else if (f_effects.length == 1){
+  //     source.connect(f_effects[0].device.node);
+  //   } else {
+  //     for (i = 1; i < f_effects.length; i++){
+  //       f_effects[i].device.node.connect(f_effects[i-1].device.node);
+  //     }
+  //     source.connect(f_effects[f_effects.length-1].device.node);
+  //   };
+  // } else if (mode == "off"){
+  //   source.disconnect();
+  //   analyser.disconnect();
+  // } else {
+    //effects.forEach((effect)=>{effect.device.node.disconnect()});
+    effects.filter(t=>t.activ==false).forEach((effect)=>{effect.gain.disconnect()});
     let f_effects = effects.filter(t=>t.activ==true);
-    if (f_effects.length == 0){
-      source.connect(myPeer);
-    } else if (f_effects.length == 1){
-      source.connect(f_effects[0].device.node);
-    } else {
-      for (i = 1; i < f_effects.length; i++){
-        f_effects[i].device.node.connect(f_effects[i-1].device.node);
-      }
-      source.connect(f_effects[f_effects.length-1].device.node);
-    };
-  } else if (mode == "off"){
-    source.disconnect();
-    analyser.disconnect();
-  } else {
-    analyser.connect(myPeer);
-    effects.forEach((effect)=>{effect.device.node.disconnect()});
-    let f_effects = effects.filter(t=>t.activ==true);
+    console.log(effects);
     if (f_effects.length == 0){
       source.connect(analyser);
+      console.log('0 effect');
     } else if (f_effects.length == 1){
-      f_effects[0].device.node.connect(analyser);
+      f_effects[0].gain.connect(analyser);
       source.connect(f_effects[0].device.node);
+      console.log('1 effect');
     } else {
-      f_effects[0].device.node.connect(analyser);
+      console.log(f_effects.length+' effects');
+      f_effects[0].gain.connect(analyser);
       for (i = 1; i < f_effects.length; i++){
-        f_effects[i].device.node.connect(f_effects[i-1].device.node);
+        f_effects[i].gain.connect(f_effects[i-1].device.node);
       }
       source.connect(f_effects[f_effects.length-1].device.node);
     };
-  };
+    console.log('Reco analyser');
+    analyser.connect(myPeer);
+  // };
 }
+
 let recTimeCount = 0;
 function recfunction(ev){
   let sampler = effects.find(t=>t.name == "sampler");

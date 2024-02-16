@@ -1,7 +1,9 @@
 //const socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
 //const socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
-const socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
-console.log("lulu ok");
+//const socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
+const socket = io.connect("https://mywrtc-unuojesj3q-od.a.run.app");
+//const socket = io.connect("https://192.168.10.2:1337");
+console.log("chr ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
