@@ -91,7 +91,7 @@ let analyser;
 let cutFreq;
 
 function startContext(event) {
-  console.log(navigator.mediaDevices.enumerateDevices());
+  //console.log(navigator.mediaDevices.enumerateDevices());
   ctx = new AudioContext();
   ctx.destination.channelInterpretation = 'discrete';
   ctx.destination.channelCount = ctx.destination.maxChannelCount;
@@ -323,7 +323,7 @@ function OnTrackFunction(event) {
     clientdiv.style.padding = "10px";
     clientdiv.setAttribute("name", 'div' + currentClientId);
     let audio = document.createElement("audio");
-    audio.setAttribute("name", 'audio' + currentClientId);
+    audio.setAttribute("name", 'audio' + currentClientId); // TODO ? Why audio needed ??
     audio.controls = false;
     audio.autoplay = true;
     audio.muted = true;
@@ -406,6 +406,14 @@ function OnTrackFunction(event) {
         btn_videos.appendChild(button);
       }
     }
+    let audioCrac= document.createElement("audio");
+    audioCrac.setAttribute("name", 'audioCrac' + currentClientId);
+    audioCrac.controls = true;
+    audioCrac.loop = true;
+    audioCrac.autoplay = false;
+    audioCrac.muted = false;
+    audioCrac.src = './audios/AUDIO01.wav';
+    clientdiv.appendChild(audioCrac);
 
     let divStats = document.createElement("div");
     divStats.setAttribute("name", 'divStats'+ currentClientId);
@@ -455,6 +463,7 @@ function sendData(event) {
       break;
     case "btn_scene3":
       data = {"scene": 3};
+      change2Crac();
       break;
     default:
       console.log("Error : no scene found !")
@@ -477,6 +486,19 @@ function onSendChannelMessageCallback(event) {
   console.log('Received Message');
 }
 
+function change2Crac(){
+  clientS.forEach((client)=>{
+    let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
+    let audioSource = ctx.createMediaElementSource(audioCrac);
+    let myPeer = ctx.createMediaStreamDestination();
+    audioSource.connect(myPeer);
+    let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+    audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+    let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+    client.rtcPeerConnection.removeTrack(videoSender);
+  });
+}
+
 function changeVid(event){
   const clientId = event.target.name.substring(3);
   let videoelement = document.getElementsByName('video' + clientId)[0];
@@ -494,6 +516,9 @@ function changeVid(event){
     audioSender.replaceTrack(audioTrack);
     });
 }
+
+
+
 function changeChan(event){
   const clientId = event.target.name.substring(3);
   let client = clientS.find(t=>t.clientId==clientId);
@@ -554,6 +579,9 @@ function changeBackgroundColor(event){
       data = {"scene": 4};
       for (let i = 0; i < randNumber; i++){
         clientS[(iterKey+i) % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+        let audioCrac = document.getElementsByName('audioCrac'+clientS[(iterKey+i) % clientS.length].clientId)[0];
+        audioCrac.play();
+        setTimeout(()=>{audioCrac.pause()}, 1000);
       }
     } catch (error) {
       console.error(error);

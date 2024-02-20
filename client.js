@@ -451,13 +451,16 @@ function onReceiveChannelMessageCallback(event) {
       userCanvas.remove();
       break;
     case 3:
-      adminVideo.remove();
+      //adminVideo.remove();
+      adminVideo.style.display = "none";
       //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
-      atablee.style.background = "white";
+      setTimeout(()=>{
+        atablee.style.background = "white";
+      }, 100);
       if (navigator.vibrate){ navigator.vibrate([400, 0, 300, 0, 200, 0, 100].map(function(x) { return (x+200) * Math.random(); })); }
-      setTimeout(()=>{atablee.style.background = "black";}, 100);
+      setTimeout(()=>{atablee.style.background = "black";}, 1000);
       break;
     case 5:
       
