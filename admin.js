@@ -21,6 +21,8 @@ for (let i = 0; i < 15; i++){
 const btn_start = document.getElementById('btn_start');
 const btn_reload = document.getElementById('btn_reload');
 const btn_reco = document.getElementById('btn_reco');
+// const btn_midi = document.getElementById('btn_midi');
+// const slider_midi = document.getElementById('slider_midi');
 const btn_scene1 = document.getElementById('btn_scene1');
 const btn_scene2 = document.getElementById('btn_scene2');
 const btn_scene3 = document.getElementById('btn_scene3');
@@ -28,6 +30,22 @@ const btn_scene3 = document.getElementById('btn_scene3');
 btn_start.onclick = startContext;
 btn_reload.onclick = sendData;
 btn_reco.onclick = sendData;
+// btn_midi.onclick = ()=>{
+//   if(navigator.requestMIDIAccess){
+//     navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
+//   }
+//   else {
+//     alert("No MIDI support in your browser.");
+//   }
+// };
+// slider_midi.onchange = ()=>{
+//   let outputs = midi.outputs
+//   outputs.forEach((output)=>{
+//     const noteOnMessage = [0x90, 90, 0x7f];
+//     output.send(noteOnMessage);
+//   })
+// }
+
 btn_scene1.onclick = sendData;
 btn_scene2.onclick = sendData;
 btn_scene3.onclick = sendData;
@@ -548,8 +566,7 @@ function changeBackgroundColor(event){
 /// MIDI SETTINGS :
 var log = console.log.bind(console), keyData = document.getElementById('key_data'), 
 				deviceInfoInputs = document.getElementById('inputs'), deviceInfoOutputs = document.getElementById('outputs'), midi;
-        
-// request MIDI access
+
 if(navigator.requestMIDIAccess){
   navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
 }
@@ -616,7 +633,6 @@ function onMIDIMessage(event){
   } catch (error) {
     console.error(error);
   }
-
 }
 
 function logger(container, label, data){

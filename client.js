@@ -163,25 +163,25 @@ let effects = [
   //     },
   //   ],
   // },
-  // {
-  //   name: "freeze",
-  //   title: "FREEZE AUTO",
-  //   device: {},
-  //   div: {},
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "auto",
-  //       title: "AUTO",
-  //       defaultValue: 100.0,
-  //       param: {},
-  //       visible: false,
-  //       type: "bool"
-  //     },
-  //   ],
-  // },
+  {
+    name: "freeze",
+    title: "FREEZE AUTO",
+    device: {},
+    div: {},
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "auto",
+        title: "AUTO",
+        defaultValue: 100.0,
+        param: {},
+        visible: false,
+        type: "bool"
+      },
+    ],
+  },
   {
     name: "filter",
     title: "FILTER (HIGH-CUT)",
