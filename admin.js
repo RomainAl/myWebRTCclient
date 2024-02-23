@@ -269,6 +269,7 @@ socket.on("offer", function (offer, clientId) {
       sendChannel.onopen = onSendChannelStateChange;
       sendChannel.onmessage = onSendChannelMessageCallback;
       sendChannel.onclose = onSendChannelStateChange;
+      myPeer = ctx.createMediaStreamDestination();
       let client = {
         rtcDataSendChannel: sendChannel,
         rtcPeerConnection: rtcPeerConnection,
@@ -278,7 +279,8 @@ socket.on("offer", function (offer, clientId) {
         source: source,
         gainNode: gainNode,
         cutFreq: cutFreq,
-        analyser: analyser
+        analyser: analyser,
+        audioCrac_myPeer: myPeer
       };
       clientS.push(client);
   })
@@ -412,8 +414,17 @@ function OnTrackFunction(event) {
     audioCrac.loop = true;
     audioCrac.autoplay = false;
     audioCrac.muted = false;
-    audioCrac.src = './audios/AUDIO01.wav';
+    audioCrac.src = './audios/audio1.wav';
     clientdiv.appendChild(audioCrac);
+
+    let audioCrac2= document.createElement("audio");
+    audioCrac2.setAttribute("name", 'audioCrac2' + currentClientId);
+    audioCrac2.controls = true;
+    audioCrac2.loop = true;
+    audioCrac2.autoplay = false;
+    audioCrac2.muted = false;
+    audioCrac2.src = './audios/audio2.wav';
+    clientdiv.appendChild(audioCrac2);
 
     let divStats = document.createElement("div");
     divStats.setAttribute("name", 'divStats'+ currentClientId);
@@ -490,10 +501,14 @@ function change2Crac(){
   clientS.forEach((client)=>{
     let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
     let audioSource = ctx.createMediaElementSource(audioCrac);
-    let myPeer = ctx.createMediaStreamDestination();
-    audioSource.connect(myPeer);
+    audioSource.connect(client.audioCrac_myPeer);
+    audioCrac = document.getElementsByName('audioCrac2' + client.clientId)[0];
+    audioSource = ctx.createMediaElementSource(audioCrac);
+    audioSource.connect(client.audioCrac_myPeer);
+    audioCrac.playbackRate = Math.random()+0.1;
+    audioCrac.play();
     let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-    audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+    audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
     let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
     client.rtcPeerConnection.removeTrack(videoSender);
   });
@@ -580,8 +595,9 @@ function changeBackgroundColor(event){
       for (let i = 0; i < randNumber; i++){
         clientS[(iterKey+i) % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
         let audioCrac = document.getElementsByName('audioCrac'+clientS[(iterKey+i) % clientS.length].clientId)[0];
+        audioCrac.playbackRate = Math.random()+0.1;
         audioCrac.play();
-        setTimeout(()=>{audioCrac.pause()}, 1000);
+        setTimeout(()=>{audioCrac.pause()}, 1500);
       }
     } catch (error) {
       console.error(error);
