@@ -397,7 +397,8 @@ socket.on("candidate", function (candidate) {
 });
 
 socket.on("disconnect", (reason) => {
-  console.log('Socket disconnected at ' + Date.now())
+  console.log('Socket disconnected at ')
+  console.log(Date.now());
   console.log(reason);
 });
 
