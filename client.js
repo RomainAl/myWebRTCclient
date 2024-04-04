@@ -6,7 +6,6 @@ try {
   socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
   //socket = io.connect("https://192.168.10.2:1337");
   console.log("flyio ok");
-  console.log(socket); 
   //socket = io.connect("https://192.168.10.2:1337");
 } catch(err){
   alert(err);
@@ -314,14 +313,12 @@ socket.on("create", function () {
       });
     }
   }
-  console.log(navigator.mediaDevices.getSupportedConstraints());
 
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then(function (stream) {
 
       source = context.createMediaStreamSource(stream);
-      console.log(stream.getTracks()[0].getSettings());
       context.suspend();
       effects_Setup(effects)
       .then(()=>{
@@ -344,7 +341,6 @@ socket.on("create", function () {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
       }
       streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
-      console.log(streamVisualizer4Clients);
       streamVisualizer4Clients.start();
       document.getElementById( 'overlay' ).remove();
       myGUI.style.display = "flex";
@@ -398,6 +394,11 @@ socket.on("answer", function (answer) {
 socket.on("candidate", function (candidate) {
   let icecandidate = new RTCIceCandidate(candidate);
   rtcPeerConnection.addIceCandidate(icecandidate);
+});
+
+socket.on("disconnect", (reason) => {
+  console.log('Socket disconnected : ')
+  console.log(reason);
 });
 
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
@@ -901,20 +902,16 @@ function nodeConnection(mode){ // TODO
   console.log(effects);
   if (f_effects.length == 0){
     source.connect(analyser);
-    console.log('0 effect');
   } else if (f_effects.length == 1){
     f_effects[0].gain.connect(analyser);
     source.connect(f_effects[0].device.node);
-    console.log('1 effect');
   } else {
-    console.log(f_effects.length+' effects');
     f_effects[0].gain.connect(analyser);
     for (i = 1; i < f_effects.length; i++){
       f_effects[i].gain.connect(f_effects[i-1].device.node);
     }
     source.connect(f_effects[f_effects.length-1].device.node);
   };
-  console.log('Reco analyser');
   analyser.connect(myPeer);
 }
 
