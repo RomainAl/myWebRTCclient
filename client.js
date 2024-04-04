@@ -188,8 +188,8 @@ let effects = [
     title: "FILTER (HIGH-CUT)",
     device: {},
     div: {},
-    activ: true,
-    visible: true,
+    activ: false,
+    visible: false,
     gain: null,
     userParams: [
       {
@@ -899,7 +899,6 @@ function nodeConnection(mode){ // TODO
   analyser.disconnect(0);
   effects.filter(t=>t.activ==false).forEach((effect)=>{effect.gain.disconnect()});
   let f_effects = effects.filter(t=>t.activ==true);
-  console.log(effects);
   if (f_effects.length == 0){
     source.connect(analyser);
   } else if (f_effects.length == 1){
