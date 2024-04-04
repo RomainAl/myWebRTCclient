@@ -5,6 +5,7 @@ try {
   socket = io.connect("https://mywrtc-unuojesj3q-od.a.run.app");
   //socket = io.connect("https://192.168.10.2:1337");
   console.log("chr ok");
+  console.log(socket); 
   //socket = io.connect("https://192.168.10.2:1337");
 } catch(err){
   alert(err);
@@ -293,7 +294,7 @@ function init() {
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
-
+  console.log("Socket receive create");
   if (navigator.mediaDevices.getUserMedia === undefined) {
     navigator.mediaDevices.getUserMedia = function(constraints) {
   
