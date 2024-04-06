@@ -247,12 +247,21 @@ let effects = [
 ];
 
 // Contains the stun server URL we will be using.
-let iceServers = {
+/*let iceServers = {
   iceServers: [
     { urls: "stun:stun.services.mozilla.com" },
     { urls: "stun:stun.l.google.com:19302" },
   ],
-};
+};*/
+let iceServers;
+async function create_iceServers() {
+  const response = 
+    await window.fetch("https://ludicke.metered.live/api/v1/turn/credentials?apiKey=5384caa827c45b8e5c34576216e80a7430ce");
+
+  // Saving the response in the iceServers array
+  iceServers = await response.json();
+}
+create_iceServers();
 
 const offerOptions = {
   offerToReceiveAudio: 1,
@@ -279,11 +288,12 @@ startButton.addEventListener( 'click', function () {
 } );
 
 function init() {
+  console.log(iceServers);
   requestWakeLock();
   //changeFullScreen();
   context = new AudioContext();
-  //myPeer = context.createMediaStreamDestination();
-  myPeer = context.destination;
+  myPeer = context.createMediaStreamDestination();
+  //myPeer = context.destination;
   gain = context.createGain();
   gain.gain.value = 0.1;
   analyser = context.createAnalyser();

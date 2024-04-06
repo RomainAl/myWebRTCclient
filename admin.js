@@ -1,9 +1,9 @@
 //const socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
 //const socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
 //const socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
-const socket = io.connect("https://mywrtc-unuojesj3q-od.a.run.app");
+const   socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
 //const socket = io.connect("https://192.168.10.2:1337");
-console.log("chr ok");
+console.log("flyio ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
@@ -63,12 +63,21 @@ const NVideo = 21;
 const roomName = "atablee";
 let currentClientId;
 
-let iceServers = {
+/*let iceServers = {
   iceServers: [
     { urls: "stun:stun.services.mozilla.com" },
     { urls: "stun:stun.l.google.com:19302" },
   ],
-};
+};*/
+let iceServers;
+async function create_iceServers() {
+  const response = 
+    await window.fetch("https://ludicke.metered.live/api/v1/turn/credentials?apiKey=5384caa827c45b8e5c34576216e80a7430ce");
+
+  // Saving the response in the iceServers array
+  iceServers = await response.json();
+}
+create_iceServers();
 
 console.log(navigator.mediaDevices.enumerateDevices());
 
