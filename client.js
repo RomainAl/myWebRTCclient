@@ -137,33 +137,33 @@ let effects = [
       },
     ],
   },
-  // {
-  //   name: "pitchshift",
-  //   title: "PITCH SHIFTER",
-  //   device: {},
-  //   div: {},
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "transp",
-  //       title: "TRANSPOSITION",
-  //       defaultValue: null,
-  //       param: {},
-  //       visible: true,
-  //       type: "real"
-  //     },
-  //     {
-  //       name: "mix",
-  //       title: "MIX",
-  //       defaultValue: 100.0,
-  //       param: {},
-  //       visible: false,
-  //       type: "real"
-  //     },
-  //   ],
-  // },
+   {
+     name: "pitchshift",
+     title: "PITCH SHIFTER",
+     device: {},
+     div: {},
+     activ: false,
+     visible: true,
+     gain: null,
+     userParams: [
+       {
+         name: "transp",
+         title: "TRANSPOSITION",
+         defaultValue: null,
+         param: {},
+         visible: true,
+         type: "real"
+       },
+       {
+         name: "mix",
+         title: "MIX",
+         defaultValue: 100.0,
+         param: {},
+         visible: false,
+         type: "real"
+       },
+     ],
+   },
   // {
   //   name: "freeze",
   //   title: "FREEZE AUTO",
@@ -189,7 +189,7 @@ let effects = [
     device: {},
     div: {},
     activ: false,
-    visible: false,
+    visible: true,
     gain: null,
     userParams: [
       {
@@ -205,7 +205,7 @@ let effects = [
         title: "lo-cut",
         defaultValue: null,
         param: {},
-        visible: false,
+        visible: true,
         type: "real"
       }
     ]

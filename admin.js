@@ -667,10 +667,26 @@ function onMIDIMessage(event){
 			break;
 	}*/
 	
-	log('data', data, 'cmd', cmd, 'channel', channel);
+	//log('data', data, 'cmd', cmd, 'channel', channel);
 	logger(keyData, 'key data', data);
 
-  try {
+  if ((note == 46)&&(velocity==127)) {
+    let randNumber = Math.max(Math.round(Math.random()*clientS.length), 1);
+    try {
+      data = {"scene": 4};
+      for (let i = 0; i < randNumber; i++){
+        clientS[(iterKey+i) % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+        let audioCrac = document.getElementsByName('audioCrac'+clientS[(iterKey+i) % clientS.length].clientId)[0];
+        audioCrac.playbackRate = Math.random()+0.1;
+        audioCrac.play();
+        setTimeout(()=>{audioCrac.pause()}, 1500);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+    iterKey+=randNumber;
+  }
+  /*try {
     data = {"scene": 4};
     switch (note){
       case 60 :
@@ -685,7 +701,7 @@ function onMIDIMessage(event){
     }
   } catch (error) {
     console.error(error);
-  }
+  }*/
 }
 
 function logger(container, label, data){
