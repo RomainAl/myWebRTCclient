@@ -137,7 +137,7 @@ let effects = [
       },
     ],
   },
-  /* {
+  {
      name: "pitchshift",
      title: "PITCH SHIFTER",
      device: {},
@@ -163,7 +163,7 @@ let effects = [
          type: "real"
        },
      ],
-   },*/
+   },
   // {
   //   name: "freeze",
   //   title: "FREEZE AUTO",
