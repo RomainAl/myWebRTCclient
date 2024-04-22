@@ -189,7 +189,7 @@ let effects = [
     device: {},
     div: {},
     activ: false,
-    visible: false,
+    visible: true,
     gain: null,
     userParams: [
       {
