@@ -292,8 +292,8 @@ function init() {
   requestWakeLock();
   //changeFullScreen();
   context = new AudioContext();
-  //myPeer = context.createMediaStreamDestination();
-  myPeer = context.destination;
+  myPeer = context.createMediaStreamDestination();
+  // myPeer = context.destination;
   gain = context.createGain();
   gain.gain.value = 0.1;
   analyser = context.createAnalyser();
