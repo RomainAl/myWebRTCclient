@@ -436,6 +436,7 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   adminVideo.loop = true;
   
   adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*10)+1}.mp4`;
+  adminVideo.type="video/mp4";
 }
 
 function receiveChannelCallback(event) {
