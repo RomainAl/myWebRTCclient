@@ -2,8 +2,8 @@
 //const socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
 //const socket = io.connect("https://mywrtc-ro5o23vkzq-od.a.run.app");
 const   socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
-//const socket = io.connect("https://192.168.10.2:1337");
-console.log("flyio ok");
+// const socket = io.connect("https://192.168.10.2:1337");
+console.log("Flyio ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
@@ -405,7 +405,7 @@ function OnTrackFunction(event) {
     videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
       videoMaster.setAttribute("name", 'video' + currentClientId);
-      videoMaster.display = "inline";
+      videoMaster.style.display = "inline";
       clientdiv.appendChild(videoMaster);
       let btn_videos = document.createElement("div");
       clientdiv.appendChild(btn_videos);
