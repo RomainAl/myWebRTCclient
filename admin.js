@@ -424,6 +424,7 @@ function OnTrackFunction(event) {
     audioCrac.autoplay = false;
     audioCrac.muted = false;
     audioCrac.src = './audios/audio1.wav';
+    audioCrac.style.width = '200px';
     clientdiv.appendChild(audioCrac);
 
     let audioCrac2= document.createElement("audio");
@@ -433,6 +434,7 @@ function OnTrackFunction(event) {
     audioCrac2.autoplay = false;
     audioCrac2.muted = false;
     audioCrac2.src = './audios/audio2.wav';
+    audioCrac2.style.width = '200px';
     clientdiv.appendChild(audioCrac2);
 
     let divStats = document.createElement("div");
