@@ -224,9 +224,21 @@ socket.on("offer", function (offer, clientId) {
 
   currentClientId = clientId;
   console.log('Offer receive from = '+clientId);
-  let videoelement = document.getElementById("adminVideosTest");
+  let videoelement = document.getElementById("adminVideos");
   videoelement = videoelement.getElementsByTagName("video")[0];
   let adminStream = videoelement.captureStream().clone();
+  const tracks = adminStream.getVideoTracks();
+  tracks.forEach(track => {
+    if ('contentHint' in track) {
+      track.contentHint = 'detail';
+      if (track.contentHint !== 'detail') {
+        console.log('Invalid video track contentHint: \'' + 'detail' + '\'');
+      }
+    } else {
+      console.log('MediaStreamTrack contentHint attribute not supported');
+    }
+  });
+  // let adminStream = videoelement.captureStream();
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
@@ -532,7 +544,7 @@ function changeVid(event){
   videoelement.type="video/mp4";
   videoelement.play()
   .then(() => {
-    let adminStream = videoelement.captureStream()
+    let adminStream = videoelement.captureStream();
     let client = clientS.find(t=>t.clientId==clientId);
     const [videoTrack] = adminStream.getVideoTracks();
     let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);

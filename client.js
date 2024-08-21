@@ -61,6 +61,7 @@ let AudioContext = window.AudioContext || window.webkitAudioContext;
 let context;
 let analyser;
 let source;
+let source_mic;
 let gain;
 let myPeer;
 let timer_rec;
@@ -327,8 +328,8 @@ socket.on("create", function () {
   navigator.mediaDevices
     .getUserMedia(constraints)
     .then(function (stream) {
-
-      source = context.createMediaStreamSource(stream);
+      source_mic = stream;
+      source = context.createMediaStreamSource(source_mic);
       context.suspend();
       effects_Setup(effects)
       .then(()=>{
@@ -470,8 +471,10 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
-      myPeer.stream.getTracks().forEach((track) => {track.stop()});
-      userCanvasStream.getTracks().forEach((track) => {track.stop()});
+      myPeer.stream.getTracks().forEach((track) => {track.stop();});
+      rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+      source_mic.getTracks().forEach(function(track) {track.stop();});
+      context.close();
       userCanvas.remove();
       break;
     case 3:
@@ -525,12 +528,14 @@ function webrtcStateChange(ev){
         ev.currentTarget.close();
         myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
+        rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
         break;
       case "closed":
         console.log("Offline");
         atablee.style.display = "none";
         myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
+        rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
         break;
       case "failed":
         console.log("Error");
@@ -538,6 +543,7 @@ function webrtcStateChange(ev){
         ev.currentTarget.close();
         myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
+        rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
         break;
       default:
         console.log("Unknown");
@@ -564,14 +570,19 @@ const requestWakeLock = async () => {
 };
 
 document.addEventListener("visibilitychange", (event) => {
+  if (context.state !== "closed"){
+    if (document.visibilityState === "visible") {
+      context.resume();
+    } else {
+      context.suspend();
+    }
+  }
   if (document.visibilityState === "visible") {
-    context.resume();
     requestWakeLock();
   } else {
     btn_fullscreen.style.backgroundColor = "transparent";
     document.getElementById("fs1").style.display = 'inline-block';
     document.getElementById("fs2").style.display = 'none';
-    context.suspend();
   }
 });
 
@@ -938,7 +949,7 @@ function nodeConnection(mode){ // TODO
 let recTimeCount = 0;
 function recfunction(ev){
   let sampler = effects.find(t=>t.name == "sampler");
-  if ((btn_rec.style.background == "transparent") && (recTimeCount==0)){
+  if ((btn_rec.style.backgroundColor == "transparent") && (recTimeCount==0)){
     streamVisualizer4Clients.setColor("red");
     recTimeCount = Date.now();
     btn_rec.style.backgroundColor = "#FF0000";
