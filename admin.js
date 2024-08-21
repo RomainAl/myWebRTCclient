@@ -8,9 +8,9 @@ console.log("Flyio ok");
 
 const adminVideos = document.getElementById("adminVideos");
 for (let i = 0; i < 15; i++){
-  videoelement = document.createElement("video");
-  videoelement.src = './videos/video1.mp4';
-  videoelement.type="video/mp4";
+  let videoelement = document.createElement("video");
+  videoelement.src = './videos/video1.webm';
+  videoelement.type="video/webm";
   videoelement.width = 250;
   videoelement.playsinline = true;
   videoelement.loop = true;
@@ -224,9 +224,9 @@ socket.on("offer", function (offer, clientId) {
 
   currentClientId = clientId;
   console.log('Offer receive from = '+clientId);
-  let videoelement = document.getElementById("adminVideos");
+  let videoelement = document.getElementById("adminVideosTest");
   videoelement = videoelement.getElementsByTagName("video")[0];
-  let adminStream = videoelement.captureStream();
+  let adminStream = videoelement.captureStream().clone();
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
