@@ -224,7 +224,7 @@ socket.on("offer", function (offer, clientId) {
 
   currentClientId = clientId;
   console.log('Offer receive from = '+clientId);
-  let videoelement = document.getElementById("adminVideos");
+  let videoelement = document.getElementById("adminVideosTest");
   videoelement = videoelement.getElementsByTagName("video")[0];
   let adminStream = videoelement.captureStream().clone();
   const tracks = adminStream.getVideoTracks();
@@ -238,6 +238,14 @@ socket.on("offer", function (offer, clientId) {
       console.log('MediaStreamTrack contentHint attribute not supported');
     }
   });
+  const videoTracks = adminStream.getVideoTracks();
+  const audioTracks = adminStream.getAudioTracks();
+  if (videoTracks.length > 0) {
+    console.log(`Using video device: ${videoTracks[0].label}`);
+  }
+  if (audioTracks.length > 0) {
+    console.log(`Using audio device: ${audioTracks[0].label}`);
+  }
   // let adminStream = videoelement.captureStream();
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
@@ -410,7 +418,7 @@ function OnTrackFunction(event) {
     }
     ch++;
     ch = ch % ctx.destination.maxChannelCount;
-    const streamVisualizer = new MyWebAudio(source, analyser, canvas, false);
+    const streamVisualizer = new MyWebAudio(source, analyser, canvas);
     streamVisualizer.start();
 
     let videoMaster = document.getElementById("adminVideos");

@@ -69,7 +69,7 @@ body
 		border: 1px solid rgb(255, 255, 255);
 		border-radius: 50%;
 		color: #ffffff;
-		padding: 20px 20px;
+		padding: 20px 19px;
     margin: 15px;
 		cursor: pointer;
 	}
@@ -107,7 +107,7 @@ body
 }
 
 .param-slider {
-  width: 92%;
+  width: 85%;
 }
 
 label {
@@ -150,6 +150,7 @@ label {
     justify-content: center;
     flex-direction: column-reverse;
     background: rgba(0,0,0,0.5);
+    overflow: scroll;
   }
 }
 
@@ -194,6 +195,7 @@ label {
     justify-content: center;
     flex-direction: column-reverse;
     background: rgba(0,0,0,0.5);
+    overflow: scroll;
   }
 }
 
@@ -208,7 +210,7 @@ label {
 		border: 1px solid rgb(255, 255, 255);
 		border-radius: 50%;
 		color: #ffffff;
-		padding: 15px 15px;
+		padding: 15px 16px;
 		text-transform: uppercase;
     font-family: "Gill Sans", sans-serif;
 		cursor: pointer;

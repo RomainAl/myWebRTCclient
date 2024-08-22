@@ -25,7 +25,7 @@
 const SMOOTHING = 0.8;
 const FFT_SIZE = 256;
 
-function MyWebAudio(source, analyser, canvas, doSound) {
+function MyWebAudio(source, analyser, canvas) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
   this.canvas = canvas;
   this.source = source;
@@ -40,7 +40,11 @@ function MyWebAudio(source, analyser, canvas, doSound) {
 }
 
 MyWebAudio.prototype.start = function() {
-  requestAnimationFrame(this.draw.bind(this));
+  this.myAnim = requestAnimationFrame(this.draw.bind(this));
+};
+
+MyWebAudio.prototype.stop = function() {
+  cancelAnimationFrame(this.myAnim);
 };
 
 MyWebAudio.prototype.draw = function() {

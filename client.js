@@ -13,6 +13,8 @@ try {
 let streamVisualizer4Clients;
 
 let userCanvas = document.getElementById("canvas");
+userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
+userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
 let adminVideo = document.getElementById("video");
 let effectsPan = document.getElementById("effects-params");
 effectsPan.style.visibility = "hidden";
@@ -87,12 +89,66 @@ let effects = [
     {
       name: "time",
       title: "TIME",
-      defaultValue: null,
+      defaultValue: 30.0,
       param: {},
       visible: true,
       type: "real"
     }
     ],
+  },
+  {
+    name: "disto",
+    title: "DISTO",
+    device: {},
+    div: {},
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "drive",
+        title: "DISTO",
+        defaultValue: 50.0,
+        param: {},
+        visible: true,
+        type: "real"
+      },{
+        name: "mix",
+        title: "MIX",
+        defaultValue: 100.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },{
+        name: "midfreq",
+        title: "MIDFREQ",
+        defaultValue: 0.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },{
+        name: "treble",
+        title: "TREBLE",
+        defaultValue: 50.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },{
+        name: "mid",
+        title: "MID",
+        defaultValue: 100.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },{
+        name: "bass",
+        title: "BASS",
+        defaultValue: 50.0,
+        param: {},
+        visible: false,
+        type: "real"
+      },
+  ],
   },
   {
     name: "downsample",
@@ -165,28 +221,9 @@ let effects = [
        },
      ],
    },
-  // {
-  //   name: "freeze",
-  //   title: "FREEZE AUTO",
-  //   device: {},
-  //   div: {},
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "auto",
-  //       title: "AUTO",
-  //       defaultValue: 100.0,
-  //       param: {},
-  //       visible: false,
-  //       type: "bool"
-  //     },
-  //   ],
-  // },
   {
-    name: "filter",
-    title: "FILTER (HIGH-CUT)",
+    name: "freeze",
+    title: "FREEZE AUTO",
     device: {},
     div: {},
     activ: false,
@@ -194,23 +231,42 @@ let effects = [
     gain: null,
     userParams: [
       {
-        name: "hi-cut",
-        title: "hi-cut",
-        defaultValue: 1200.0,
+        name: "auto",
+        title: "AUTO",
+        defaultValue: 100.0,
         param: {},
-        visible: true,
-        type: "real"
+        visible: false,
+        type: "bool"
       },
-      {
-        name: "lo-cut",
-        title: "lo-cut",
-        defaultValue: null,
-        param: {},
-        visible: true,
-        type: "real"
-      }
-    ]
+    ],
   },
+  // {
+  //   name: "filter",
+  //   title: "FILTER (HIGH-CUT)",
+  //   device: {},
+  //   div: {},
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "hi-cut",
+  //       title: "hi-cut",
+  //       defaultValue: 1200.0,
+  //       param: {},
+  //       visible: true,
+  //       type: "real"
+  //     },
+  //     {
+  //       name: "lo-cut",
+  //       title: "lo-cut",
+  //       defaultValue: null,
+  //       param: {},
+  //       visible: true,
+  //       type: "real"
+  //     }
+  //   ]
+  // },
   {
     name: "sampler",
     title: "SAMPLER",
@@ -351,7 +407,7 @@ socket.on("create", function () {
       if (audioTracks.length > 0) {
         console.log(`Using Audio device: ${audioTracks[0].label}`);
       }
-      streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas, false);
+      streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
       streamVisualizer4Clients.start();
       document.getElementById( 'overlay' ).remove();
       myGUI.style.display = "flex";
@@ -432,9 +488,10 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   //     adminVideo.srcObject = event.streams[0];
   //   };
   // }
-  adminVideo.volume = 0;
-  adminVideo.srcObject = event.streams[0];
-  console.log(event);
+  if (adminVideo.srcObject !== event.streams[0]) {
+    adminVideo.volume = 0;
+    adminVideo.srcObject = event.streams[0];
+  }
 
   // adminVideo.volume = 0;
   // adminVideo.controls = true;
@@ -463,6 +520,7 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.volume = 0;
       userCanvas.style.display = "initial";
       myGUI.style.display = "flex";
+
       break;
     case 2:
       userCanvas.style.display = "none";
@@ -476,6 +534,7 @@ function onReceiveChannelMessageCallback(event) {
       source_mic.getTracks().forEach(function(track) {track.stop();});
       context.close();
       userCanvas.remove();
+      streamVisualizer4Clients.stop();
       break;
     case 3:
       //adminVideo.remove();
@@ -570,12 +629,15 @@ const requestWakeLock = async () => {
 };
 
 document.addEventListener("visibilitychange", (event) => {
-  if (context.state !== "closed"){
+
+  try{
     if (document.visibilityState === "visible") {
       context.resume();
     } else {
       context.suspend();
     }
+  } catch (err){
+    console.log(err);
   }
   if (document.visibilityState === "visible") {
     requestWakeLock();
@@ -953,6 +1015,8 @@ function recfunction(ev){
     streamVisualizer4Clients.setColor("red");
     recTimeCount = Date.now();
     btn_rec.style.backgroundColor = "#FF0000";
+    effectsPan.style.visibility = "hidden";
+    btn_effects.style.background = "transparent";
     sampler.activ = true;
     sampler.device.parameters.find(param=>param.name=="size").value = sampler.userParams.find(t=>t.name == "size").defaultValue;
     sampler.device.parameters.find(param=>param.name=="clear_buf").value = 1.0;

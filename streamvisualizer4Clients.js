@@ -1,45 +1,28 @@
-/*
- * Copyright 2016 Boris Smus. All Rights Reserved.
-
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-// Adapted from Boris Smus's demo at http://webaudioapi.com/samples/visualizer
-
-/* globals AudioContext, webkitAudioContext */
-
-//const WIDTH = 300;
-//const HEIGHT = 100;
-
-// Interesting parameters to tweak!
+// TODO -> Module or Class !!!
 const SMOOTHING = 1.0;
-const FFT_SIZE = 1024*4;
+const FFT_SIZE = 512;
 
-function StreamVisualizer4Clients(analyser, canvas, doSound) {
-  //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
+function StreamVisualizer4Clients(analyser, canvas) {
   this.canvas = canvas;
   this.drawContext = this.canvas.getContext('2d');
   this.analyser = analyser;
   this.mycolor = 'white';
-
-  //this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
+  this.rectSize = 8;
+  this.gain = 1.0;
+  this.analyser.fftSize = FFT_SIZE;
+  this.analyser.smoothingTimeConstant = SMOOTHING;
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
   this.startTime = 0;
   this.startOffset = 0;
 }
 
 StreamVisualizer4Clients.prototype.start = function() {
-  requestAnimationFrame(this.draw.bind(this));
+  this.myAnim = requestAnimationFrame(this.draw.bind(this));
+};
+
+StreamVisualizer4Clients.prototype.stop = function() {
+  cancelAnimationFrame(this.myAnim);
+  console.log(this.myAnim);
 };
 
 StreamVisualizer4Clients.prototype.setColor = function(col) {
@@ -47,44 +30,27 @@ StreamVisualizer4Clients.prototype.setColor = function(col) {
 };
 
 StreamVisualizer4Clients.prototype.draw = function() {
-  let barWidth;
-  let offset;
-  let height;
-  let percent;
-  let value;
-  this.analyser.smoothingTimeConstant = SMOOTHING;
-  this.analyser.fftSize = FFT_SIZE;
-
-  // Get the frequency data from the currently playing music
-  //this.analyser.getByteFrequencyData(this.freqs);
   this.analyser.getByteTimeDomainData(this.times);
-
-  //this.canvas.width = WIDTH;
-  //this.canvas.height = HEIGHT;
   this.drawContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
-  // Draw the frequency domain chart.
-  // for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
-  //   value = this.freqs[i];
-  //   percent = value / 256;
-  //   height = this.canvas.height * percent;
-  //   offset = this.canvas.height - height - 1;
-  //   barWidth = this.canvas.width / this.analyser.frequencyBinCount;
-  //   let hue = i/this.analyser.frequencyBinCount * 360;
-  //   this.drawContext.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
-  //   this.drawContext.fillRect(i * barWidth, offset, barWidth, height);
-  // }
 
-  
-  // Draw the time domain chart.
-  for (let i = 0; i < this.analyser.frequencyBinCount/8; i++) {
-    value = this.times[i];
-    percent = value / 256;
-    height = this.canvas.height * percent * 6
-    offset = this.canvas.height*3.5 - height - 1;
-    barWidth = 8*this.canvas.width/this.analyser.frequencyBinCount;
+  let meanVal = 0;
+  let barWidth;
+  let value;
+  for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
+    value = (this.times[i] / 256)-0.5;
+    if (Math.abs(value) < 0.01) value = 0;
+    meanVal += Math.abs(value);
+    value = value * this.canvas.height * this.gain;
+    y = Math.min(Math.max(value + this.canvas.height*0.5,0),this.canvas.height) - this.rectSize/2;
+    barWidth = this.canvas.width/this.analyser.frequencyBinCount;
     this.drawContext.fillStyle = this.mycolor;
-    this.drawContext.fillRect(i * barWidth, offset, 3, 3);
+    this.drawContext.fillRect(i * barWidth, y, this.rectSize, this.rectSize);
   }
-
+  meanVal /= this.analyser.frequencyBinCount;
+  if (meanVal > 0.25) {
+    this.rectSize = 20;
+  } else {
+    this.rectSize = 10;
+  };
   requestAnimationFrame(this.draw.bind(this));
 };
