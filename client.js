@@ -497,7 +497,8 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   adminVideo.controls = true;
   adminVideo.loop = true;
   
-  adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*20)+1}.webm`;
+  // adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*20)+1}.webm`;
+  adminVideo.src = `./videos/video${Math.round(Math.random()*20)+1}.webm`;
   adminVideo.type="video/webm";
 }
 
