@@ -347,7 +347,7 @@ startButton.addEventListener( 'click', function () {
 function init() {
   console.log(iceServers);
   requestWakeLock();
-  //changeFullScreen();
+  //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
   myPeer = context.createMediaStreamDestination();
   // myPeer = context.destination;
@@ -488,17 +488,17 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   //     adminVideo.srcObject = event.streams[0];
   //   };
   // }
-  if (adminVideo.srcObject !== event.streams[0]) {
-    adminVideo.volume = 0;
-    adminVideo.srcObject = event.streams[0];
-  }
+  // if (adminVideo.srcObject !== event.streams[0]) {
+  //   adminVideo.volume = 0;
+  //   adminVideo.srcObject = event.streams[0];
+  // }
 
-  // adminVideo.volume = 0;
-  // adminVideo.controls = true;
-  // adminVideo.loop = true;
+  adminVideo.volume = 0;
+  adminVideo.controls = true;
+  adminVideo.loop = true;
   
-  // adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*10)+1}.mp4`;
-  // adminVideo.type="video/mp4";
+  adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*20)+1}.webm`;
+  adminVideo.type="video/webm";
 }
 
 function receiveChannelCallback(event) {

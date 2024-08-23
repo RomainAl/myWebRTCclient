@@ -63,21 +63,12 @@ const NVideo = 21;
 const roomName = "atablee";
 let currentClientId;
 
-/*let iceServers = {
+let iceServers = {
   iceServers: [
     { urls: "stun:stun.services.mozilla.com" },
     { urls: "stun:stun.l.google.com:19302" },
   ],
-};*/
-let iceServers;
-async function create_iceServers() {
-  const response = 
-    await window.fetch("https://ludicke.metered.live/api/v1/turn/credentials?apiKey=5384caa827c45b8e5c34576216e80a7430ce");
-
-  // Saving the response in the iceServers array
-  iceServers = await response.json();
-}
-create_iceServers();
+};
 
 console.log(navigator.mediaDevices.enumerateDevices());
 
@@ -224,11 +215,18 @@ socket.on("offer", function (offer, clientId) {
 
   currentClientId = clientId;
   console.log('Offer receive from = '+clientId);
-  let videoelement = document.getElementById("adminVideosTest");
+  let videoelement = document.getElementById("adminVideos");
   videoelement = videoelement.getElementsByTagName("video")[0];
-  let adminStream = videoelement.captureStream().clone();
-  const tracks = adminStream.getVideoTracks();
-  tracks.forEach(track => {
+  let adminStream = videoelement.captureStream();
+  const audioTracks = adminStream.getAudioTracks();
+  const videoTracks = adminStream.getVideoTracks();
+  if (videoTracks.length > 0) {
+    console.log(`Using video device: ${videoTracks[0].label}`);
+  }
+  if (audioTracks.length > 0) {
+    console.log(`Using audio device: ${audioTracks[0].label}`);
+  }
+  videoTracks.forEach(track => {
     if ('contentHint' in track) {
       track.contentHint = 'detail';
       if (track.contentHint !== 'detail') {
@@ -238,15 +236,7 @@ socket.on("offer", function (offer, clientId) {
       console.log('MediaStreamTrack contentHint attribute not supported');
     }
   });
-  const videoTracks = adminStream.getVideoTracks();
-  const audioTracks = adminStream.getAudioTracks();
-  if (videoTracks.length > 0) {
-    console.log(`Using video device: ${videoTracks[0].label}`);
-  }
-  if (audioTracks.length > 0) {
-    console.log(`Using audio device: ${audioTracks[0].label}`);
-  }
-  // let adminStream = videoelement.captureStream();
+
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
   rtcPeerConnection.ontrack = OnTrackFunction;
@@ -444,7 +434,7 @@ function OnTrackFunction(event) {
     audioCrac.autoplay = false;
     audioCrac.muted = false;
     audioCrac.src = './audios/audio1.wav';
-    audioCrac.style.width = '200px';
+    audioCrac.style.width = '250px';
     clientdiv.appendChild(audioCrac);
 
     let audioCrac2= document.createElement("audio");
@@ -454,7 +444,7 @@ function OnTrackFunction(event) {
     audioCrac2.autoplay = false;
     audioCrac2.muted = false;
     audioCrac2.src = './audios/audio2.wav';
-    audioCrac2.style.width = '200px';
+    audioCrac2.style.width = '250px';
     clientdiv.appendChild(audioCrac2);
 
     let divStats = document.createElement("div");
@@ -502,6 +492,7 @@ function sendData(event) {
       break;
     case "btn_scene2":
       data = {"scene": 2};
+      // change2Vid();
       break;
     case "btn_scene3":
       data = {"scene": 3};
@@ -563,6 +554,18 @@ function changeVid(event){
     });
 }
 
+function change2Vid(){
+  let videoelements = document.getElementById("adminVideosTest").getElementsByTagName("video");
+  let adminStream2 = videoelements[2].captureStream();
+  clientS.forEach((client)=>{
+    const [videoTrack] = adminStream.getVideoTracks();
+    let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === 'video');
+    videoSender.replaceTrack(videoTrack);
+    const [audioTrack] = adminStream.getAudioTracks();
+    let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === 'audio');
+    audioSender.replaceTrack(audioTrack);
+  });
+}
 
 
 function changeChan(event){
