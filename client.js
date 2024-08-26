@@ -15,7 +15,13 @@ let streamVisualizer4Clients;
 let userCanvas = document.getElementById("canvas");
 userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
 userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
+userCanvas.style.display = "none";
 let adminVideo = document.getElementById("video");
+let adminVimeo = document.getElementById("vimeo");
+adminVideo.style.display = "none";
+adminVideo.type="video/mp4";
+adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.mp4`;
+let vimeo = new Vimeo.Player('vimeo');
 let effectsPan = document.getElementById("effects-params");
 effectsPan.style.visibility = "hidden";
 let myGUI = document.getElementById("GUI");
@@ -48,7 +54,6 @@ btn_effects.onclick = (ev)=>{
 // let testBool = true;
 // btn_test.onclick = testBtn;
 
-adminVideo.style.display = "none";
 //effectsPan.style.visibility = "collapse";
 
 navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; 
@@ -356,6 +361,9 @@ function init() {
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
+  // adminVideo.volume = 1;
+  // adminVideo.play();
+  vimeo.setVolume(1.0);
   socket.emit("join", roomName, false);
 };
 
@@ -529,9 +537,7 @@ function onReceiveChannelMessageCallback(event) {
       myGUI.style.display = "none";
       //document.getElementById("overlay").remove(); // TODO
       adminVideo.style.display = "initial";
-      adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
-      adminVideo.type="video/webm";
-      adminVideo.volume = 0.2;
+      adminVideo.volume = 1;
       adminVideo.play();
       myPeer.stream.getTracks().forEach((track) => {track.stop();});
       rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
@@ -553,7 +559,11 @@ function onReceiveChannelMessageCallback(event) {
       setTimeout(()=>{atablee.style.background = "black";}, 1000);
       break;
     case 5:
-      
+      adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.mp4`;
+      // vimeo.loadVideo("978281628").then(()=>vimeo.play());
+      vimeo.setCurrentTime(Math.random()*100);
+      vimeo.on('progress', (e)=>console.log(e.percent));
+      vimeo.play();
       break;
     default :
       console.log("No scene...")

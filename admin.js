@@ -495,8 +495,8 @@ function sendData(event) {
       // change2Vid();
       break;
     case "btn_scene3":
-      data = {"scene": 3};
-      change2Crac();
+      data = {"scene": 5};
+      // change2Crac();
       break;
     default:
       console.log("Error : no scene found !")
