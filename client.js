@@ -493,13 +493,13 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   //   adminVideo.srcObject = event.streams[0];
   // }
 
-  adminVideo.volume = 0;
-  adminVideo.controls = true;
-  adminVideo.loop = true;
+  // adminVideo.volume = 0;
+  // adminVideo.controls = true;
+  // adminVideo.loop = true;
   
   // adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*20)+1}.webm`;
-  adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
-  adminVideo.type="video/webm";
+  // adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
+  // adminVideo.type="video/webm";
 }
 
 function receiveChannelCallback(event) {
@@ -528,6 +528,8 @@ function onReceiveChannelMessageCallback(event) {
       myGUI.style.display = "none";
       //document.getElementById("overlay").remove(); // TODO
       adminVideo.style.display = "initial";
+      adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
+      adminVideo.type="video/webm";
       adminVideo.volume = 1;
       adminVideo.play();
       myPeer.stream.getTracks().forEach((track) => {track.stop();});
