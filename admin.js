@@ -7,7 +7,7 @@ console.log("Flyio ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 
 const adminVideos = document.getElementById("adminVideos");
-for (let i = 0; i < 15; i++){
+for (let i = 0; i < 20; i++){
   let videoelement = document.createElement("video");
   videoelement.src = './videos/video1.webm';
   videoelement.type="video/webm";

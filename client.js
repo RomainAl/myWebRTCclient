@@ -519,6 +519,7 @@ function onReceiveChannelMessageCallback(event) {
     case 1:
       adminVideo.style.display = "none";
       adminVideo.volume = 0;
+      adminVideo.pause();
       userCanvas.style.display = "initial";
       myGUI.style.display = "flex";
 
@@ -530,7 +531,7 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "initial";
       adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
       adminVideo.type="video/webm";
-      adminVideo.volume = 0;
+      adminVideo.volume = 0.2;
       adminVideo.play();
       myPeer.stream.getTracks().forEach((track) => {track.stop();});
       rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
