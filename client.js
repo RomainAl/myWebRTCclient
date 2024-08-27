@@ -17,11 +17,11 @@ userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
 userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
 //userCanvas.style.display = "none";
 let adminVideo = document.getElementById("video");
-let adminVimeo = document.getElementById("vimeo");
+// let adminVimeo = document.getElementById("vimeo");
 adminVideo.style.display = "none";
-adminVideo.type="video/mp4";
-adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.mp4`;
-let vimeo = new Vimeo.Player('vimeo');
+adminVideo.type="video/webm";
+adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
+// let vimeo = new Vimeo.Player('vimeo');
 let effectsPan = document.getElementById("effects-params");
 effectsPan.style.visibility = "hidden";
 let myGUI = document.getElementById("GUI");
@@ -354,7 +354,6 @@ startButton.addEventListener( 'click', function () {
 } );
 
 function init() {
-  console.log(iceServers);
   requestWakeLock();
   //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
@@ -367,100 +366,36 @@ function init() {
   analyser.maxDecibels = 0;
   // adminVideo.volume = 1;
   // adminVideo.play();
-  vimeo.setVolume(1.0);
+  // vimeo.setVolume(1.0);
   socket.emit("join", roomName, false);
 };
 
 // Triggered when a room is succesfully created.
 socket.on("create", function () {
   console.log("Socket receive create");
-  if (navigator.mediaDevices.getUserMedia === undefined) {
-    navigator.mediaDevices.getUserMedia = function(constraints) {
-  
-      // First get ahold of the legacy getUserMedia, if present
-      var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-  
-      // Some browsers just don't implement it - return a rejected promise with an error
-      // to keep a consistent interface
-      if (!getUserMedia) {
-        return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
-      }
-  
-      // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-      return new Promise(function(resolve, reject) {
-        getUserMedia.call(navigator, constraints, resolve, reject);
-      });
-    }
-  }
-
-  navigator.mediaDevices
-    .getUserMedia(constraints)
-    .then(function (stream) {
-      source_mic = stream;
-      source = context.createMediaStreamSource(source_mic);
-      context.suspend();
-      effects_Setup(effects)
-      .then(()=>{
-        context.resume();
-        nodeConnection("auto");
-        btn_effects.disabled = false;
-        btn_effects.style.borderColor = "white";
-        btn_rec.disabled = false;
-        btn_rec.style.borderColor = "white";
-      })
-      .catch(function (err) {
-        context.resume();
-        console.log(`${err.name}, ${err.message}`);
-        alert('Sorry, impossible for this smartphone to access sound effects !');
-        source.connect(analyser);
-      })
-
-      const audioTracks = stream.getAudioTracks();
-      if (audioTracks.length > 0) {
-        console.log(`Using Audio device: ${audioTracks[0].label}`);
-      }
-      streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
-      streamVisualizer4Clients.start();
-      document.getElementById( 'overlay' ).remove();
-      myGUI.style.display = "flex";
-
+  rtcPeerConnection = new RTCPeerConnection(iceServers);
+  rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
+  rtcPeerConnection.ontrack = OnTrackFunction;
+  rtcPeerConnection.addTrack(myPeer.stream.getTracks()[0], myPeer.stream);
+  rtcPeerConnection.addTrack(userCanvasStream.getTracks()[0], userCanvasStream);
+  console.log('Adding Local Stream to peer connection');
+  sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+  sendChannel.onopen = onSendChannelStateChange;
+  sendChannel.onmessage = onSendChannelMessageCallback;
+  sendChannel.onclose = onSendChannelStateChange;
+  rtcPeerConnection.ondatachannel = receiveChannelCallback;
+  rtcPeerConnection.onconnectionstatechange = webrtcStateChange;
+  rtcPeerConnection
+    .createOffer(offerOptions)
+    .then((offer) => {
+      rtcPeerConnection.setLocalDescription(offer);
+      socket.emit("offer", offer);
+      console.log('offer sent');
     })
-    .catch(function (err) {
-      document.getElementById( 'titles' ).remove();
-      document.getElementById( 'err' ).style.display = "inline-block";
-      document.getElementById( 'microon' ).style.display = "none";
-      document.getElementById( 'microoff' ).style.display = "inline-block";
-      console.log(err);
-    })
-    .then(function(){
-      rtcPeerConnection = new RTCPeerConnection(iceServers);
-      rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
-      rtcPeerConnection.ontrack = OnTrackFunction;
-      console.log('Adding Local Stream to peer connection');
-      //userStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, userStream));
-      //rtcPeerConnection.addTrack(userStream.getTracks()[0], userStream);
-      rtcPeerConnection.addTrack(myPeer.stream.getTracks()[0], myPeer.stream);
-      rtcPeerConnection.addTrack(userCanvasStream.getTracks()[0], userCanvasStream);
-      sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
-      sendChannel.onopen = onSendChannelStateChange;
-      sendChannel.onmessage = onSendChannelMessageCallback;
-      sendChannel.onclose = onSendChannelStateChange;
-      rtcPeerConnection.ondatachannel = receiveChannelCallback;
-      rtcPeerConnection.onconnectionstatechange = webrtcStateChange;
-      rtcPeerConnection
-        .createOffer(offerOptions)
-        .then((offer) => {
-          rtcPeerConnection.setLocalDescription(offer);
-          socket.emit("offer", offer);
-          console.log('offer sent');
-        })
 
-        .catch((error) => {
-          console.log(error);
-        });
-    }
-
-    );
+    .catch((error) => {
+      console.log(error);
+    });
 });
 
 // Triggered on receiving an answer from the person who joined the room.
@@ -500,11 +435,10 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   //     adminVideo.srcObject = event.streams[0];
   //   };
   // }
-  // if (adminVideo.srcObject !== event.streams[0]) {
-  //   adminVideo.volume = 0;
-  //   adminVideo.srcObject = event.streams[0];
-  // }
-
+  if (adminVideo.srcObject !== event.streams[0]) {
+    adminVideo.srcObject = event.streams[0];
+  }
+  
   // adminVideo.volume = 0;
   // adminVideo.controls = true;
   // adminVideo.loop = true;
@@ -512,6 +446,7 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   // adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*20)+1}.webm`;
   // adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
   // adminVideo.type="video/webm";
+  console.log("on TRAAAACKKK");
 }
 
 function receiveChannelCallback(event) {
@@ -547,12 +482,13 @@ function onReceiveChannelMessageCallback(event) {
       rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
       source_mic.getTracks().forEach(function(track) {track.stop();});
       context.close();
-      userCanvas.remove();
       streamVisualizer4Clients.stop();
       break;
     case 3:
       //adminVideo.remove();
       adminVideo.style.display = "none";
+      // adminVideo.pause();
+      // adminVideo.volume = 0;
       //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
@@ -563,11 +499,16 @@ function onReceiveChannelMessageCallback(event) {
       setTimeout(()=>{atablee.style.background = "black";}, 1000);
       break;
     case 5:
-      adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.mp4`;
+      adminVideo.srcObject.getVideoTracks().forEach(track => {
+        track.stop()
+        adminVideo.srcObject.removeTrack(track);
+      });
+      adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
+      adminVideo.play();
       // vimeo.loadVideo("978281628").then(()=>vimeo.play());
-      vimeo.setCurrentTime(Math.random()*100);
-      vimeo.on('progress', (e)=>console.log(e.percent));
-      vimeo.play();
+      // vimeo.setCurrentTime(Math.random()*100);
+      // vimeo.on('progress', (e)=>console.log(e.percent));
+      // vimeo.play();
       break;
     default :
       console.log("No scene...")
@@ -585,7 +526,7 @@ function onSendChannelStateChange() {
 }
 
 function onSendChannelMessageCallback(event) {
-  console.log('Received Message');
+  console.log('Message sent');
 }
 
 function webrtcStateChange(ev){
@@ -598,6 +539,64 @@ function webrtcStateChange(ev){
         break;
       case "connected":
         console.log("Online");
+        if (navigator.mediaDevices.getUserMedia === undefined) {
+          navigator.mediaDevices.getUserMedia = function(constraints) {
+        
+            // First get ahold of the legacy getUserMedia, if present
+            var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+        
+            // Some browsers just don't implement it - return a rejected promise with an error
+            // to keep a consistent interface
+            if (!getUserMedia) {
+              return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
+            }
+        
+            // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
+            return new Promise(function(resolve, reject) {
+              getUserMedia.call(navigator, constraints, resolve, reject);
+            });
+          }
+        }
+      
+        navigator.mediaDevices
+          .getUserMedia(constraints)
+          .then(function (stream) {
+            source_mic = stream;
+            source = context.createMediaStreamSource(source_mic);
+            context.suspend();
+            effects_Setup(effects)
+            .then(()=>{
+              context.resume();
+              nodeConnection("auto");
+              btn_effects.disabled = false;
+              btn_effects.style.borderColor = "white";
+              btn_rec.disabled = false;
+              btn_rec.style.borderColor = "white";
+            })
+            .catch(function (err) {
+              context.resume();
+              console.log(`${err.name}, ${err.message}`);
+              alert('Sorry, impossible for this smartphone to access sound effects !');
+              source.connect(analyser);
+            })
+      
+            const audioTracks = stream.getAudioTracks();
+            if (audioTracks.length > 0) {
+              console.log(`Using Audio device: ${audioTracks[0].label}`);
+            }
+            streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
+            streamVisualizer4Clients.start();
+            document.getElementById( 'overlay' ).remove();
+            myGUI.style.display = "flex";
+      
+          })
+          .catch(function (err) {
+            document.getElementById( 'titles' ).remove();
+            document.getElementById( 'err' ).style.display = "inline-block";
+            document.getElementById( 'microon' ).style.display = "none";
+            document.getElementById( 'microoff' ).style.display = "inline-block";
+            console.log(err);
+          })
         break;
       case "disconnected":
         console.log("Disconnecting…");

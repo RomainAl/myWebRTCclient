@@ -1,6 +1,27 @@
+@font-face {
+  font-family: 'InterVar';
+  src: url("./others/InterVariable.ttf");
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes rotateSpinner {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 html,
 body
 {
+    font-family: 'InterVar', sans-serif;
+    animation: fade-in 2s ease 0s forwards;
     overflow: hidden;
     background: #000000;
 }
@@ -73,7 +94,7 @@ body
 	#overlay button {
 		background: transparent;
 		border: 0;
-		border: 1px solid rgb(255, 255, 255);
+		border: 2px solid rgb(255, 255, 255);
 		border-radius: 50%;
 		color: #ffffff;
 		padding: 20px 19px;
@@ -81,13 +102,22 @@ body
 		cursor: pointer;
 	}
 
-  #overlay h1,h2,h3,h4,p {
+  .spinner {
+    border-right-color: #5597d4;
+    animation: rotateSpinner 800ms linear infinite;
+  }
+  
+  .alert {
+    color: #ff0000;
+    font-weight: bold;
+  }
+
+  #overlay h1,h2,h3,h4,p,span {
 		background: transparent;
 		border: 0;
 		color: #ffffff;
 		padding: 12px 18px;
     text-align: center;
-    font-family: "Gill Sans", sans-serif;
 	}
 
 .effect_div {
@@ -219,7 +249,6 @@ label {
 		color: #ffffff;
 		padding: 15px 16px;
 		text-transform: uppercase;
-    font-family: "Gill Sans", sans-serif;
 		cursor: pointer;
 	}
 

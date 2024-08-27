@@ -18,18 +18,16 @@ for (let i = 0; i < 20; i++){
   videoelement.volume = 1;
   adminVideos.appendChild(videoelement);
 }
-const btn_start = document.getElementById('btn_start');
-const btn_reload = document.getElementById('btn_reload');
-const btn_reco = document.getElementById('btn_reco');
+document.getElementById('btn_start').onclick = startContext;;
+document.getElementById('btn_reload').onclick = sendData;;
+document.getElementById('btn_reco').onclick = sendData;;
 // const btn_midi = document.getElementById('btn_midi');
 // const slider_midi = document.getElementById('slider_midi');
-const btn_scene1 = document.getElementById('btn_scene1');
-const btn_scene2 = document.getElementById('btn_scene2');
-const btn_scene3 = document.getElementById('btn_scene3');
+document.getElementById('btn_scene1').onclick = sendData;
+document.getElementById('btn_scene2').onclick = sendData;
+document.getElementById('btn_scene2_random').onclick = sendData;
+document.getElementById('btn_scene3').onclick = sendData;
 
-btn_start.onclick = startContext;
-btn_reload.onclick = sendData;
-btn_reco.onclick = sendData;
 // btn_midi.onclick = ()=>{
 //   if(navigator.requestMIDIAccess){
 //     navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
@@ -45,10 +43,6 @@ btn_reco.onclick = sendData;
 //     output.send(noteOnMessage);
 //   })
 // }
-
-btn_scene1.onclick = sendData;
-btn_scene2.onclick = sendData;
-btn_scene3.onclick = sendData;
 
 const divGStats = document.getElementById('stats');
 
@@ -245,9 +239,6 @@ socket.on("offer", function (offer, clientId) {
   rtcPeerConnection.ondatachannel = receiveChannelCallback;
   rtcPeerConnection.onconnectionstatechange = (ev) => {
     let client;
-    console.log("tamere1");
-    console.log(ev);
-    console.log("tamere2");
     switch(ev.currentTarget.connectionState) {
       case "new":
         console.log("New...");
@@ -332,6 +323,7 @@ function OnIceCandidateFunction(event) {
   
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
 function OnTrackFunction(event) {
+  console.log("ontraaaaack");
   if (event.track.kind === 'audio'){
     let medias = document.getElementById('medias');
     let clientdiv = document.createElement("div");
@@ -497,9 +489,13 @@ function sendData(event) {
       data = {"scene": 2};
       // change2Vid();
       break;
-    case "btn_scene3":
+    case "btn_scene2_random":
       data = {"scene": 5};
-      // change2Crac();
+      // change2Vid();
+      break;
+    case "btn_scene3":
+      data = {"scene": 3};
+      change2Crac();
       break;
     default:
       console.log("Error : no scene found !")

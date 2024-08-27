@@ -22,6 +22,7 @@ StreamVisualizer4Clients.prototype.start = function() {
 
 StreamVisualizer4Clients.prototype.stop = function() {
   cancelAnimationFrame(this.myAnim);
+  this.drawContext.clearRect(0, 0, this.canvas.width, this.canvas.height);
 };
 
 StreamVisualizer4Clients.prototype.setColor = function(col) {
