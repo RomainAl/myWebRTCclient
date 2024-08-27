@@ -245,6 +245,9 @@ socket.on("offer", function (offer, clientId) {
   rtcPeerConnection.ondatachannel = receiveChannelCallback;
   rtcPeerConnection.onconnectionstatechange = (ev) => {
     let client;
+    console.log("tamere1");
+    console.log(ev);
+    console.log("tamere2");
     switch(ev.currentTarget.connectionState) {
       case "new":
         console.log("New...");

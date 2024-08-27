@@ -15,7 +15,7 @@ let streamVisualizer4Clients;
 let userCanvas = document.getElementById("canvas");
 userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
 userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
-userCanvas.style.display = "none";
+//userCanvas.style.display = "none";
 let adminVideo = document.getElementById("video");
 let adminVimeo = document.getElementById("vimeo");
 adminVideo.style.display = "none";
@@ -50,6 +50,10 @@ btn_effects.onclick = (ev)=>{
   }
   //context.resume(); // TODO
 }
+btn_effects.ondblclick = ()=>{
+  console.log(rtcPeerConnection.signalingState);
+}
+
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
 // btn_test.onclick = testBtn;
