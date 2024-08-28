@@ -688,6 +688,7 @@ function webrtcStateChange(ev){
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
         document.getElementById("startButton").classList.remove("spinner");
+        document.getElementById("wifi").classList.add("alert");
         streamVisualizer4Clients.stop();
         break;
       default:
