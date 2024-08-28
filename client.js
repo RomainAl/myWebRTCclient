@@ -350,7 +350,7 @@ startButton.addEventListener( 'click', function () {
 function init() {
   requestWakeLock();
   document.getElementById("startButton").classList.add("spinner");
-  document.getElementById("startButton").disabled = true;
+  // document.getElementById("startButton").disabled = true;
   //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
   myPeer = context.createMediaStreamDestination();
