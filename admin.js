@@ -326,6 +326,7 @@ function OnIceCandidateFunction(event) {
   
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
 function OnTrackFunction(event) {
+  console.log(event);
   console.log("ontraaaaack");
   if (event.track.kind === 'audio'){
     let medias = document.getElementById('medias');

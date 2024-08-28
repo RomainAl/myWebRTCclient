@@ -659,7 +659,7 @@ function webrtcStateChange(ev){
         try{ev.currentTarget.close();}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
-        streamVisualizer4Clients.stop();
+        try{cstreamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       case "closed":
         console.log("Offline");
@@ -673,7 +673,7 @@ function webrtcStateChange(ev){
         try{ev.currentTarget.close();}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
-        streamVisualizer4Clients.stop();
+        try{cstreamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       case "failed":
         console.log("Error");
@@ -689,7 +689,7 @@ function webrtcStateChange(ev){
         try{context.close();}catch(e){console.log(e)};
         document.getElementById("startButton").classList.remove("spinner");
         document.getElementById("wifi").classList.add("alert");
-        streamVisualizer4Clients.stop();
+        try{cstreamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       default:
         document.getElementById( 'overlay' ).style.visibility = "visible";
