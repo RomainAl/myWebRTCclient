@@ -363,6 +363,7 @@ function init() {
   adminVideo.volume = 0;
   adminVideo.play().then(()=>adminVideo.pause());
   // vimeo.setVolume(1.0);
+  console.log("tamre");
   socket.emit("join", roomName, false);
 };
 
@@ -629,6 +630,7 @@ function webrtcStateChange(ev){
               adminVideo_webrtc.volume = 0;
               adminVideo_webrtc.pause();
               myGUI.style.display = "flex";
+              document.getElementById("loading-bar").style.display = "none";
             })
       
             const audioTracks = stream.getAudioTracks();
@@ -659,7 +661,7 @@ function webrtcStateChange(ev){
         try{ev.currentTarget.close();}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
-        try{cstreamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       case "closed":
         console.log("Offline");
@@ -673,7 +675,7 @@ function webrtcStateChange(ev){
         try{ev.currentTarget.close();}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
-        try{cstreamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       case "failed":
         console.log("Error");
@@ -689,7 +691,7 @@ function webrtcStateChange(ev){
         try{context.close();}catch(e){console.log(e)};
         document.getElementById("startButton").classList.remove("spinner");
         document.getElementById("wifi").classList.add("alert");
-        try{cstreamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       default:
         document.getElementById( 'overlay' ).style.visibility = "visible";
