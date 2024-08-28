@@ -350,7 +350,6 @@ startButton.addEventListener( 'click', function () {
 function init() {
   requestWakeLock();
   document.getElementById("startButton").classList.add("spinner");
-  // document.getElementById("startButton").disabled = true;
   //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
   myPeer = context.createMediaStreamDestination();
@@ -363,7 +362,7 @@ function init() {
   adminVideo.volume = 0;
   adminVideo.play().then(()=>adminVideo.pause());
   // vimeo.setVolume(1.0);
-  console.log("tamre");
+  document.getElementById("startButton").disabled = true;
   socket.emit("join", roomName, false);
 };
 
