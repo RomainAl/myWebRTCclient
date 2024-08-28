@@ -654,12 +654,11 @@ function webrtcStateChange(ev){
         myGUI.style.display = "none";
         adminVideo.pause();
         adminVideo.volume = 0;
-        ev.currentTarget.close();
-        myPeer.stream.getTracks().forEach((track) => {track.stop()});
-        userCanvasStream.getTracks().forEach((track) => {track.stop()});
-        ev.currentTarget.close();
-        source_mic.getTracks().forEach(function(track) {track.stop();});
-        context.close();
+        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{ev.currentTarget.close();}catch(e){console.log(e)};
+        try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+        try{context.close();}catch(e){console.log(e)};
         streamVisualizer4Clients.stop();
         break;
       case "closed":
@@ -669,11 +668,11 @@ function webrtcStateChange(ev){
         myGUI.style.display = "none";
         adminVideo.pause();
         adminVideo.volume = 0;
-        myPeer.stream.getTracks().forEach((track) => {track.stop()});
-        userCanvasStream.getTracks().forEach((track) => {track.stop()});
-        ev.currentTarget.close();
-        source_mic.getTracks().forEach(function(track) {track.stop();});
-        context.close();
+        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{ev.currentTarget.close();}catch(e){console.log(e)};
+        try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+        try{context.close();}catch(e){console.log(e)};
         streamVisualizer4Clients.stop();
         break;
       case "failed":
@@ -683,11 +682,12 @@ function webrtcStateChange(ev){
         myGUI.style.display = "none";
         adminVideo.pause();
         adminVideo.volume = 0;
-        myPeer.stream.getTracks().forEach((track) => {track.stop()});
-        userCanvasStream.getTracks().forEach((track) => {track.stop()});
-        ev.currentTarget.close();
-        source_mic.getTracks().forEach(function(track) {track.stop();});
-        context.close();
+        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{ev.currentTarget.close();}catch(e){console.log(e)};
+        try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+        try{context.close();}catch(e){console.log(e)};
+        document.getElementById("startButton").classList.remove("spinner");
         streamVisualizer4Clients.stop();
         break;
       default:
