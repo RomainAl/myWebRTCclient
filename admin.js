@@ -24,8 +24,9 @@ document.getElementById('btn_reco').onclick = sendData;;
 // const btn_midi = document.getElementById('btn_midi');
 // const slider_midi = document.getElementById('slider_midi');
 document.getElementById('btn_scene1').onclick = sendData;
-document.getElementById('btn_scene2').onclick = sendData;
-document.getElementById('btn_scene2_random').onclick = sendData;
+document.getElementById('btn_scene20').onclick = sendData;
+document.getElementById('btn_scene21').onclick = sendData;
+document.getElementById('btn_scene21_random').onclick = sendData;
 document.getElementById('btn_scene3').onclick = sendData;
 
 // btn_midi.onclick = ()=>{
@@ -260,6 +261,8 @@ socket.on("offer", function (offer, clientId) {
         break;
       case "closed":
         console.log("Offline");
+        client.div.style.borderColor = "red";
+        ev.currentTarget.close();
         break;
       case "failed":
         console.log("Error");
@@ -485,11 +488,14 @@ function sendData(event) {
     case "btn_scene1":
       data = {"scene": 1};
       break;
-    case "btn_scene2":
-      data = {"scene": 2};
+    case "btn_scene20":
+      data = {"scene": 20};
+      break;
+    case "btn_scene21":
+      data = {"scene": 21};
       // change2Vid();
       break;
-    case "btn_scene2_random":
+    case "btn_scene21_random":
       data = {"scene": 5};
       // change2Vid();
       break;

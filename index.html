@@ -14,15 +14,16 @@
         <!-- <iframe id="vimeo" src="https://player.vimeo.com/video/750452856?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"></iframe> -->
         <canvas id="canvas"></canvas>
         <!-- <div data-vimeo-id="750452856" id="vimeo" data-vimeo-loop="true" data-vimeo-controls="true" data-vimeo-autoplay="true" data-vimeo-muted="true" ></div> -->
-        <video id="video" playsinline></video>
+        <video id="video" playsinline preload="auto"></video>
+        <video id="video_webrtc" playsinline></video>
     </div>
-    <div id="GUI" style="display: none">
+    <div id="GUI" style="display: none;">
         <div id="effects-params">
             <!-- <button id="btn_test">TEST</button> -->
         </div>
         <div id="Btns">
-            <button id="btn_effects"><i class="fa-solid fa-gear" style="color: #ffffff;"></i></button>
-            <button id="btn_rec" style="background-color: transparent;">
+            <button id="btn_effects" disabled><i class="fa-solid fa-gear" style="color: #ffffff;"></i></button>
+            <button id="btn_rec" disabled style="background-color: transparent;">
                 <i id="rec" class="fa-solid fa-circle fa-lg" style="color: #FF0000;"></i>
                 <i id="stop" class="fa-solid fa-square fa-lg" style="color: #FFFFFF;  display: none"></i>
                 <i id="trash" class="fa-solid fa-circle-xmark fa-lg" style="color: #ffffff; display: none"></i></button>
@@ -38,12 +39,13 @@
                 . Et allume ton micro :</p>
         </div>
         <p id="err"; style="display: none"><i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #ffffff;"></i><br><br><br>Accès impossible à ton micro... <br> Mais tu peux rester pour la suite ! </p>
-        <button id="startButton">
+        <button id="startButton" disabled class="spinner">
             <i id="microon" class="fa-solid fa-microphone fa-2xl" style="color: #ffffff;"></i>
-            <i id="microoff" class="fa-solid fa-microphone-slash fa-2xl" style="color: #ffffff; padding: 15px 0; display: none"></i>
+            <i id="microoff" class="fa-solid fa-microphone-slash fa-2xl" style="color: #ffffff; padding: 12px 0; display: none"></i>
         </button>
-        <p class="alert">. Désolé, nous travaillons actuellement sur le site . <br>. (v0.72) .</p>
+        <p class="alert">. Désolé, nous travaillons actuellement sur le site . <br>. (v0.73) .</p>
     </div>
+    <div id="loading-bar" ></div>
     <!-- <script src="https://192.168.10.2:1337/socket.io/socket.io.min.js"></script> -->
     <script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>
     <!-- <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script> -->

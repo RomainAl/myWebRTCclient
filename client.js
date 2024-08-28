@@ -1,31 +1,27 @@
-let socket;
-try {
-  //socket = io.connect("https://maman-jk7dceleka-od.a.run.app");
-  //socket = io.connect("https://maman2-jk7dceleka-od.a.run.app");
-  //socket = io.connect("https://mywrtc-unuojesj3q-od.a.run.app");
-  socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
-  // socket = io.connect("https://192.168.10.2:1337");
-  console.log("Flyio ok");
-  //socket = io.connect("https://192.168.10.2:1337");
-} catch(err){
-  alert(err);
+if (location.protocol !== 'https:') {
+  location.replace(`https:${location.href.substring(location.protocol.length)}`);
+  alert("Go HTTPS !");
 }
+const socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
+
 let streamVisualizer4Clients;
 
 let userCanvas = document.getElementById("canvas");
 userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
 userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
-//userCanvas.style.display = "none";
 let adminVideo = document.getElementById("video");
 // let adminVimeo = document.getElementById("vimeo");
 adminVideo.style.display = "none";
 adminVideo.type="video/webm";
 adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
+adminVideo.volume = 0;
+let adminVideo_webrtc = document.getElementById("video_webrtc");
+adminVideo_webrtc.style.display = "none";
+adminVideo_webrtc.volume = 0;
 // let vimeo = new Vimeo.Player('vimeo');
 let effectsPan = document.getElementById("effects-params");
 effectsPan.style.visibility = "hidden";
 let myGUI = document.getElementById("GUI");
-myGUI.style.display = "none";
 let atablee = document.getElementById("atablee");
 let btn_fullscreen = document.getElementById("btn_fullscreen");
 let btn_rec = document.getElementById("btn_rec");
@@ -36,8 +32,6 @@ let mystop = document.getElementById("stop");
 let trash = document.getElementById("trash");
 let btn_effects = document.getElementById("btn_effects");
 btn_fullscreen.onclick = changeFullScreen;
-btn_effects.disabled = true;
-btn_rec.disabled = true;
 btn_effects.style.borderColor = "#5c5c5c";
 btn_rec.style.borderColor = "#5c5c5c";
 btn_effects.onclick = (ev)=>{
@@ -80,7 +74,7 @@ const displayAllEffectsParams = false;
 let effects = [
   {
     name: "delay",
-    title: "DELAY TIME",
+    title: "ECHOS",
     device: {},
     div: {},
     activ: false,
@@ -107,7 +101,7 @@ let effects = [
   },
   {
     name: "disto",
-    title: "DISTO",
+    title: "DISTORSION",
     device: {},
     div: {},
     activ: false,
@@ -161,7 +155,7 @@ let effects = [
   },
   {
     name: "downsample",
-    title: "DOWN SAMPLE",
+    title: "DEGRADATION",
     device: {},
     div: {},
     activ: false,
@@ -179,7 +173,7 @@ let effects = [
   },
   {
     name: "reverb",
-    title: "REVERB",
+    title: "REVERBERATION",
     device: {},
     div: {},
     activ: false,
@@ -205,7 +199,7 @@ let effects = [
   },
   {
      name: "pitchshift",
-     title: "PITCH SHIFTER",
+     title: "HAUTEUR",
      device: {},
      div: {},
      activ: false,
@@ -232,7 +226,7 @@ let effects = [
    },
   {
     name: "freeze",
-    title: "FREEZE AUTO",
+    title: "FREEZE (AUTO)",
     device: {},
     div: {},
     activ: false,
@@ -287,7 +281,7 @@ let effects = [
     userParams: [
       {
         name: "pitch",
-        title: "SPEED PLAY",
+        title: "VITESSE",
         defaultValue: 1.0,
         param: {},
         visible: true,
@@ -295,7 +289,7 @@ let effects = [
       },
       {
         name: "metro_speed",
-        title: "RANDOM PLAY",
+        title: "LECTURE ALEATOIRE",
         defaultValue: null,
         param: {},
         visible: true,
@@ -355,6 +349,8 @@ startButton.addEventListener( 'click', function () {
 
 function init() {
   requestWakeLock();
+  document.getElementById("startButton").classList.add("spinner");
+  document.getElementById("startButton").disabled = true;
   //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
   myPeer = context.createMediaStreamDestination();
@@ -364,8 +360,8 @@ function init() {
   analyser = context.createAnalyser();
   analyser.minDecibels = -50;
   analyser.maxDecibels = 0;
-  // adminVideo.volume = 1;
-  // adminVideo.play();
+  adminVideo.volume = 0;
+  adminVideo.play().then(()=>adminVideo.pause());
   // vimeo.setVolume(1.0);
   socket.emit("join", roomName, false);
 };
@@ -414,6 +410,12 @@ socket.on("disconnect", (reason) => {
   console.log('Socket disconnected at ')
   console.log(Date.now());
   console.log(reason);
+  document.getElementById("startButton").disabled = true;
+});
+
+socket.on("connect", () => {
+  document.getElementById("startButton").disabled = false;
+  document.getElementById("startButton").classList.remove("spinner");
 });
 
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
@@ -435,8 +437,8 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   //     adminVideo.srcObject = event.streams[0];
   //   };
   // }
-  if (adminVideo.srcObject !== event.streams[0]) {
-    adminVideo.srcObject = event.streams[0];
+  if (adminVideo_webrtc.srcObject !== event.streams[0]) {
+    adminVideo_webrtc.srcObject = event.streams[0];
   }
   
   // adminVideo.volume = 0;
@@ -467,14 +469,35 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo.style.display = "none";
       adminVideo.volume = 0;
       adminVideo.pause();
+      adminVideo_webrtc.style.display = "none";
+      adminVideo_webrtc.volume = 0;
+      adminVideo_webrtc.pause();
       userCanvas.style.display = "initial";
       myGUI.style.display = "flex";
-
       break;
-    case 2:
+    case 20:
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
+      adminVideo.style.display = "none";
       //document.getElementById("overlay").remove(); // TODO
+      adminVideo_webrtc.style.display = "initial";
+      adminVideo_webrtc.volume = 1;
+      adminVideo_webrtc.play();
+      adminVideo.volume = 0;
+      adminVideo.pause();
+      myPeer.stream.getTracks().forEach((track) => {track.stop();});
+      rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+      source_mic.getTracks().forEach(function(track) {track.stop();});
+      context.close();
+      streamVisualizer4Clients.stop();
+      break;
+    case 21:
+      userCanvas.style.display = "none";
+      myGUI.style.display = "none";
+      adminVideo_webrtc.style.display = "none";
+      //document.getElementById("overlay").remove(); // TODO
+      adminVideo_webrtc.volume = 0;
+      adminVideo_webrtc.pause();
       adminVideo.style.display = "initial";
       adminVideo.volume = 1;
       adminVideo.play();
@@ -486,9 +509,19 @@ function onReceiveChannelMessageCallback(event) {
       break;
     case 3:
       //adminVideo.remove();
+      userCanvas.style.display = "none";
+      myGUI.style.display = "none";
       adminVideo.style.display = "none";
-      // adminVideo.pause();
-      // adminVideo.volume = 0;
+      adminVideo.pause();
+      adminVideo.volume = 0;
+      adminVideo_webrtc.style.display = "none";
+      adminVideo_webrtc.volume = 1;
+      adminVideo_webrtc.play();
+      myPeer.stream.getTracks().forEach((track) => {track.stop();});
+      rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+      source_mic.getTracks().forEach(function(track) {track.stop();});
+      context.close();
+      streamVisualizer4Clients.stop();
       //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
@@ -499,10 +532,6 @@ function onReceiveChannelMessageCallback(event) {
       setTimeout(()=>{atablee.style.background = "black";}, 1000);
       break;
     case 5:
-      adminVideo.srcObject.getVideoTracks().forEach(track => {
-        track.stop()
-        adminVideo.srcObject.removeTrack(track);
-      });
       adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
       adminVideo.play();
       // vimeo.loadVideo("978281628").then(()=>vimeo.play());
@@ -539,6 +568,8 @@ function webrtcStateChange(ev){
         break;
       case "connected":
         console.log("Online");
+        document.getElementById("startButton").classList.remove("spinner");
+        document.getElementById("startButton").disabled = false;
         if (navigator.mediaDevices.getUserMedia === undefined) {
           navigator.mediaDevices.getUserMedia = function(constraints) {
         
@@ -564,6 +595,7 @@ function webrtcStateChange(ev){
             source_mic = stream;
             source = context.createMediaStreamSource(source_mic);
             context.suspend();
+            document.getElementById("loading-bar").style.display = "initial";
             effects_Setup(effects)
             .then(()=>{
               context.resume();
@@ -572,12 +604,31 @@ function webrtcStateChange(ev){
               btn_effects.style.borderColor = "white";
               btn_rec.disabled = false;
               btn_rec.style.borderColor = "white";
+              atablee.style.display = "initial";
+              userCanvas.style.display = "initial";
+              adminVideo.style.display = "none";
+              adminVideo.volume = 0;
+              adminVideo.pause();
+              adminVideo_webrtc.style.display = "none";
+              adminVideo_webrtc.volume = 0;
+              adminVideo_webrtc.pause();
+              myGUI.style.display = "flex";
+              document.getElementById("loading-bar").style.display = "none";
             })
             .catch(function (err) {
               context.resume();
               console.log(`${err.name}, ${err.message}`);
               alert('Sorry, impossible for this smartphone to access sound effects !');
               source.connect(analyser);
+              atablee.style.display = "initial";
+              userCanvas.style.display = "initial";
+              adminVideo.style.display = "none";
+              adminVideo.volume = 0;
+              adminVideo.pause();
+              adminVideo_webrtc.style.display = "none";
+              adminVideo_webrtc.volume = 0;
+              adminVideo_webrtc.pause();
+              myGUI.style.display = "flex";
             })
       
             const audioTracks = stream.getAudioTracks();
@@ -586,12 +637,10 @@ function webrtcStateChange(ev){
             }
             streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
             streamVisualizer4Clients.start();
-            document.getElementById( 'overlay' ).remove();
-            myGUI.style.display = "flex";
-      
+            document.getElementById( 'overlay' ).style.visibility = "hidden";
           })
           .catch(function (err) {
-            document.getElementById( 'titles' ).remove();
+            document.getElementById( 'titles' ).display = "none";
             document.getElementById( 'err' ).style.display = "inline-block";
             document.getElementById( 'microon' ).style.display = "none";
             document.getElementById( 'microoff' ).style.display = "inline-block";
@@ -600,29 +649,53 @@ function webrtcStateChange(ev){
         break;
       case "disconnected":
         console.log("Disconnecting…");
+        document.getElementById( 'overlay' ).style.visibility = "visible";
         atablee.style.display = "none";
+        myGUI.style.display = "none";
+        adminVideo.pause();
+        adminVideo.volume = 0;
         ev.currentTarget.close();
         myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
-        rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+        ev.currentTarget.close();
+        source_mic.getTracks().forEach(function(track) {track.stop();});
+        context.close();
+        streamVisualizer4Clients.stop();
         break;
       case "closed":
         console.log("Offline");
+        document.getElementById( 'overlay' ).style.visibility = "visible";
         atablee.style.display = "none";
+        myGUI.style.display = "none";
+        adminVideo.pause();
+        adminVideo.volume = 0;
         myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
-        rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+        ev.currentTarget.close();
+        source_mic.getTracks().forEach(function(track) {track.stop();});
+        context.close();
+        streamVisualizer4Clients.stop();
         break;
       case "failed":
         console.log("Error");
+        document.getElementById( 'overlay' ).style.visibility = "visible";
         atablee.style.display = "none";
-        ev.currentTarget.close();
+        myGUI.style.display = "none";
+        adminVideo.pause();
+        adminVideo.volume = 0;
         myPeer.stream.getTracks().forEach((track) => {track.stop()});
         userCanvasStream.getTracks().forEach((track) => {track.stop()});
-        rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+        ev.currentTarget.close();
+        source_mic.getTracks().forEach(function(track) {track.stop();});
+        context.close();
+        streamVisualizer4Clients.stop();
         break;
       default:
-        console.log("Unknown");
+        document.getElementById( 'overlay' ).style.visibility = "visible";
+        atablee.style.display = "none";
+        myGUI.style.display = "none";
+        adminVideo.pause();
+        adminVideo.volume = 0;
         break;
     }
 };
@@ -706,6 +779,11 @@ function changeFullScreen(){
 async function effects_Setup(effects) {
   let response, patcher;
   for (i=0; i<effects.length;i++){
+    if (window.matchMedia("(orientation: portrait)").matches){
+      document.getElementById("loading-bar").style.transform = `scaleY(${(i+1)/effects.length})`;
+    }  else {
+      document.getElementById("loading-bar").style.transform = `scaleX(${(i+1)/effects.length})`;
+    }
     try {
         response = await fetch("./effects/" + effects[i].name + ".export.json");
         patcher = await response.json();
