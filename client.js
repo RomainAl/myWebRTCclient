@@ -408,13 +408,14 @@ socket.on("candidate", function (candidate) {
 });
 
 socket.on("disconnect", (reason) => {
-  console.log('Socket disconnected at ')
+  console.log('Socket disconnected at ');
   console.log(Date.now());
   console.log(reason);
   document.getElementById("startButton").disabled = true;
 });
 
 socket.on("connect", () => {
+  console.log('Socket connected');
   document.getElementById("startButton").disabled = false;
   document.getElementById("startButton").classList.remove("spinner");
 });
