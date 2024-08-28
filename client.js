@@ -363,6 +363,7 @@ function init() {
   adminVideo.play().then(()=>adminVideo.pause());
   // vimeo.setVolume(1.0);
   document.getElementById("startButton").disabled = true;
+  socket.connect();
   socket.emit("join", roomName, false);
 };
 
