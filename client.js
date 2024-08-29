@@ -1,4 +1,4 @@
-if (location.protocol !== 'https:') {
+if (location.protocol !== 'https:') { // TODO
   location.replace(`https:${location.href.substring(location.protocol.length)}`);
   alert("Go HTTPS !");
 }
@@ -6,31 +6,32 @@ const socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.d
 
 let streamVisualizer4Clients;
 
-let userCanvas = document.getElementById("canvas");
+const userCanvas = document.getElementById("canvas");
 userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
 userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
-let adminVideo = document.getElementById("video");
+const adminVideo = document.getElementById("video");
 // let adminVimeo = document.getElementById("vimeo");
 adminVideo.style.display = "none";
 adminVideo.type="video/webm";
 adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
 adminVideo.volume = 0;
-let adminVideo_webrtc = document.getElementById("video_webrtc");
+const adminVideo_webrtc = document.getElementById("video_webrtc");
 adminVideo_webrtc.style.display = "none";
 adminVideo_webrtc.volume = 0;
 // let vimeo = new Vimeo.Player('vimeo');
-let effectsPan = document.getElementById("effects-params");
+const effectsPan = document.getElementById("effects-params");
 effectsPan.style.visibility = "hidden";
-let myGUI = document.getElementById("GUI");
-let atablee = document.getElementById("atablee");
-let btn_fullscreen = document.getElementById("btn_fullscreen");
-let btn_rec = document.getElementById("btn_rec");
+const overlay = document.getElementById('overlay');
+const myGUI = document.getElementById("GUI");
+const atablee = document.getElementById("atablee");
+const btn_fullscreen = document.getElementById("btn_fullscreen");
+const btn_rec = document.getElementById("btn_rec");
 btn_rec.style.background = "transparent";
 btn_rec.onclick = recfunction;
-let rec = document.getElementById("rec");
-let mystop = document.getElementById("stop");
-let trash = document.getElementById("trash");
-let btn_effects = document.getElementById("btn_effects");
+const rec = document.getElementById("rec");
+const mystop = document.getElementById("stop");
+const trash = document.getElementById("trash");
+const btn_effects = document.getElementById("btn_effects");
 btn_fullscreen.onclick = changeFullScreen;
 btn_effects.style.borderColor = "#5c5c5c";
 btn_rec.style.borderColor = "#5c5c5c";
@@ -42,9 +43,14 @@ btn_effects.onclick = (ev)=>{
     effectsPan.style.visibility = "visible";
     btn_effects.style.backgroundColor = "#5c5c5c";
   }
-  //context.resume(); // TODO
 }
-btn_effects.ondblclick = ()=>{
+const startButton = document.getElementById( 'startButton' );
+startButton.onclick = ()=>init();
+overlay.ondblclick = ()=>{
+  location.reload();
+}
+
+myGUI.ondblclick = ()=>{
   console.log(rtcPeerConnection.signalingState);
 }
 
@@ -343,11 +349,6 @@ const constraints = {
   video: false,
 };
 
-const startButton = document.getElementById( 'startButton' );
-startButton.addEventListener( 'click', function () {
-  init();
-} );
-
 function init() {
   requestWakeLock();
   document.getElementById("startButton").classList.add("spinner");
@@ -398,13 +399,12 @@ socket.on("create", function () {
 
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
-  console.log(answer);
   if (answer != null){
     rtcPeerConnection.setRemoteDescription(answer);
     console.log('answer received');
   } else {
     console.log("Disconnecting…");
-    document.getElementById( 'overlay' ).style.visibility = "visible";
+    overlay.style.visibility = "visible";
     atablee.style.display = "none";
     myGUI.style.display = "none";
     adminVideo.pause();
@@ -467,7 +467,7 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   // adminVideo.src = `https://192.168.10.2:5502/videos/video${Math.round(Math.random()*20)+1}.webm`;
   // adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
   // adminVideo.type="video/webm";
-  console.log("on TRAAAACKKK");
+  console.log("On Track");
 }
 
 function receiveChannelCallback(event) {
@@ -657,7 +657,7 @@ function webrtcStateChange(ev){
             }
             streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
             streamVisualizer4Clients.start();
-            document.getElementById( 'overlay' ).style.visibility = "hidden";
+            overlay.style.visibility = "hidden";
           })
           .catch(function (err) {
             document.getElementById( 'titles' ).display = "none";
@@ -669,7 +669,7 @@ function webrtcStateChange(ev){
         break;
       case "disconnected":
         console.log("Disconnecting…");
-        document.getElementById( 'overlay' ).style.visibility = "visible";
+        overlay.style.visibility = "visible";
         atablee.style.display = "none";
         myGUI.style.display = "none";
         adminVideo.pause();
@@ -683,7 +683,7 @@ function webrtcStateChange(ev){
         break;
       case "closed":
         console.log("Offline");
-        document.getElementById( 'overlay' ).style.visibility = "visible";
+        overlay.style.visibility = "visible";
         atablee.style.display = "none";
         myGUI.style.display = "none";
         adminVideo.pause();
@@ -697,7 +697,7 @@ function webrtcStateChange(ev){
         break;
       case "failed":
         console.log("Error");
-        document.getElementById( 'overlay' ).style.visibility = "visible";
+        overlay.style.visibility = "visible";
         atablee.style.display = "none";
         myGUI.style.display = "none";
         adminVideo.pause();
@@ -713,7 +713,7 @@ function webrtcStateChange(ev){
         try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
         break;
       default:
-        document.getElementById( 'overlay' ).style.visibility = "visible";
+        overlay.style.visibility = "visible";
         atablee.style.display = "none";
         myGUI.style.display = "none";
         adminVideo.pause();
@@ -1151,6 +1151,7 @@ function recfunction(ev){
 
 
     timer_rec = setTimeout(()=>{
+      sampler.gain.disconnect();
       streamVisualizer4Clients.setColor("white");
       sampler.device.parameters.find(param=>param.name=="rand_play").value = 1.0;
       sampler.device.parameters.find(param=>param.name=="out_gain").value = 1.0;
@@ -1169,6 +1170,7 @@ function recfunction(ev){
       nodeConnection("auto");
     }, sampler.device.parameters.find(param=>param.name=="size").value * 1000.0);
   } else if (recTimeCount != 0){
+    sampler.gain.disconnect();
     streamVisualizer4Clients.setColor("white");
     rec.style.display = "none";
     trash.style.display = "inline";
@@ -1194,6 +1196,7 @@ function recfunction(ev){
     }, 100.0);
   } else {
     streamVisualizer4Clients.setColor("white");
+    sampler.gain.disconnect();
     recTimeCount = 0;
     clearTimeout(timer_rec);
     rec.style.display = "inline";

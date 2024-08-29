@@ -66,8 +66,6 @@ let iceServers = {
   ],
 };
 
-console.log(navigator.mediaDevices.enumerateDevices());
-
 //{ sinkId: "124e612f375942fd133185c04186d1a26bc79eda5e4fc75317b508430d00e4ea" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
 let ctx;
@@ -307,7 +305,6 @@ socket.on("offer", function (offer, clientId) {
         console.log(error);
     });
   } else {
-    alert("NO STATED !!");
     rtcPeerConnection.close();
     socket.emit("answer", null, clientId);
     console.log('No answer sent to : ' + clientId);
@@ -334,8 +331,7 @@ function OnIceCandidateFunction(event) {
   
 // Implementing the OnTrackFunction which is part of the RTCPeerConnection Interface.
 function OnTrackFunction(event) {
-  console.log(event);
-  console.log("ontraaaaack");
+  console.log("OnTrack");
   if (event.track.kind === 'audio'){
     let medias = document.getElementById('medias');
     let clientdiv = document.createElement("div");
