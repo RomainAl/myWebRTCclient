@@ -2,14 +2,6 @@
   font-family: 'InterVar';
   src: url("./others/InterVariable.ttf");
 }
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
 
 @keyframes rotateSpinner {
 	to {
@@ -21,7 +13,6 @@ html,
 body
 {
     font-family: 'InterVar', sans-serif;
-    animation: fade-in 2s ease 0s forwards;
     overflow: hidden;
     background: #000000;
 }

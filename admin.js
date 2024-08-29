@@ -18,9 +18,10 @@ for (let i = 0; i < 20; i++){
   videoelement.volume = 1;
   adminVideos.appendChild(videoelement);
 }
-document.getElementById('btn_start').onclick = startContext;;
-document.getElementById('btn_reload').onclick = sendData;;
-document.getElementById('btn_reco').onclick = sendData;;
+document.getElementById('btn_start').onclick = startContext;
+document.getElementById('btn_reload').onclick = sendData;
+document.getElementById('btn_stopAll').onclick = removeAllStoped;
+document.getElementById('btn_reco').onclick = sendData;
 // const btn_midi = document.getElementById('btn_midi');
 // const slider_midi = document.getElementById('slider_midi');
 document.getElementById('btn_scene1').onclick = sendData;
@@ -207,8 +208,9 @@ socket.on("create", function () {
 });
 
 socket.on("offer", function (offer, clientId) {
-
+  console.log(clientS);
   currentClientId = clientId;
+  if (clientS && (clientS.find(t=>t.clientId==clientId))) removeClient(clientId);
   console.log('Offer receive from = '+clientId);
   let videoelement = document.getElementById("adminVideos");
   videoelement = videoelement.getElementsByTagName("video")[0];
@@ -234,76 +236,82 @@ socket.on("offer", function (offer, clientId) {
 
   let rtcPeerConnection = new RTCPeerConnection(iceServers);
   rtcPeerConnection.onicecandidate = OnIceCandidateFunction;
-  rtcPeerConnection.ontrack = OnTrackFunction;
   rtcPeerConnection.setRemoteDescription(offer);
   adminStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, adminStream));
   rtcPeerConnection.ondatachannel = receiveChannelCallback;
-  rtcPeerConnection.onconnectionstatechange = (ev) => {
-    let client;
-    switch(ev.currentTarget.connectionState) {
-      case "new":
-        console.log("New...");
-        break;
-      case "checking":
-        console.log("Connecting…");
-        break;
-      case "connected":
-        console.log("Online");
-        client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-        client.div.style.borderColor = "green";
-        break;
-      case "disconnected":
-        console.log("Disconnecting…");
-        client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-        client.div.style.borderColor = "red";
-        //removeClient(clientId);
-        ev.currentTarget.close();
-        break;
-      case "closed":
-        console.log("Offline");
-        client.div.style.borderColor = "red";
-        ev.currentTarget.close();
-        break;
-      case "failed":
-        console.log("Error");
-        client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-        client.div.style.borderColor = "red";
-        ev.currentTarget.close();
-        break;
-      default:
-        console.log("Unknown");
-        break;
-    }
-  };
-  rtcPeerConnection
-  .createAnswer()
-  .then((answer) => {
-      rtcPeerConnection.setLocalDescription(answer);
-      socket.emit("answer", answer, clientId);
-      console.log('answer sent to : ' + clientId);
-      sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
-      sendChannel.onopen = onSendChannelStateChange;
-      sendChannel.onmessage = onSendChannelMessageCallback;
-      sendChannel.onclose = onSendChannelStateChange;
-      myPeer = ctx.createMediaStreamDestination();
-      let client = {
-        rtcDataSendChannel: sendChannel,
-        rtcPeerConnection: rtcPeerConnection,
-        clientId : clientId,
-        rtcPeerCoID: rtcPeerConnection.remoteDescription.sdp.slice(9, 29),
-        div: document.getElementsByName('div'+clientId)[0],
-        source: source,
-        gainNode: gainNode,
-        cutFreq: cutFreq,
-        analyser: analyser,
-        audioCrac_myPeer: myPeer
-      };
-      clientS.push(client);
-  })
-  .catch((error) => {
-      console.log(error);
-  });
-
+  if (ctx){
+    rtcPeerConnection.ontrack = OnTrackFunction;
+    rtcPeerConnection
+    .createAnswer()
+    .then((answer) => {
+        rtcPeerConnection.setLocalDescription(answer);
+        socket.emit("answer", answer, clientId);
+        console.log('answer sent to : ' + clientId);
+        sendChannel = rtcPeerConnection.createDataChannel('mySceneName');
+        sendChannel.onopen = onSendChannelStateChange;
+        sendChannel.onmessage = onSendChannelMessageCallback;
+        sendChannel.onclose = onSendChannelStateChange;
+        rtcPeerConnection.onconnectionstatechange = (ev) => {
+          let client;
+          switch(ev.currentTarget.connectionState) {
+            case "new":
+              console.log("New...");
+              break;
+            case "checking":
+              console.log("Connecting…");
+              break;
+            case "connected":
+              console.log("Online");
+              client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
+              client.div.style.borderColor = "green";
+              break;
+            case "disconnected":
+              console.log("Disconnecting…");
+              client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
+              ev.currentTarget.close();
+              client.div.style.borderColor = "red";
+              //removeClient(clientId);
+              break;
+            case "closed":
+              console.log("Offline");
+              ev.currentTarget.close();
+              client.div.style.borderColor = "red";
+              break;
+            case "failed":
+              console.log("Error");
+              client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
+              ev.currentTarget.close();
+              client.div.style.borderColor = "red";
+              break;
+            default:
+              console.log("Unknown");
+              break;
+          }
+        };
+        myPeer = ctx.createMediaStreamDestination();
+        let client = {
+          rtcDataSendChannel: sendChannel,
+          rtcPeerConnection: rtcPeerConnection,
+          clientId : clientId,
+          rtcPeerCoID: rtcPeerConnection.remoteDescription.sdp.slice(9, 29),
+          div: document.getElementsByName('div'+clientId)[0],
+          source: source,
+          gainNode: gainNode,
+          cutFreq: cutFreq,
+          analyser: analyser,
+          audioCrac_myPeer: myPeer
+        };
+        clientS.push(client);
+    })
+    .catch((error) => {
+        console.log(error);
+    });
+  } else {
+    alert("NO STATED !!");
+    rtcPeerConnection.close();
+    socket.emit("answer", null, clientId);
+    console.log('No answer sent to : ' + clientId);
+  }
 });
 
 socket.on("disconnect", (reason) => {
@@ -366,50 +374,52 @@ function OnTrackFunction(event) {
     gain.step = 0.1;
     gain.onchange = changeGain;
     clientdiv.appendChild(gain);
-    source = ctx.createMediaStreamSource(event.streams[0]);
-    gainNode = ctx.createGain();
-    gainNode.gain.value = gain.value;
-    analyser = ctx.createAnalyser();
-    analyser.minDecibels = -140;
-    analyser.maxDecibels = 0;
+    if (ctx){
+      source = ctx.createMediaStreamSource(event.streams[0]);
+      gainNode = ctx.createGain();
+      gainNode.gain.value = gain.value;
+      analyser = ctx.createAnalyser();
+      analyser.minDecibels = -140;
+      analyser.maxDecibels = 0;
 
-    let cutFreq_f = document.createElement('input');
-    cutFreq_f.setAttribute("name", 'input'+currentClientId);
-    cutFreq_f.type = 'range';
-    cutFreq_f.min = 0;
-    cutFreq_f.max = 22050;
-    cutFreq_f.value = 0;
-    cutFreq_f.step = 100;
-    
-    cutFreq_f.onchange = changeCutFreq;
-    clientdiv.appendChild(cutFreq_f);
+      let cutFreq_f = document.createElement('input');
+      cutFreq_f.setAttribute("name", 'input'+currentClientId);
+      cutFreq_f.type = 'range';
+      cutFreq_f.min = 0;
+      cutFreq_f.max = 22050;
+      cutFreq_f.value = 0;
+      cutFreq_f.step = 100;
+      
+      cutFreq_f.onchange = changeCutFreq;
+      clientdiv.appendChild(cutFreq_f);
 
-    cutFreq = ctx.createBiquadFilter();
-    cutFreq.frequency.value = cutFreq_f.value;
-    cutFreq.type = "peaking";
-    cutFreq.gain.value = -40;
+      cutFreq = ctx.createBiquadFilter();
+      cutFreq.frequency.value = cutFreq_f.value;
+      cutFreq.type = "peaking";
+      cutFreq.gain.value = -40;
 
-    const splitter = ctx.createChannelSplitter(1);
-    source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
-    let btn_chan = document.createElement("div");
-    clientdiv.appendChild(btn_chan);
-    for (let i=0; i<ctx.destination.maxChannelCount; i++){
-      let button = document.createElement("button");
-      button.setAttribute("name", 'btn'+ currentClientId);
-      if (ch % ctx.destination.maxChannelCount==i){
-        button.style.background='green';
-      } else {
-        button.style.background='white';
+      const splitter = ctx.createChannelSplitter(1);
+      source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
+      let btn_chan = document.createElement("div");
+      clientdiv.appendChild(btn_chan);
+      for (let i=0; i<ctx.destination.maxChannelCount; i++){
+        let button = document.createElement("button");
+        button.setAttribute("name", 'btn'+ currentClientId);
+        if (ch % ctx.destination.maxChannelCount==i){
+          button.style.background='green';
+        } else {
+          button.style.background='white';
+        }
+        button.innerText = i+1;
+        button.onclick = changeChan;
+        btn_chan.appendChild(button);
       }
-      button.innerText = i+1;
-      button.onclick = changeChan;
-      btn_chan.appendChild(button);
-    }
-    ch++;
-    ch = ch % ctx.destination.maxChannelCount;
-    const streamVisualizer = new MyWebAudio(source, analyser, canvas);
-    streamVisualizer.start();
-
+      ch++;
+      ch = ch % ctx.destination.maxChannelCount;
+      const streamVisualizer = new MyWebAudio(source, analyser, canvas);
+      streamVisualizer.start();
+    };
+    
     let videoMaster = document.getElementById("adminVideos");
     videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
@@ -625,6 +635,10 @@ function removeAllChildNodes(parent) {
   while (parent.firstChild) {
       parent.removeChild(parent.firstChild);
   }
+}
+function removeAllStoped() {
+  clientS.filter(c=>c.rtcPeerConnection.signalingState!=='stable').forEach(c=>removeClient(c.clientId));
+  console.log(clientS);
 }
 
 function changeBackgroundColor(event){

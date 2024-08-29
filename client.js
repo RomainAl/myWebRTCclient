@@ -71,6 +71,7 @@ let gain;
 let myPeer;
 let timer_rec;
 const displayAllEffectsParams = false;
+
 let effects = [
   {
     name: "delay",
@@ -397,8 +398,24 @@ socket.on("create", function () {
 
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
-  rtcPeerConnection.setRemoteDescription(answer);
-  console.log('answer received');
+  console.log(answer);
+  if (answer != null){
+    rtcPeerConnection.setRemoteDescription(answer);
+    console.log('answer received');
+  } else {
+    console.log("Disconnecting…");
+    document.getElementById( 'overlay' ).style.visibility = "visible";
+    atablee.style.display = "none";
+    myGUI.style.display = "none";
+    adminVideo.pause();
+    adminVideo.volume = 0;
+    try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+    try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+    try{context.close();}catch(e){console.log(e)};
+    alert("Désolé, l'administrateur n'est pas prêt !");
+    document.getElementById("startButton").disabled = false;
+    document.getElementById("startButton").classList.remove("spinner");
+  }
 });
 
 // Triggered on receiving an ice candidate from the peer.
