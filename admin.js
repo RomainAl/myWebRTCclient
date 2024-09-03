@@ -198,10 +198,6 @@ function dumpStats(results, statsPrev) {
 
 socket.emit("join", roomName, true);
 
-/*socket.on("create", function (id) {
-  currentAdminId = id;
-});*/
-
 socket.on("create", function () {
 });
 
@@ -250,7 +246,6 @@ socket.on("offer", function (offer, clientId) {
         sendChannel.onmessage = onSendChannelMessageCallback;
         sendChannel.onclose = onSendChannelStateChange;
         rtcPeerConnection.onconnectionstatechange = (ev) => {
-          let client;
           switch(ev.currentTarget.connectionState) {
             case "new":
               console.log("New...");
@@ -260,26 +255,23 @@ socket.on("offer", function (offer, clientId) {
               break;
             case "connected":
               console.log("Online");
-              client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
-              client.div.style.borderColor = "green";
+              clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "green";
               break;
             case "disconnected":
               console.log("Disconnecting…");
-              client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
               ev.currentTarget.close();
-              client.div.style.borderColor = "red";
+              clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
               //removeClient(clientId);
               break;
             case "closed":
               console.log("Offline");
               ev.currentTarget.close();
-              client.div.style.borderColor = "red";
+              clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
               break;
             case "failed":
               console.log("Error");
-              client = clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29)));
               ev.currentTarget.close();
-              client.div.style.borderColor = "red";
+              clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
               break;
             default:
               console.log("Unknown");
@@ -306,6 +298,7 @@ socket.on("offer", function (offer, clientId) {
     });
   } else {
     rtcPeerConnection.close();
+    rtcPeerConnection = null;
     socket.emit("answer", null, clientId);
     console.log('No answer sent to : ' + clientId);
   }
@@ -474,7 +467,9 @@ function receiveChannelCallback(event) {
 }
 
 function onReceiveChannelMessageCallback(event) {
-  console.log('Received Message');
+  console.log('Received Message : ' + event.data);
+  clientS.find(c=>c.clientId == JSON.parse(event.data).clientId).div.style.background = "red";
+  setTimeout(()=>{clientS.find(c=>c.clientId == JSON.parse(event.data).clientId).div.style.background = "white";}, 1000);
 }
 
 function onReceiveChannelStateChange() {
@@ -507,6 +502,7 @@ function sendData(event) {
       // change2Vid();
       break;
     case "btn_scene3":
+      // data = {"scene": 6};
       data = {"scene": 3};
       change2Crac();
       break;
@@ -528,23 +524,27 @@ function onSendChannelStateChange() {
 }
 
 function onSendChannelMessageCallback(event) {
-  console.log('Received Message');
+  console.log('Message sent');
 }
 
 function change2Crac(){
   clientS.forEach((client)=>{
-    let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
-    let audioSource = ctx.createMediaElementSource(audioCrac);
-    audioSource.connect(client.audioCrac_myPeer);
-    audioCrac = document.getElementsByName('audioCrac2' + client.clientId)[0];
-    audioSource = ctx.createMediaElementSource(audioCrac);
-    audioSource.connect(client.audioCrac_myPeer);
-    audioCrac.playbackRate = Math.random()+0.1;
-    audioCrac.play();
-    let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-    audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
-    let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
-    client.rtcPeerConnection.removeTrack(videoSender);
+    try {
+      let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
+      let audioSource = ctx.createMediaElementSource(audioCrac);
+      audioSource.connect(client.audioCrac_myPeer);
+      audioCrac = document.getElementsByName('audioCrac2' + client.clientId)[0];
+      audioSource = ctx.createMediaElementSource(audioCrac);
+      audioSource.connect(client.audioCrac_myPeer);
+      audioCrac.playbackRate = Math.random()+0.1;
+      audioCrac.play();
+      let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+      audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
+      let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+      client.rtcPeerConnection.removeTrack(videoSender);
+    } catch(err){
+      console.log(err);
+    }
   });
 }
 
@@ -614,8 +614,9 @@ function removeClient(clientId){
   let client = clientS.find(t=>t.clientId==clientId);
   let ind = clientS.findIndex(t=>t.clientId==clientId);
   try{
-    client.rtcPeerConnection.close();
     client.rtcDataSendChannel.close();
+    client.rtcPeerConnection.close();
+    client.rtcPeerConnection = null;
   } catch (error) {
     console.error(error);
   }
@@ -633,7 +634,7 @@ function removeAllChildNodes(parent) {
   }
 }
 function removeAllStoped() {
-  clientS.filter(c=>c.rtcPeerConnection.signalingState!=='stable').forEach(c=>removeClient(c.clientId));
+  clientS.filter(c=>c.rtcPeerConnection.connectionState!=='connected').forEach(c=>removeClient(c.clientId));
   console.log(clientS);
 }
 

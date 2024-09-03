@@ -4,8 +4,6 @@ if (location.protocol !== 'https:') { // TODO
 }
 const socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
 
-let streamVisualizer4Clients;
-
 const userCanvas = document.getElementById("canvas");
 userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
 userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
@@ -52,6 +50,9 @@ overlay.ondblclick = ()=>{
 
 myGUI.ondblclick = ()=>{
   console.log(rtcPeerConnection.signalingState);
+  if (sendChannel.readyState === 'open') {
+    sendChannel.send(JSON.stringify({clientId: myID}));
+  }
 }
 
 // let btn_test = document.getElementById("btn_test");
@@ -61,6 +62,8 @@ myGUI.ondblclick = ()=>{
 //effectsPan.style.visibility = "collapse";
 
 navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; 
+let streamVisualizer4Clients;
+let myID;
 let roomName = "atablee";
 let rtcPeerConnection;
 let receiveChannel;
@@ -78,7 +81,26 @@ let myPeer;
 let timer_rec;
 const displayAllEffectsParams = false;
 
-let effects = [
+const effects = [
+  // {
+  //   name: "click",
+  //   title: "click",
+  //   device: {},
+  //   div: {},
+  //   activ: true,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //   {
+  //     name: "TRIG",
+  //     title: "TRIG",
+  //     defaultValue: 0.0,
+  //     param: {},
+  //     visible: true,
+  //     type: "bool"
+  //   }
+  //   ],
+  // },
   {
     name: "delay",
     title: "ECHOS",
@@ -401,7 +423,9 @@ socket.on("create", function () {
 socket.on("answer", function (answer) {
   if (answer != null){
     rtcPeerConnection.setRemoteDescription(answer);
+    myID = socket.id;
     console.log('answer received');
+    console.log('My ID : ' + myID);
   } else {
     console.log("Disconnecting…");
     overlay.style.visibility = "visible";
@@ -558,6 +582,9 @@ function onReceiveChannelMessageCallback(event) {
       // vimeo.on('progress', (e)=>console.log(e.percent));
       // vimeo.play();
       break;
+    case 6:
+      effects.find(e=>e.name == 'click').device.parameters[1].value = Math.random();
+      break;
     default :
       console.log("No scene...")
   }
@@ -637,7 +664,7 @@ function webrtcStateChange(ev){
             .catch(function (err) {
               context.resume();
               console.log(`${err.name}, ${err.message}`);
-              alert('Sorry, impossible for this smartphone to access sound effects !');
+              alert('Désolé, impossible pour ton smartphone d\'accéder');
               source.connect(analyser);
               atablee.style.display = "initial";
               userCanvas.style.display = "initial";
@@ -676,7 +703,7 @@ function webrtcStateChange(ev){
         adminVideo.volume = 0;
         try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{ev.currentTarget.close();}catch(e){console.log(e)};
+        try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
         try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
@@ -690,7 +717,7 @@ function webrtcStateChange(ev){
         adminVideo.volume = 0;
         try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{ev.currentTarget.close();}catch(e){console.log(e)};
+        try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
         try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
@@ -704,7 +731,7 @@ function webrtcStateChange(ev){
         adminVideo.volume = 0;
         try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{ev.currentTarget.close();}catch(e){console.log(e)};
+        try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
         try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
         try{context.close();}catch(e){console.log(e)};
         document.getElementById("startButton").classList.remove("spinner");
