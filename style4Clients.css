@@ -1,86 +1,84 @@
-@font-face {
-  font-family: 'InterVar';
-  src: url("./others/InterVariable.ttf");
-}
-
-@keyframes rotateSpinner {
-	to {
-		transform: rotate(360deg);
-	}
-}
-
-html,
-body
-{
-    font-family: 'InterVar', sans-serif;
-    overflow: hidden;
-    background: #000000;
-}
-
-*
-{
-    margin: 0;
-    padding: 0;
-    outline: none;
-}
-
-@media screen and (min-width: 320px) and (max-width: 767px) and (orientation: portrait) {
-  #atablee {
-    transform: rotate(-90deg);
-    transform-origin: left top;
-    width: 100vh;
-    height: 100vw;
-    overflow-x: hidden;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: 'black';
-    background: #000000;
+  @font-face {
+    font-family: 'InterVar';
+    src: url("./others/InterVariable.ttf");
   }
-}
 
-#canvas {
-  background: #000000;
-  position: fixed;
-  width:100%;
-  height:100%;
-}
+  @keyframes rotateSpinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 
-video {
-  background: #000000;
-  position: fixed;
-  width:100%;
-  height:100%;
-}
+  html,
+  body
+  {
+      font-family: 'InterVar', sans-serif;
+      overflow: hidden;
+      background: #000000;
+  }
 
-#vimeo {
-  background: #000000;
-  position: fixed;
-  width:100%;
-  height:100%;
-}
+  *
+  {
+      margin: 0;
+      padding: 0;
+      outline: none;
+  }
 
-#vimeo, iframe {
-  background: #000000;
-  position: fixed;
-  width:100%;
-  height:100%;
-}
+  #canvas {
+    background: #000000;
+    position: fixed;
+    width:100%;
+    height:100%;
+  }
 
-#overlay {
-	position: absolute;
-	font-size: 16px;
-	z-index: 2;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-direction: column;
-	background: rgba(0,0,0,0.5);
-}
+  video {
+    background: #000000;
+    position: fixed;
+    width:100%;
+    height:100%;
+  }
+
+  #vimeo {
+    background: #000000;
+    position: fixed;
+    width:100%;
+    height:100%;
+  }
+
+  #vimeo, iframe {
+    background: #000000;
+    position: fixed;
+    width:100%;
+    height:100%;
+  }
+
+  #overlay {
+    position: absolute;
+    font-size: 16px;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: rgba(0,0,0,0.5);
+    overflow-y: scroll;
+  }
+
+  #adminID {
+    position: absolute;
+    font-size: 16px;
+    z-index: 2;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgb(255, 255, 255);
+    visibility: hidden;
+  }
 
 	#overlay button {
 		background: transparent;
@@ -111,148 +109,189 @@ video {
     text-align: center;
 	}
 
-.effect_div {
-  width: 100%;
-  margin-top: 2px;
-  margin-bottom: 2px;
-  display: flex;
-  align-items: start;
-  justify-content: center;
-  flex-direction: column;
-}
+  .effect_div {
+    width: 100%;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    flex-direction: column;
+  }
 
-.effect_div div {
-  margin-top: 5px;
-  margin-bottom: 5px;
-}
+  .effect_div div {
+    margin-top: 5px;
+    margin-bottom: 5px;
+  }
 
-.div_slider{
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-}
+  .div_slider{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
 
-.param-slider {
-  width: 85%;
-}
+  .param-slider {
+    width: 85%;
+  }
 
-label {
-  color: #ffffff;
-}
-@media screen and (orientation: landscape){
-  #loading-bar {
+  label {
+    color: #ffffff;
+  }
+  @media screen and (orientation: landscape){
+    #loading-bar {
+        position: absolute;
+        top: 49.5%;
+        width: 100%;
+        height: 1%;
+        background: #ffffff;
+        transform: scaleX(0);
+        transform-origin: bottom right;
+        transition: transform 0.5s;
+    }
+
+    #GUI {
       position: absolute;
-      top: 49.5%;
+      font-size: 16px;
+      z-index: 2;
+      top: 0;
+      left: 0;
       width: 100%;
-      height: 1%;
+      height: 100%;
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      background: rgba(0,0,0,0);
+    }
+    #Btns {
+      border-right: 0.5px solid rgba(255, 255, 255, .5);
+      font-size: 16px;
+      z-index: 2;
+      width: 10%;
+      height: 100%;
+      bottom: 0%;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      flex-direction: column;
+      background: rgba(0,0,0,0.5);
+    }
+    #effects-params {
+      font-size: 16px;
+      z-index: 2;
+      width: 50%;
+      height: auto;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      flex-direction: column-reverse;
+      background: rgba(0,0,0,0.5);
+      overflow: scroll;
+    }
+    #gain {
+      transform: rotate(-90deg);
+    }
+
+    #gain-param {
+      font-size: 16px;
+      z-index: 2;
+      height: auto;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      flex-direction: column-reverse;
+      background: rgba(0,0,0,0.5);
+    }
+  }
+
+  @media screen and (orientation: portrait){
+    #atablee {
+      transform: rotate(-90deg);
+      transform-origin: left top;
+      width: 100vh;
+      height: 100vw;
+      overflow-x: hidden;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background-color: 'black';
+      background: #000000;
+    }
+
+    #loading-bar {
+      position: absolute;
+      left: 49.5%;
+      height: 100%;
+      width: 1%;
       background: #ffffff;
-      transform: scaleX(0);
-      transform-origin: bottom right;
+      transform: scaleY(0);
+      transform-origin: top left;
       transition: transform 0.5s;
+    }
+
+    #GUI {
+      position: absolute;
+      font-size: 16px;
+      z-index: 2;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      background: rgba(0,0,0,0);
+    }
+    
+    #Btns {
+      border-top: 1px solid rgba(255, 255, 255, .5);
+      font-size: 16px;
+      z-index: 2;
+      width: 100%;
+      height: 10%;
+      bottom: 0%;
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      flex-direction: row;
+      background: rgba(0,0,0,0.5);
+    }
+
+    #effects-params {
+      padding-bottom: 5px;
+      font-size: 16px;
+      z-index: 2;
+      width: 100%;
+      height: auto;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      flex-direction: column-reverse;
+      background: rgba(0,0,0,0.5);
+      overflow: scroll;
+    }
+    #gain-param {
+      padding-bottom: 20px;
+      padding-top: 20px;
+      font-size: 16px;
+      z-index: 2;
+      width: 100%;
+      height: auto;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+      flex-direction: column-reverse;
+      background: rgba(0,0,0,0.5);
+    }
   }
 
-  #GUI {
-    position: absolute;
-    font-size: 16px;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: flex-end;
-    background: rgba(0,0,0,0);
-  }
-  #Btns {
-    border-right: 0.5px solid rgba(255, 255, 255, .5);
-    font-size: 16px;
-    z-index: 2;
-    width: 10%;
-    height: 100%;
-    bottom: 0%;
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-    flex-direction: column;
-    background: rgba(0,0,0,0.5);
-  }
-  #effects-params {
-    font-size: 16px;
-    z-index: 2;
-    width: 50%;
-    height: auto;
-    display: flex;
-    align-items: start;
-    justify-content: center;
-    flex-direction: column-reverse;
-    background: rgba(0,0,0,0.5);
-    overflow: scroll;
-  }
-}
-
-@media screen and (orientation: portrait){
-  #loading-bar {
-    position: absolute;
-    left: 49.5%;
-    height: 100%;
-    width: 1%;
-    background: #ffffff;
-    transform: scaleY(0);
-    transform-origin: top left;
-    transition: transform 0.5s;
+  #sampler_div {
+    border-bottom: 1px dashed rgba(255, 255, 255, .5);
+    padding-top: 2px;
+    padding-bottom: 2px;
   }
 
-  #GUI {
-    position: absolute;
-    font-size: 16px;
-    z-index: 2;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    background: rgba(0,0,0,0);
-  }
-  
-  #Btns {
-    border-top: 1px solid rgba(255, 255, 255, .5);
-    font-size: 16px;
-    z-index: 2;
-    width: 100%;
-    height: 10%;
-    bottom: 0%;
-    display: flex;
-    align-items: center;
-    justify-content: space-evenly;
-    flex-direction: row;
-    background: rgba(0,0,0,0.5);
-  }
-
-  #effects-params {
-    padding-bottom: 5px;
-    font-size: 16px;
-    z-index: 2;
-    width: 100%;
-    height: auto;
-    display: flex;
-    align-items: start;
-    justify-content: center;
-    flex-direction: column-reverse;
-    background: rgba(0,0,0,0.5);
-    overflow: scroll;
-  }
-}
-
-#sampler_div {
-  border-bottom: 1px dashed rgba(255, 255, 255, .5);
-  padding-top: 2px;
-  padding-bottom: 2px;
-}
 	#Btns button {
 		background: transparent;
 		border: 0;

@@ -24,11 +24,14 @@ document.getElementById('btn_stopAll').onclick = removeAllStoped;
 document.getElementById('btn_reco').onclick = sendData;
 // const btn_midi = document.getElementById('btn_midi');
 // const slider_midi = document.getElementById('slider_midi');
-document.getElementById('btn_scene1').onclick = sendData;
-document.getElementById('btn_scene20').onclick = sendData;
-document.getElementById('btn_scene21').onclick = sendData;
-document.getElementById('btn_scene21_random').onclick = sendData;
-document.getElementById('btn_scene3').onclick = sendData;
+document.getElementById('btn_scene1').onclick = changeScene;
+document.getElementById('btn_scene20').onclick = changeScene;
+document.getElementById('btn_scene21').onclick = changeScene;
+// document.getElementById('btn_scene21_random').onclick = sendData;
+document.getElementById('btn_scene3').onclick = changeScene;
+document.getElementById('btn_lauch').onclick = sendData;
+const scenes = document.getElementById('scenes');
+const scenes_array = Array.from(scenes.children);
 
 // btn_midi.onclick = ()=>{
 //   if(navigator.requestMIDIAccess){
@@ -51,13 +54,22 @@ const divGStats = document.getElementById('stats');
 let clientS = [];
 let sendChannel;
 let receiveChannel;
-
+let currentSceneNb = 1;
 let iterKey = 0;
 document.addEventListener('keydown', changeBackgroundColor);
-
 const NVideo = 21;
 const roomName = "atablee";
 let currentClientId;
+let stopco = false;
+document.getElementById("btn_stopco").onclick = ()=>{
+  if (stopco){
+    document.getElementById("btn_stopco").style.background = 'white';
+    stopco = false;
+  } else {
+    document.getElementById("btn_stopco").style.background = 'red';
+    stopco = true;
+  }
+}
 
 let iceServers = {
   iceServers: [
@@ -103,6 +115,7 @@ function startContext(event) {
   console.log("Channel number: " + ctx.destination.maxChannelCount);
   //merger.channelInterpretation = 'discrete';
   console.log(ctx);
+  document.body.style.background = 'white';
 }
 
 // Display statistics
@@ -202,8 +215,6 @@ socket.on("create", function () {
 });
 
 socket.on("offer", function (offer, clientId) {
-  console.log(clientS);
-  currentClientId = clientId;
   if (clientS && (clientS.find(t=>t.clientId==clientId))) removeClient(clientId);
   console.log('Offer receive from = '+clientId);
   let videoelement = document.getElementById("adminVideos");
@@ -233,7 +244,14 @@ socket.on("offer", function (offer, clientId) {
   rtcPeerConnection.setRemoteDescription(offer);
   adminStream.getTracks().forEach((track) => rtcPeerConnection.addTrack(track, adminStream));
   rtcPeerConnection.ondatachannel = receiveChannelCallback;
-  if (ctx){
+
+  if (stopco){
+    rtcPeerConnection.close();
+    rtcPeerConnection = null;
+    socket.emit("answer", "stopco", clientId);
+    console.log('No answer sent to : ' + clientId);
+  } else if (ctx) {
+    currentClientId = clientId;
     rtcPeerConnection.ontrack = OnTrackFunction;
     rtcPeerConnection
     .createAnswer()
@@ -450,6 +468,12 @@ function OnTrackFunction(event) {
     clientdiv.appendChild(divStats);
 
     let button = document.createElement("button");
+    button.setAttribute("name", 'btn_id'+ currentClientId);
+    button.innerText = "ID";
+    button.onclick = clientResearch;
+    clientdiv.appendChild(button);
+
+    button = document.createElement("button");
     button.setAttribute("name", 'btn'+ currentClientId);
     button.innerText = "STOP";
     button.onclick = stop;
@@ -487,25 +511,42 @@ function sendData(event) {
       socket.connect();
       socket.emit("join", roomName, true);
       break;
-    case "btn_scene1":
-      data = {"scene": 1};
-      break;
-    case "btn_scene20":
-      data = {"scene": 20};
-      break;
-    case "btn_scene21":
-      data = {"scene": 21};
-      // change2Vid();
-      break;
-    case "btn_scene21_random":
-      data = {"scene": 5};
-      // change2Vid();
-      break;
-    case "btn_scene3":
-      // data = {"scene": 6};
-      data = {"scene": 3};
-      change2Crac();
-      break;
+    case "btn_lauch":
+
+      const scene = scenes_array.find(c=>c.style.background == 'orange');
+      if (scene){
+        switch (scene.getAttribute('id')){
+          case "btn_scene1":
+            currentSceneNb = 1;
+            data = {"scene": currentSceneNb};
+            break;
+          case "btn_scene20":
+            currentSceneNb = 20;
+            data = {"scene": currentSceneNb};
+            break;
+          case "btn_scene21":
+            currentSceneNb = 21;
+            data = {"scene": currentSceneNb};
+            // change2Vid();
+            break;
+          case "btn_scene21_random":
+            currentSceneNb = 5;
+            data = {"scene": currentSceneNb};
+            // change2Vid();
+            break;
+          case "btn_scene3":
+            // data = {"scene": 6};
+            currentSceneNb = 3;
+            data = {"scene": currentSceneNb};
+            change2Crac();
+            break;
+        }
+      } else {
+        alert('Sélectionne une scène !');
+      }
+
+    break;
+    
     default:
       console.log("Error : no scene found !")
   }
@@ -521,6 +562,10 @@ function sendData(event) {
 function onSendChannelStateChange() {
   const readyState = sendChannel.readyState;
   console.log('Send channel state is: ' + readyState);
+  if (readyState == 'open'){
+    sendChannel.send(JSON.stringify({"scene":  currentSceneNb}));
+    if (currentSceneNb == 3) change2Crac();
+  }
 }
 
 function onSendChannelMessageCallback(event) {
@@ -550,35 +595,42 @@ function change2Crac(){
 
 function changeVid(event){
   const clientId = event.target.name.substring(3);
-  let videoelement = document.getElementsByName('video' + clientId)[0];
-  videoelement.src = './videos/video'+event.target.innerText+'.mp4';
-  videoelement.type="video/mp4";
-  videoelement.play()
-  .then(() => {
-    let adminStream = videoelement.captureStream();
-    let client = clientS.find(t=>t.clientId==clientId);
-    const [videoTrack] = adminStream.getVideoTracks();
-    let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
-    videoSender.replaceTrack(videoTrack);
-    const [audioTrack] = adminStream.getAudioTracks();
-    let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
-    audioSender.replaceTrack(audioTrack);
-    });
+  const scene = scenes_array.find(c=>c.style.background == 'orange');
+  if (scene){
+    switch (scene.getAttribute('id')){
+      case "btn_scene20":
+        let videoelement = document.getElementsByName('video' + clientId)[0];
+        videoelement.src = './videos/video'+event.target.innerText+'.mp4';
+        videoelement.type="video/mp4";
+        videoelement.play()
+        .then(() => {
+          let adminStream = videoelement.captureStream();
+          let client = clientS.find(t=>t.clientId==clientId);
+          const [videoTrack] = adminStream.getVideoTracks();
+          let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === videoTrack.kind);
+          videoSender.replaceTrack(videoTrack);
+          const [audioTrack] = adminStream.getAudioTracks();
+          let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === audioTrack.kind);
+          audioSender.replaceTrack(audioTrack);
+          });
+        break;
+      case "btn_scene21":
+        data = {"scene": 21, "video": event.target.innerText};
+        console.log(data);
+        const client = clientS.find(c=>c.clientId == clientId);
+        if (client.rtcDataSendChannel.readyState === 'open') {
+          client.rtcDataSendChannel.send(JSON.stringify(data));
+        }
+    }
+  }
 }
 
-function change2Vid(){
-  let videoelements = document.getElementById("adminVideosTest").getElementsByTagName("video");
-  let adminStream2 = videoelements[2].captureStream();
-  clientS.forEach((client)=>{
-    const [videoTrack] = adminStream.getVideoTracks();
-    let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === 'video');
-    videoSender.replaceTrack(videoTrack);
-    const [audioTrack] = adminStream.getAudioTracks();
-    let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === 'audio');
-    audioSender.replaceTrack(audioTrack);
-  });
+function changeScene(event){
+  for (const child of scenes.children) {
+    child.style.background = 'yellow';
+  }
+  event.target.style.background = 'orange';
 }
-
 
 function changeChan(event){
   const clientId = event.target.name.substring(3);
@@ -608,6 +660,15 @@ function changeCutFreq(event){
 function stop(event){
   const clientId = event.target.name.substring(3);
   removeClient(clientId);
+}
+
+function clientResearch(event){
+  const clientId = event.target.name.substring(6);
+  const client = clientS.find(c=>c.clientId == clientId);
+  if (client.rtcDataSendChannel.readyState === 'open') {
+    const data = {"id": clientId};
+    client.rtcDataSendChannel.send(JSON.stringify(data));
+  }
 }
 
 function removeClient(clientId){

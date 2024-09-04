@@ -10,19 +10,24 @@ userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
 const adminVideo = document.getElementById("video");
 // let adminVimeo = document.getElementById("vimeo");
 adminVideo.style.display = "none";
-adminVideo.type="video/webm";
-adminVideo.src = `./videos4Client/video${Math.round(Math.random()*20)+1}.webm`;
-adminVideo.volume = 0;
+// adminVideo.addEventListener("ended", (event) => {alert('fini')});
+// adminVideo.type="video/webm";
+// adminVideo.src = `./videos4Client/video20.webm`;
+// adminVideo.volume = 0;
 const adminVideo_webrtc = document.getElementById("video_webrtc");
 adminVideo_webrtc.style.display = "none";
 adminVideo_webrtc.volume = 0;
 // let vimeo = new Vimeo.Player('vimeo');
 const effectsPan = document.getElementById("effects-params");
-effectsPan.style.visibility = "hidden";
+effectsPan.style.display = "none";
+const gainPan = document.getElementById("gain-param");
+gainPan.style.display = "none";
+const BtnsPan = document.getElementById("Btns");
 const overlay = document.getElementById('overlay');
 const myGUI = document.getElementById("GUI");
 const atablee = document.getElementById("atablee");
 const btn_fullscreen = document.getElementById("btn_fullscreen");
+const btn_gain = document.getElementById("btn_gain");
 const btn_rec = document.getElementById("btn_rec");
 btn_rec.style.background = "transparent";
 btn_rec.onclick = recfunction;
@@ -34,12 +39,25 @@ btn_fullscreen.onclick = changeFullScreen;
 btn_effects.style.borderColor = "#5c5c5c";
 btn_rec.style.borderColor = "#5c5c5c";
 btn_effects.onclick = (ev)=>{
-  if (effectsPan.style.visibility == "visible"){
-    effectsPan.style.visibility = "hidden";
+  if (effectsPan.style.display == "flex"){
+    effectsPan.style.display = "none";
     btn_effects.style.background = "transparent";
   } else {
-    effectsPan.style.visibility = "visible";
+    effectsPan.style.display = "flex";
     btn_effects.style.backgroundColor = "#5c5c5c";
+    gainPan.style.display = 'none';
+    btn_gain.style.background = "transparent";
+  }
+}
+btn_gain.onclick = (ev)=>{
+  if (gainPan.style.display == 'flex'){
+    gainPan.style.display = 'none';
+    btn_gain.style.background = "transparent";
+  } else {
+    effectsPan.style.display = "none";
+    btn_effects.style.background = "transparent";
+    gainPan.style.display = 'flex';
+    btn_gain.style.backgroundColor = "#5c5c5c";
   }
 }
 const startButton = document.getElementById( 'startButton' );
@@ -48,13 +66,17 @@ overlay.ondblclick = ()=>{
   location.reload();
 }
 
-myGUI.ondblclick = ()=>{
-  console.log(rtcPeerConnection.signalingState);
-  if (sendChannel.readyState === 'open') {
-    sendChannel.send(JSON.stringify({clientId: myID}));
-  }
+BtnsPan.ondblclick = adminID;
+document.body.ondblclick = adminID;
+adminVideo.ondblclick = adminID;
+adminVideo_webrtc.ondblclick = adminID;
+userCanvas.ondblclick = adminID;
+function adminID(e){
+    console.log(rtcPeerConnection.signalingState);
+    if (sendChannel.readyState === 'open') {
+      sendChannel.send(JSON.stringify({clientId: myID}));
+    }
 }
-
 // let btn_test = document.getElementById("btn_test");
 // let testBool = true;
 // btn_test.onclick = testBtn;
@@ -83,8 +105,8 @@ const displayAllEffectsParams = false;
 
 const effects = [
   // {
-  //   name: "click",
-  //   title: "click",
+  //   name: "nico01",
+  //   title: "nico01",
   //   device: {},
   //   div: {},
   //   activ: true,
@@ -92,8 +114,8 @@ const effects = [
   //   gain: null,
   //   userParams: [
   //   {
-  //     name: "TRIG",
-  //     title: "TRIG",
+  //     name: "BANG",
+  //     title: "BANG",
   //     defaultValue: 0.0,
   //     param: {},
   //     visible: true,
@@ -272,33 +294,33 @@ const effects = [
       },
     ],
   },
-  // {
-  //   name: "filter",
-  //   title: "FILTER (HIGH-CUT)",
-  //   device: {},
-  //   div: {},
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "hi-cut",
-  //       title: "hi-cut",
-  //       defaultValue: 1200.0,
-  //       param: {},
-  //       visible: true,
-  //       type: "real"
-  //     },
-  //     {
-  //       name: "lo-cut",
-  //       title: "lo-cut",
-  //       defaultValue: null,
-  //       param: {},
-  //       visible: true,
-  //       type: "real"
-  //     }
-  //   ]
-  // },
+  {
+    name: "filter",
+    title: "FILTER (HIGH-CUT)",
+    device: {},
+    div: {},
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "hi-cut",
+        title: "hi-cut",
+        defaultValue: 1200.0,
+        param: {},
+        visible: true,
+        type: "real"
+      },
+      {
+        name: "lo-cut",
+        title: "lo-cut",
+        defaultValue: null,
+        param: {},
+        visible: true,
+        type: "real"
+      }
+    ]
+  },
   {
     name: "sampler",
     title: "SAMPLER",
@@ -374,19 +396,25 @@ const constraints = {
 function init() {
   requestWakeLock();
   document.getElementById("startButton").classList.add("spinner");
+  document.getElementById("startButton").disabled = true;
   //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
   myPeer = context.createMediaStreamDestination();
-  // myPeer = context.destination;
   gain = context.createGain();
-  gain.gain.value = 0.1;
+  gain.gain.value = 1.0;
+  document.getElementById("gain").addEventListener("input", (event) => {
+    gain.gain.value = event.target.value;
+    if (event.target.value < 0.1) {
+      document.getElementById("g2").style.display = 'inline-block';
+      document.getElementById("g1").style.display = 'none';
+    } else {
+      document.getElementById("g1").style.display = 'inline-block';
+      document.getElementById("g2").style.display = 'none';
+    }
+  });
   analyser = context.createAnalyser();
-  analyser.minDecibels = -50;
-  analyser.maxDecibels = 0;
-  adminVideo.volume = 0;
-  adminVideo.play().then(()=>adminVideo.pause());
-  // vimeo.setVolume(1.0);
-  document.getElementById("startButton").disabled = true;
+  adminVideo.muted = false;
+  adminVideo.volume = 0.0;
   socket.connect();
   socket.emit("join", roomName, false);
 };
@@ -421,13 +449,8 @@ socket.on("create", function () {
 
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
-  if (answer != null){
-    rtcPeerConnection.setRemoteDescription(answer);
-    myID = socket.id;
-    console.log('answer received');
-    console.log('My ID : ' + myID);
-  } else {
-    console.log("Disconnecting…");
+  console.log(answer);
+  if (answer == null){
     overlay.style.visibility = "visible";
     atablee.style.display = "none";
     myGUI.style.display = "none";
@@ -439,6 +462,23 @@ socket.on("answer", function (answer) {
     alert("Désolé, l'administrateur n'est pas prêt !");
     document.getElementById("startButton").disabled = false;
     document.getElementById("startButton").classList.remove("spinner");
+  } else if (answer == "stopco") {
+    overlay.style.visibility = "visible";
+    atablee.style.display = "none";
+    myGUI.style.display = "none";
+    adminVideo.pause();
+    adminVideo.volume = 0;
+    try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+    try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+    try{context.close();}catch(e){console.log(e)};
+    alert("Désolé, il n'y a plus de place ! Revenez vite !");
+    document.getElementById("startButton").disabled = false;
+    document.getElementById("startButton").classList.remove("spinner");
+  } else {
+    rtcPeerConnection.setRemoteDescription(answer);
+    myID = socket.id;
+    console.log('answer received');
+    console.log('My ID : ' + myID);
   }
 });
 
@@ -504,21 +544,125 @@ function receiveChannelCallback(event) {
 
 function onReceiveChannelMessageCallback(event) {
   console.log('Received Message : ' + event.data);
-  switch (JSON.parse(event.data).scene){
+  changeScene(JSON.parse(event.data));
+}
+
+function changeScene(data){
+  switch (data.scene){
     case 0:
       location.reload();
       break;
     case 1:
-      adminVideo.style.display = "none";
-      adminVideo.volume = 0;
-      adminVideo.pause();
-      adminVideo_webrtc.style.display = "none";
-      adminVideo_webrtc.volume = 0;
-      adminVideo_webrtc.pause();
-      userCanvas.style.display = "initial";
-      myGUI.style.display = "flex";
+      if ((!context)||(context.state=='closed') ){ // TODO
+        context = new AudioContext();
+        myPeer = context.createMediaStreamDestination();
+        gain = context.createGain();
+        gain.gain.value = 1.0;
+        document.getElementById("gain").addEventListener("input", (event) => {
+          gain.gain.value = event.target.value;
+          if (event.target.value < 0.1) {
+            document.getElementById("g2").style.display = 'inline-block';
+            document.getElementById("g1").style.display = 'none';
+          } else {
+            document.getElementById("g1").style.display = 'inline-block';
+            document.getElementById("g2").style.display = 'none';
+          }
+        });
+        analyser = context.createAnalyser();
+        let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+        audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+        let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+        videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
+      }
+
+      if (navigator.mediaDevices.getUserMedia === undefined) {
+        navigator.mediaDevices.getUserMedia = function(constraints) {
+      
+          // First get ahold of the legacy getUserMedia, if present
+          var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+      
+          // Some browsers just don't implement it - return a rejected promise with an error
+          // to keep a consistent interface
+          if (!getUserMedia) {
+            return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
+          }
+      
+          // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
+          return new Promise(function(resolve, reject) {
+            getUserMedia.call(navigator, constraints, resolve, reject);
+          });
+        }
+      }
+    
+      navigator.mediaDevices
+        .getUserMedia(constraints)
+        .then(function (stream) {
+          source_mic = stream;
+          source = context.createMediaStreamSource(source_mic);
+          context.suspend();
+          document.getElementById("loading-bar").style.display = "initial";
+          effects_Setup(effects)
+          .then(()=>{
+            context.resume();
+            nodeConnection("auto");
+            btn_effects.disabled = false;
+            btn_effects.style.borderColor = "white";
+            btn_rec.disabled = false;
+            btn_rec.style.borderColor = "white";
+            atablee.style.display = "initial";
+            userCanvas.style.display = "initial";
+            adminVideo.style.display = "none";
+            adminVideo.muted = true;
+            adminVideo.play();
+            adminVideo_webrtc.style.display = "none";
+            adminVideo_webrtc.volume = 0;
+            adminVideo_webrtc.pause();
+            myGUI.style.display = "flex";
+            document.getElementById("loading-bar").style.display = "none";
+          })
+          .catch(function (err) {
+            context.resume();
+            console.log(`${err.name}, ${err.message}`);
+            alert('Désolé, impossible pour ton smartphone de charger les effets sonores !');
+            source.connect(gain);
+            gain.connect(analyser);
+            analyser.connect(myPeer); // TODO
+            atablee.style.display = "initial";
+            userCanvas.style.display = "initial";
+            adminVideo.style.display = "none";
+            adminVideo.volume = 0;
+            // adminVideo.pause();
+            adminVideo_webrtc.style.display = "none";
+            adminVideo_webrtc.volume = 0;
+            adminVideo_webrtc.pause();
+            myGUI.style.display = "flex";
+            document.getElementById("loading-bar").style.display = "none";
+          })
+    
+          const audioTracks = stream.getAudioTracks();
+          if (audioTracks.length > 0) {
+            console.log(`Using Audio device: ${audioTracks[0].label}`);
+          }
+          streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
+          streamVisualizer4Clients.start();
+          overlay.style.visibility = "hidden";
+        })
+        .catch(function (err) {
+          overlay.style.visibility = "visible";
+          document.getElementById( 'titles' ).display = "none";
+          document.getElementById( 'err' ).style.display = "inline-block";
+          document.getElementById( 'microon' ).style.display = "none";
+          document.getElementById( 'microoff' ).style.display = "inline-block";
+          console.log(err);
+        })
       break;
     case 20:
+      myPeer.stream.getTracks().forEach((track) => {track.stop();});
+      // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+      try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (context.state!='closed') context.close();
+      try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
+      atablee.style.display = "initial";
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
       adminVideo.style.display = "none";
@@ -528,30 +672,42 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo_webrtc.play();
       adminVideo.volume = 0;
       adminVideo.pause();
-      myPeer.stream.getTracks().forEach((track) => {track.stop();});
-      rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      source_mic.getTracks().forEach(function(track) {track.stop();});
-      context.close();
-      streamVisualizer4Clients.stop();
+      overlay.style.visibility = "hidden";
       break;
     case 21:
-      userCanvas.style.display = "none";
-      myGUI.style.display = "none";
-      adminVideo_webrtc.style.display = "none";
-      //document.getElementById("overlay").remove(); // TODO
-      adminVideo_webrtc.volume = 0;
-      adminVideo_webrtc.pause();
-      adminVideo.style.display = "initial";
-      adminVideo.volume = 1;
-      adminVideo.play();
-      myPeer.stream.getTracks().forEach((track) => {track.stop();});
-      rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      source_mic.getTracks().forEach(function(track) {track.stop();});
-      context.close();
-      streamVisualizer4Clients.stop();
+      if (data.video){
+        adminVideo.src = `./videos4Client/video${data.video}.webm`;
+        adminVideo.play();
+      } else {
+        myPeer.stream.getTracks().forEach((track) => {track.stop();});
+        // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+        try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+        if (context.state!='closed') context.close();
+        try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
+        atablee.style.display = "initial";
+        userCanvas.style.display = "none";
+        myGUI.style.display = "none";
+        adminVideo_webrtc.style.display = "none";
+        //document.getElementById("overlay").remove(); // TODO
+        adminVideo_webrtc.volume = 0;
+        adminVideo_webrtc.pause();
+        adminVideo.style.display = "initial";
+        adminVideo.loop = true;
+        adminVideo.currentTime = 0;
+        adminVideo.play();
+        adminVideo.muted = false;
+        adminVideo.volume = 1;
+        overlay.style.visibility = "hidden";
+      }
       break;
     case 3:
+      myPeer.stream.getTracks().forEach((track) => {track.stop();});
+      // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
+      try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (context.state!='closed') context.close();
+      try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       //adminVideo.remove();
+      atablee.style.display = "initial";
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
       adminVideo.style.display = "none";
@@ -560,11 +716,7 @@ function onReceiveChannelMessageCallback(event) {
       adminVideo_webrtc.style.display = "none";
       adminVideo_webrtc.volume = 1;
       adminVideo_webrtc.play();
-      myPeer.stream.getTracks().forEach((track) => {track.stop();});
-      rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      source_mic.getTracks().forEach(function(track) {track.stop();});
-      context.close();
-      streamVisualizer4Clients.stop();
+      overlay.style.visibility = "hidden";
       //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
@@ -583,10 +735,12 @@ function onReceiveChannelMessageCallback(event) {
       // vimeo.play();
       break;
     case 6:
-      effects.find(e=>e.name == 'click').device.parameters[1].value = Math.random();
+      effects.find(e=>e.name == 'nico01').device.parameters[0].value = Math.random();
       break;
     default :
-      console.log("No scene...")
+      console.log("No scene...");
+      document.getElementById("adminID").style.visibility = "visible";
+      setTimeout(()=>document.getElementById("adminID").style.visibility = "hidden", 1000);
   }
 }
 
@@ -616,83 +770,6 @@ function webrtcStateChange(ev){
         console.log("Online");
         document.getElementById("startButton").classList.remove("spinner");
         document.getElementById("startButton").disabled = false;
-        if (navigator.mediaDevices.getUserMedia === undefined) {
-          navigator.mediaDevices.getUserMedia = function(constraints) {
-        
-            // First get ahold of the legacy getUserMedia, if present
-            var getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-        
-            // Some browsers just don't implement it - return a rejected promise with an error
-            // to keep a consistent interface
-            if (!getUserMedia) {
-              return Promise.reject(new Error('getUserMedia is not implemented in this browser'));
-            }
-        
-            // Otherwise, wrap the call to the old navigator.getUserMedia with a Promise
-            return new Promise(function(resolve, reject) {
-              getUserMedia.call(navigator, constraints, resolve, reject);
-            });
-          }
-        }
-      
-        navigator.mediaDevices
-          .getUserMedia(constraints)
-          .then(function (stream) {
-            source_mic = stream;
-            source = context.createMediaStreamSource(source_mic);
-            context.suspend();
-            document.getElementById("loading-bar").style.display = "initial";
-            effects_Setup(effects)
-            .then(()=>{
-              context.resume();
-              nodeConnection("auto");
-              btn_effects.disabled = false;
-              btn_effects.style.borderColor = "white";
-              btn_rec.disabled = false;
-              btn_rec.style.borderColor = "white";
-              atablee.style.display = "initial";
-              userCanvas.style.display = "initial";
-              adminVideo.style.display = "none";
-              adminVideo.volume = 0;
-              adminVideo.pause();
-              adminVideo_webrtc.style.display = "none";
-              adminVideo_webrtc.volume = 0;
-              adminVideo_webrtc.pause();
-              myGUI.style.display = "flex";
-              document.getElementById("loading-bar").style.display = "none";
-            })
-            .catch(function (err) {
-              context.resume();
-              console.log(`${err.name}, ${err.message}`);
-              alert('Désolé, impossible pour ton smartphone d\'accéder');
-              source.connect(analyser);
-              atablee.style.display = "initial";
-              userCanvas.style.display = "initial";
-              adminVideo.style.display = "none";
-              adminVideo.volume = 0;
-              adminVideo.pause();
-              adminVideo_webrtc.style.display = "none";
-              adminVideo_webrtc.volume = 0;
-              adminVideo_webrtc.pause();
-              myGUI.style.display = "flex";
-              document.getElementById("loading-bar").style.display = "none";
-            })
-      
-            const audioTracks = stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-              console.log(`Using Audio device: ${audioTracks[0].label}`);
-            }
-            streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
-            streamVisualizer4Clients.start();
-            overlay.style.visibility = "hidden";
-          })
-          .catch(function (err) {
-            document.getElementById( 'titles' ).display = "none";
-            document.getElementById( 'err' ).style.display = "inline-block";
-            document.getElementById( 'microon' ).style.display = "none";
-            document.getElementById( 'microoff' ).style.display = "inline-block";
-            console.log(err);
-          })
         break;
       case "disconnected":
         console.log("Disconnecting…");
@@ -770,10 +847,12 @@ const requestWakeLock = async () => {
 document.addEventListener("visibilitychange", (event) => {
 
   try{
-    if (document.visibilityState === "visible") {
-      context.resume();
-    } else {
-      context.suspend();
+    if (context.state != 'closed'){
+      if (document.visibilityState === "visible") {
+        context.resume();
+      } else {
+        context.suspend();
+      }
     }
   } catch (err){
     console.log(err);
@@ -862,14 +941,31 @@ async function effects_Setup(effects) {
         return;
     }
   
+    // (Optional) Fetch the dependencies
+    // let dependencies = [];
+    // try {
+    //     const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
+    //     dependencies = await dependenciesResponse.json();
+    //     // Prepend "export" to any file dependenciies
+    //     dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d);
+    // } catch (e) {
+    //   console.log('No dependencies in : ' + effects[i].name);
+    // }
+
     // Create the device
     try {
         effects[i].device = await RNBO.createDevice({ context, patcher });
     } catch (err) {
-        alert(err);
+        alert('err');
     }
 
+    // if (dependencies.length)
+    //   await effects[i].device.loadDataBufferDependencies(dependencies);
+
+    // attachOutports(effects[i].device);
+
     effects[i].gain = context.createGain();
+    effects[i].gain.gain.value = 1.0;
     // Connect the device to the web audio graph
     effects[i].device.node.connect(effects[i].gain);
 
@@ -899,6 +995,23 @@ function loadRNBOScript(version) {
       document.body.append(el);
   });
 }
+
+// function attachOutports(device) {
+//   const outports = device.outports;
+//   if (outports.length < 1) {
+//       return;
+//   }
+
+//   device.messageEvent.subscribe((ev) => {
+
+//       // Ignore message events that don't belong to an outport
+//       if (outports.findIndex(elt => elt.tag === ev.tag) < 0) return;
+
+//       // Message events have a tag as well as a payload
+//       console.log(`${ev.tag}: ${ev.payload}`);
+//       alert('TAMERE');
+//   });
+// }
 
 function makeGUI(device, userParams, effect_title, effect_activ) {
   let effect_div = document.createElement("div");
@@ -1135,20 +1248,22 @@ function autoChangeGUI(device, isDraggingSlider, uiElements){
 function nodeConnection(mode){ // TODO
   source.disconnect(0);
   analyser.disconnect(0);
+  gain.disconnect(0);
   effects.filter(t=>t.activ==false).forEach((effect)=>{effect.gain.disconnect()});
   let f_effects = effects.filter(t=>t.activ==true);
   if (f_effects.length == 0){
-    source.connect(analyser);
+    source.connect(gain);
   } else if (f_effects.length == 1){
-    f_effects[0].gain.connect(analyser);
+    f_effects[0].gain.connect(gain);
     source.connect(f_effects[0].device.node);
   } else {
-    f_effects[0].gain.connect(analyser);
+    f_effects[0].gain.connect(gain);
     for (i = 1; i < f_effects.length; i++){
       f_effects[i].gain.connect(f_effects[i-1].device.node);
     }
     source.connect(f_effects[f_effects.length-1].device.node);
   };
+  gain.connect(analyser);
   analyser.connect(myPeer);
 }
 
@@ -1159,7 +1274,8 @@ function recfunction(ev){
     streamVisualizer4Clients.setColor("red");
     recTimeCount = Date.now();
     btn_rec.style.backgroundColor = "#FF0000";
-    effectsPan.style.visibility = "hidden";
+    effectsPan.style.display = "none";
+    gainPan.style.display = "none";
     btn_effects.style.background = "transparent";
     sampler.activ = true;
     sampler.device.parameters.find(param=>param.name=="size").value = sampler.userParams.find(t=>t.name == "size").defaultValue;

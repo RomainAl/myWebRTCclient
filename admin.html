@@ -10,21 +10,27 @@
 </head>
 <body>
     <div id="buttons">
-        <button id="btn_start" style="background: green">Start</button>
-        <button id="btn_reload">Reload</button>
-        <button id="btn_stopAll" style="background: red">Stop All</button>
-        <button id="btn_reco">Reconnect</button>
+        <div id="techs">
+            <button id="btn_start" style="background: green">Start admin</button>
+            <button id="btn_reload">Reload All</button>
+            <button id="btn_stopAll" style="background: red">Erase Reds</button>
+            <button id="btn_reco">Reconnect admin</button>
+            <button id="btn_stopco" style="background: white">Stop co</button>
+        </div>
+        <div id="stats"></div>
         <!-- <button id="btn_midi">Midi</button> -->
-        <button id="btn_scene1" style="background: yellow">Scene 1</button>
-        <button id="btn_scene20" style="background: yellow">Scene 20</button>
-        <button id="btn_scene21" style="background: yellow">Scene 21</button>
-        <button id="btn_scene21_random" style="background: yellow">Scene 21 - Rand</button>
-        <button id="btn_scene3" style="background: yellow">Scene 3</button>
+        <div id="scenes">
+            <button id="btn_scene1" style="background: yellow">Scene 1</button>
+            <button id="btn_scene20" style="background: yellow">Scene 20</button>
+            <button id="btn_scene21" style="background: yellow">Scene 21</button>
+            <!-- <button id="btn_scene21_random" style="background: yellow">Scene 21 - Rand</button> -->
+            <button id="btn_scene3" style="background: yellow">Scene 3</button>
+        </div>
+        <button id="btn_lauch" style="background: rgb(255, 0, 251)">Lance la scene</button>
     </div>
     <!-- <div>
         <input type="range" id="slider_midi" name="MidiMess" min="0" max="255" />
     </div> -->
-    <div id="stats"></div>
     <div id="adminVideos" style="display: none;"></div> 
     <!-- <div id="adminVideosTest">
         <video src="./videos/video1.webm" type="video/webm" width = 250 playsinline = true controls = true loop = true></video>
@@ -36,7 +42,7 @@
         <video src="./videos/video12.webm" type="video/webm" width = 250 playsinline = true controls = true loop = true></video>
     </div>  -->
     <div id="medias"></div>
-    <div id="device_info">
+    <div id="device_info" style="display: none;">
 		<div id="key_data"></div>
 		<div id="inputs"></div>
 		<div id="outputs"></div>

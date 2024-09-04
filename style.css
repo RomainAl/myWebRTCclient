@@ -1,6 +1,61 @@
+@font-face {
+  font-family: 'InterVar';
+  src: url("./others/InterVariable.ttf");
+}
 
 #medias {
   display: grid;
   grid-template-columns: auto auto auto auto auto auto;
   grid-gap: 10px;
+  overflow-y: scroll;
+}
+
+body
+{
+    font-family: 'InterVar', sans-serif;
+    overflow: hidden;
+    font-size: 12px;
+    background: #ff0000;
+}
+
+#buttons {
+  position: fixe;
+  display: flex;
+  justify-content: space-around;
+  flex-direction: row;
+  padding: 10px 0px;
+  background-color: rgb(0, 0, 0, 0.5);
+}
+
+#stats {
+  align-items: center;
+  justify-content: center;
+}
+
+button {
+  font-family: 'InterVar', sans-serif;
+  font-size: 12px;
+  color: rgb(0, 0, 0);
+  border: none;
+  padding: 5px 10px;
+  margin: 2px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  box-shadow: rgba(50, 50, 93, .1) 0 0 0 1px inset,rgba(50, 50, 93, .1) 0 2px 5px 0,rgba(0, 0, 0, .07) 0 1px 1px 0;
+  box-sizing: border-box;
+  transform: translateZ(0);
+  transition: all .2s,box-shadow .08s ease-in;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  outline: none;
+  overflow: hidden;
+  backface-visibility: hidden;
+  border-radius: 6px;
+  border-width: 0;
+}
+
+button:focus {
+  box-shadow: rgba(50, 50, 93, 1) 0 0 0 1px inset, rgba(50, 50, 93, .2) 0 6px 15px 0, rgba(0, 0, 0, .1) 0 2px 2px 0, rgba(50, 151, 211, .3) 0 0 0 4px;
 }
