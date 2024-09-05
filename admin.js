@@ -109,14 +109,6 @@ function startContext(event) {
   ctx = new AudioContext();
   ctx.destination.channelInterpretation = 'discrete';
   ctx.destination.channelCount = ctx.destination.maxChannelCount;
-  /*ctx.audioWorklet.addModule('bypass-processor.js')
-    .then(() => {
-      console.log(bitcrusher);
-      bitcrusher = new AudioWorkletNode(ctx, 'bypass-processor');
-      console.log(bitcrusher);
-    })
-    .catch((err)=>{console.log("tamere "+err)});*/
-    
   merger = ctx.createChannelMerger(ctx.destination.maxChannelCount);
   merger.channelInterpretation = 'discrete';
   merger.connect(ctx.destination);
@@ -357,7 +349,7 @@ function OnTrackFunction(event) {
     medias.appendChild(clientdiv);
     clientdiv.setAttribute("name", 'div' + currentClientId);
     clientdiv.classList.add("tel");
-
+    clientdiv.style.width = `${document.getElementById('resizeTel').value}%`;
     let divS = document.createElement("div");
     divS.setAttribute("name", 'divS1');
     divS.classList.add("divS");
@@ -467,6 +459,7 @@ function OnTrackFunction(event) {
     audioCrac.autoplay = false;
     audioCrac.muted = false;
     audioCrac.src = './audios/audio1.wav';
+    audioCrac.controlsList="nodownload noplaybackrate";
     divS.appendChild(audioCrac);
 
     let audioCrac2= document.createElement("audio");
@@ -476,6 +469,8 @@ function OnTrackFunction(event) {
     audioCrac2.autoplay = false;
     audioCrac2.muted = false;
     audioCrac2.src = './audios/audio2.wav';
+    audioCrac2.controlsList="nodownload noplaybackrate";
+    audioCrac2.playbackRate = Math.random()+0.3;
     divS.appendChild(audioCrac2);
 
     if ((currentSel!=0)&&(currentSel!=3)) divS.style.display = 'none';
@@ -530,6 +525,7 @@ function sendData(event) {
   switch (event.srcElement.id){
     case "btn_reload":
       data = {"scene": 0};
+      currentSceneNb = 1;
       break;
     case "btn_reco":
       socket.connect();
@@ -618,6 +614,10 @@ function change2Crac(){
 }
 
 function changeVid(event){
+  for (const child of event.target.parentElement.children) {
+    child.style.background = 'white';
+  }
+  event.target.style.background = 'green';
   const clientId = event.target.name.substring(3);
   const scene = scenes_array.find(c=>c.style.background == 'orange');
   if (scene){
