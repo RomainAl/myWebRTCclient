@@ -29,9 +29,16 @@ document.getElementById('btn_scene20').onclick = changeScene;
 document.getElementById('btn_scene21').onclick = changeScene;
 // document.getElementById('btn_scene21_random').onclick = sendData;
 document.getElementById('btn_scene3').onclick = changeScene;
+document.getElementById('btn_tech').onclick = changeScene;
 document.getElementById('btn_lauch').onclick = sendData;
 const scenes = document.getElementById('scenes');
 const scenes_array = Array.from(scenes.children);
+document.getElementById('resizeTel').onchange = (e)=>{
+  Array.from(document.getElementsByClassName('tel')).forEach(t=>t.style.width = `${e.target.value}%`)
+}
+
+
+// document.getElementsByClassName('tel').forEach(t=>t.style.width = e.target.value);
 
 // btn_midi.onclick = ()=>{
 //   if(navigator.requestMIDIAccess){
@@ -55,6 +62,7 @@ let clientS = [];
 let sendChannel;
 let receiveChannel;
 let currentSceneNb = 1;
+let currentSel = 0;
 let iterKey = 0;
 document.addEventListener('keydown', changeBackgroundColor);
 const NVideo = 21;
@@ -344,35 +352,28 @@ function OnIceCandidateFunction(event) {
 function OnTrackFunction(event) {
   console.log("OnTrack");
   if (event.track.kind === 'audio'){
-    let medias = document.getElementById('medias');
-    let clientdiv = document.createElement("div");
+    const medias = document.getElementById('medias');
+    const clientdiv = document.createElement("div");
     medias.appendChild(clientdiv);
-    clientdiv.style.border = "double";
-    clientdiv.style.borderRadius = "20px";
-    clientdiv.style.display = "flex";
-    clientdiv.style.flexDirection = "column";
-    clientdiv.style.alignItems = "center";
-    clientdiv.style.alignContent = "space-around";
-    //clientdiv.style.justifyContent = "space-around";
-    clientdiv.style.justifySelf = "stretch";
-    clientdiv.style.padding = "10px";
     clientdiv.setAttribute("name", 'div' + currentClientId);
-    let audio = document.createElement("audio");
+    clientdiv.classList.add("tel");
+
+    let divS = document.createElement("div");
+    divS.setAttribute("name", 'divS1');
+    divS.classList.add("divS");
+    clientdiv.appendChild(divS);
+    const audio = document.createElement("audio");
     audio.setAttribute("name", 'audio' + currentClientId); // TODO ? Why audio needed ??
     audio.controls = false;
     audio.autoplay = true;
     audio.muted = true;
-    clientdiv.appendChild(audio);
+    divS.appendChild(audio);
     
     if (audio.srcObject !== event.streams[0]) {
       audio.srcObject = event.streams[0];
       console.log('Received audio remote stream');
     }
-    canvas = document.createElement("canvas");
-    canvas.setAttribute("name", 'canvas' + currentClientId);
-    canvas.width = 250;
-    clientdiv.appendChild(canvas);
-    let gain = document.createElement('input');
+    const gain = document.createElement('input');
     gain.setAttribute("name", 'input'+currentClientId);
     gain.type = 'range';
     gain.min = 0;
@@ -380,7 +381,11 @@ function OnTrackFunction(event) {
     gain.value = 1.0;
     gain.step = 0.1;
     gain.onchange = changeGain;
-    clientdiv.appendChild(gain);
+    divS.appendChild(gain);
+    canvas = document.createElement("canvas");
+    canvas.setAttribute("name", 'canvas' + currentClientId);
+    canvas.width = 250;
+    divS.appendChild(canvas);
     if (ctx){
       source = ctx.createMediaStreamSource(event.streams[0]);
       gainNode = ctx.createGain();
@@ -389,7 +394,7 @@ function OnTrackFunction(event) {
       analyser.minDecibels = -140;
       analyser.maxDecibels = 0;
 
-      let cutFreq_f = document.createElement('input');
+      const cutFreq_f = document.createElement('input');
       cutFreq_f.setAttribute("name", 'input'+currentClientId);
       cutFreq_f.type = 'range';
       cutFreq_f.min = 0;
@@ -398,7 +403,7 @@ function OnTrackFunction(event) {
       cutFreq_f.step = 100;
       
       cutFreq_f.onchange = changeCutFreq;
-      clientdiv.appendChild(cutFreq_f);
+      divS.appendChild(cutFreq_f);
 
       cutFreq = ctx.createBiquadFilter();
       cutFreq.frequency.value = cutFreq_f.value;
@@ -407,10 +412,10 @@ function OnTrackFunction(event) {
 
       const splitter = ctx.createChannelSplitter(1);
       source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
-      let btn_chan = document.createElement("div");
-      clientdiv.appendChild(btn_chan);
+      const btn_chan = document.createElement("div");
+      divS.appendChild(btn_chan);
       for (let i=0; i<ctx.destination.maxChannelCount; i++){
-        let button = document.createElement("button");
+        const button = document.createElement("button");
         button.setAttribute("name", 'btn'+ currentClientId);
         if (ch % ctx.destination.maxChannelCount==i){
           button.style.background='green';
@@ -426,23 +431,35 @@ function OnTrackFunction(event) {
       const streamVisualizer = new MyWebAudio(source, analyser, canvas);
       streamVisualizer.start();
     };
-    
+
+    if ((currentSel!=0)&&(currentSel!=1)) divS.style.display = 'none';
+
+    divS = document.createElement("div");
+    divS.setAttribute("name", 'divS2');
+    divS.classList.add("divS");
+    clientdiv.appendChild(divS);
     let videoMaster = document.getElementById("adminVideos");
     videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
       videoMaster.setAttribute("name", 'video' + currentClientId);
       videoMaster.style.display = "inline";
-      clientdiv.appendChild(videoMaster);
-      let btn_videos = document.createElement("div");
-      clientdiv.appendChild(btn_videos);
+      divS.appendChild(videoMaster);
+      const btn_videos = document.createElement("div");
+      divS.appendChild(btn_videos);
       for (let i=0;i<NVideo;i++){
-        let button = document.createElement("button");
+        const button = document.createElement("button");
         button.setAttribute("name", 'btn'+ currentClientId);
         button.innerText = i+1;
         button.onclick = changeVid;
         btn_videos.appendChild(button);
       }
     }
+    if ((currentSel!=0)&&(currentSel!=20)&&(currentSel!=21)) divS.style.display = 'none';
+
+    divS = document.createElement("div");
+    divS.setAttribute("name", 'divS3');
+    divS.classList.add("divS");
+    clientdiv.appendChild(divS);
     let audioCrac= document.createElement("audio");
     audioCrac.setAttribute("name", 'audioCrac' + currentClientId);
     audioCrac.controls = true;
@@ -450,8 +467,7 @@ function OnTrackFunction(event) {
     audioCrac.autoplay = false;
     audioCrac.muted = false;
     audioCrac.src = './audios/audio1.wav';
-    audioCrac.style.width = '250px';
-    clientdiv.appendChild(audioCrac);
+    divS.appendChild(audioCrac);
 
     let audioCrac2= document.createElement("audio");
     audioCrac2.setAttribute("name", 'audioCrac2' + currentClientId);
@@ -460,25 +476,33 @@ function OnTrackFunction(event) {
     audioCrac2.autoplay = false;
     audioCrac2.muted = false;
     audioCrac2.src = './audios/audio2.wav';
-    audioCrac2.style.width = '250px';
-    clientdiv.appendChild(audioCrac2);
+    divS.appendChild(audioCrac2);
 
-    let divStats = document.createElement("div");
-    divStats.setAttribute("name", 'divStats'+ currentClientId);
-    clientdiv.appendChild(divStats);
-
+    if ((currentSel!=0)&&(currentSel!=3)) divS.style.display = 'none';
+    
+    divS = document.createElement("div");
+    divS.setAttribute("name", 'divTech');
+    divS.classList.add("divS");
+    clientdiv.appendChild(divS);
+    
     let button = document.createElement("button");
     button.setAttribute("name", 'btn_id'+ currentClientId);
     button.innerText = "ID";
     button.onclick = clientResearch;
-    clientdiv.appendChild(button);
+    divS.appendChild(button);
+    
+    const divStats = document.createElement("div");
+    divStats.setAttribute("name", 'divStats'+ currentClientId);
+    divS.appendChild(divStats);
 
     button = document.createElement("button");
     button.setAttribute("name", 'btn'+ currentClientId);
     button.innerText = "STOP";
     button.onclick = stop;
     button.style.background = "red";
-    clientdiv.appendChild(button);
+    divS.appendChild(button);
+
+    if ((currentSel!=0)&&(currentSel!=4)) divS.style.display = 'none';
   };
 }
 
@@ -626,10 +650,57 @@ function changeVid(event){
 }
 
 function changeScene(event){
-  for (const child of scenes.children) {
-    child.style.background = 'yellow';
+  if (event.target.style.background == 'orange'){
+    event.target.style.background = 'yellow';
+    document.getElementsByName('divS1').forEach(d=>d.style.display='flex');
+    document.getElementsByName('divS2').forEach(d=>d.style.display='flex');
+    document.getElementsByName('divS3').forEach(d=>d.style.display='flex');
+    document.getElementsByName('divTech').forEach(d=>d.style.display='flex');
+    currentSel = 0;
+    } else {
+    for (const child of scenes.children) {
+      child.style.background = 'yellow';
+    }
+    event.target.style.background = 'orange';
+    console.log(event.target.getAttribute('id'));
+    switch (event.target.getAttribute('id')){
+      case "btn_scene1":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 1;
+        break;
+      case "btn_scene20":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 20;
+        break;
+      case "btn_scene21":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 21;
+        break;
+      case "btn_scene3":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 3;
+        break;
+      case "btn_tech":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='flex');
+        currentSel = 4;
+        break;
+    }
   }
-  event.target.style.background = 'orange';
 }
 
 function changeChan(event){
@@ -653,8 +724,6 @@ function changeCutFreq(event){
   const clientId = event.target.name.substring(5);
   let client = clientS.find(t=>t.clientId==clientId);
   client.cutFreq.frequency.value = event.target.value;
-  console.log(event.target.value);
-  console.log(client);
 }
 
 function stop(event){

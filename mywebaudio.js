@@ -23,7 +23,7 @@
 
 // Interesting parameters to tweak!
 const SMOOTHING = 0.8;
-const FFT_SIZE = 256;
+const FFT_SIZE = 64;
 
 function MyWebAudio(source, analyser, canvas) {
   //console.log('Creating StreamVisualizer with remoteStream and canvas: ', remoteStream, canvas);
@@ -34,7 +34,8 @@ function MyWebAudio(source, analyser, canvas) {
   this.analyser = analyser;
   this.freqs = new Uint8Array(this.analyser.frequencyBinCount);
   this.times = new Uint8Array(this.analyser.frequencyBinCount);
-
+  this.analyser.smoothingTimeConstant = SMOOTHING;
+  this.analyser.fftSize = FFT_SIZE;
   this.startTime = 0;
   this.startOffset = 0;
 }
@@ -53,8 +54,6 @@ MyWebAudio.prototype.draw = function() {
   let height;
   let percent;
   let value;
-  this.analyser.smoothingTimeConstant = SMOOTHING;
-  this.analyser.fftSize = FFT_SIZE;
 
   // Get the frequency data from the currently playing music
   this.analyser.getByteFrequencyData(this.freqs);
@@ -84,7 +83,7 @@ MyWebAudio.prototype.draw = function() {
     offset = this.canvas.height - height - 1;
     barWidth = this.canvas.width/this.analyser.frequencyBinCount;
     this.drawContext.fillStyle = 'black';
-    this.drawContext.fillRect(i * barWidth, offset, 1, 2);
+    this.drawContext.fillRect(i * barWidth, offset, 10, 2);
   }
 
   requestAnimationFrame(this.draw.bind(this));
