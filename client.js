@@ -294,33 +294,33 @@ const effects = [
       },
     ],
   },
-  {
-    name: "filter",
-    title: "FILTER (HIGH-CUT)",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    gain: null,
-    userParams: [
-      {
-        name: "hi-cut",
-        title: "hi-cut",
-        defaultValue: 1200.0,
-        param: {},
-        visible: true,
-        type: "real"
-      },
-      {
-        name: "lo-cut",
-        title: "lo-cut",
-        defaultValue: null,
-        param: {},
-        visible: true,
-        type: "real"
-      }
-    ]
-  },
+  // {
+  //   name: "filter",
+  //   title: "FILTER (HIGH-CUT)",
+  //   device: {},
+  //   div: {},
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "hi-cut",
+  //       title: "hi-cut",
+  //       defaultValue: 1200.0,
+  //       param: {},
+  //       visible: true,
+  //       type: "real"
+  //     },
+  //     {
+  //       name: "lo-cut",
+  //       title: "lo-cut",
+  //       defaultValue: null,
+  //       param: {},
+  //       visible: true,
+  //       type: "real"
+  //     }
+  //   ]
+  // },
   {
     name: "sampler",
     title: "SAMPLER",
