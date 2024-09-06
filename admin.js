@@ -594,7 +594,7 @@ function change2Crac(){
       audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
       audioSource2 = ctx.createMediaElementSource(audioCrac2);
       audioSource2.connect(client.audioCrac_myPeer);
-      // audioCrac.playbackRate = Math.random()+0.1;
+      audioCrac2.playbackRate = Math.random()+0.1;
       audioCrac2.play();
       let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
       audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
