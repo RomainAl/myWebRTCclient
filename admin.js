@@ -29,32 +29,15 @@ document.getElementById('btn_scene20').onclick = changeScene;
 document.getElementById('btn_scene21').onclick = changeScene;
 // document.getElementById('btn_scene21_random').onclick = sendData;
 document.getElementById('btn_scene3').onclick = changeScene;
+document.getElementById('btn_scene6').onclick = changeScene;
 document.getElementById('btn_tech').onclick = changeScene;
 document.getElementById('btn_lauch').onclick = sendData;
 const scenes = document.getElementById('scenes');
 const scenes_array = Array.from(scenes.children);
-document.getElementById('resizeTel').onchange = (e)=>{
-  Array.from(document.getElementsByClassName('tel')).forEach(t=>t.style.width = `${e.target.value}%`)
-}
-
-
-// document.getElementsByClassName('tel').forEach(t=>t.style.width = e.target.value);
-
-// btn_midi.onclick = ()=>{
-//   if(navigator.requestMIDIAccess){
-//     navigator.requestMIDIAccess({sysex: false}).then(onMIDISuccess, onMIDIFailure);
-//   }
-//   else {
-//     alert("No MIDI support in your browser.");
-//   }
-// };
-// slider_midi.onchange = ()=>{
-//   let outputs = midi.outputs
-//   outputs.forEach((output)=>{
-//     const noteOnMessage = [0x90, 90, 0x7f];
-//     output.send(noteOnMessage);
-//   })
-// }
+const resizeTel = document.getElementById('resizeTel');
+resizeTel.addEventListener("input", () => {
+  Array.from(document.getElementsByClassName('tel')).forEach(t=>t.style.width = `${resizeTel.value}%`);
+});
 
 const divGStats = document.getElementById('stats');
 
@@ -372,7 +355,7 @@ function OnTrackFunction(event) {
     gain.max = 1;
     gain.value = 1.0;
     gain.step = 0.1;
-    gain.onchange = changeGain;
+    gain.addEventListener("input", changeGain);
     divS.appendChild(gain);
     canvas = document.createElement("canvas");
     canvas.setAttribute("name", 'canvas' + currentClientId);
@@ -394,7 +377,7 @@ function OnTrackFunction(event) {
       cutFreq_f.value = 0;
       cutFreq_f.step = 100;
       
-      cutFreq_f.onchange = changeCutFreq;
+      cutFreq_f.addEventListener("input", changeCutFreq)
       divS.appendChild(cutFreq_f);
 
       cutFreq = ctx.createBiquadFilter();
@@ -468,9 +451,9 @@ function OnTrackFunction(event) {
     audioCrac2.loop = true;
     audioCrac2.autoplay = false;
     audioCrac2.muted = false;
-    audioCrac2.src = './audios/audio2.wav';
+    audioCrac2.src = './audios/LXR-1.wav';
     audioCrac2.controlsList="nodownload noplaybackrate";
-    audioCrac2.playbackRate = Math.random()+0.3;
+    // audioCrac2.playbackRate = Math.random()+0.3;
     divS.appendChild(audioCrac2);
 
     if ((currentSel!=0)&&(currentSel!=3)) divS.style.display = 'none';
@@ -560,9 +543,17 @@ function sendData(event) {
             data = {"scene": currentSceneNb};
             change2Crac();
             break;
+          case "btn_scene6":
+            data = {"scene": 6};
+            currentSceneNb = 6;
+            data = {"scene": currentSceneNb};
+            break;
+          default:
+            alert('Sélectionne une scène ! (1)');
+            break;
         }
       } else {
-        alert('Sélectionne une scène !');
+        alert('Sélectionne une scène ! (2)');
       }
 
     break;
@@ -593,16 +584,18 @@ function onSendChannelMessageCallback(event) {
 }
 
 function change2Crac(){
+  // let audioCrac2 = document.getElementsByName('audioCrac2' + clientS[0].clientId)[0];
+  // let audioSource2 = ctx.createMediaElementSource(audioCrac2);
   clientS.forEach((client)=>{
     try {
       let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
       let audioSource = ctx.createMediaElementSource(audioCrac);
       audioSource.connect(client.audioCrac_myPeer);
-      audioCrac = document.getElementsByName('audioCrac2' + client.clientId)[0];
-      audioSource = ctx.createMediaElementSource(audioCrac);
-      audioSource.connect(client.audioCrac_myPeer);
-      audioCrac.playbackRate = Math.random()+0.1;
-      audioCrac.play();
+      audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
+      audioSource2 = ctx.createMediaElementSource(audioCrac2);
+      audioSource2.connect(client.audioCrac_myPeer);
+      // audioCrac.playbackRate = Math.random()+0.1;
+      audioCrac2.play();
       let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
       audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
       let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
@@ -763,6 +756,7 @@ function removeAllChildNodes(parent) {
       parent.removeChild(parent.firstChild);
   }
 }
+
 function removeAllStoped() {
   clientS.filter(c=>c.rtcPeerConnection.connectionState!=='connected').forEach(c=>removeClient(c.clientId));
   console.log(clientS);

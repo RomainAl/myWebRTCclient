@@ -104,201 +104,209 @@ let timer_rec;
 const displayAllEffectsParams = false;
 
 const effects = [
-  // {
-  //   name: "nico01",
-  //   title: "nico01",
-  //   device: {},
-  //   div: {},
-  //   activ: true,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //   {
-  //     name: "BANG",
-  //     title: "BANG",
-  //     defaultValue: 0.0,
-  //     param: {},
-  //     visible: true,
-  //     type: "bool"
-  //   }
-  //   ],
-  // },
   {
-    name: "delay",
-    title: "ECHOS",
+    name: "nico01",
+    title: "nico01",
     device: {},
     div: {},
-    activ: false,
+    activ: true,
     visible: true,
     gain: null,
     userParams: [
     {
-      name: "input",
-      title: "IN",
-      defaultValue: 1.0,
+      name: "CLEAR",
+      title: "CLEAR",
+      defaultValue: null,
       param: {},
-      visible: false,
-      type: "bool"
+      visible: true,
+      type: "real"
     },
     {
-      name: "time",
-      title: "TIME",
-      defaultValue: 30.0,
+      name: "START",
+      title: "START",
+      defaultValue: null,
       param: {},
       visible: true,
       type: "real"
     }
     ],
   },
-  {
-    name: "disto",
-    title: "DISTORSION",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    gain: null,
-    userParams: [
-      {
-        name: "drive",
-        title: "DISTO",
-        defaultValue: 50.0,
-        param: {},
-        visible: true,
-        type: "real"
-      },{
-        name: "mix",
-        title: "MIX",
-        defaultValue: 100.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },{
-        name: "midfreq",
-        title: "MIDFREQ",
-        defaultValue: 0.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },{
-        name: "treble",
-        title: "TREBLE",
-        defaultValue: 50.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },{
-        name: "mid",
-        title: "MID",
-        defaultValue: 100.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },{
-        name: "bass",
-        title: "BASS",
-        defaultValue: 50.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },
-  ],
-  },
-  {
-    name: "downsample",
-    title: "DEGRADATION",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    gain: null,
-    userParams: [
-    {
-      name: "down-sample",
-      title: "DOWN-SAMPLE",
-      defaultValue: 10,
-      param: {},
-      visible: true,
-      type: "real"
-    }],
-  },
-  {
-    name: "reverb",
-    title: "REVERBERATION",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    gain: null,
-    userParams: [
-      {
-        name: "decay",
-        title: "DECAY",
-        defaultValue: null,
-        param: {},
-        visible: true,
-        type: "real"
-      },{
-        name: "mix",
-        title: "MIX",
-        defaultValue: 100.0,
-        param: {},
-        visible: false,
-        type: "real"
-      },
-    ],
-  },
-  {
-     name: "pitchshift",
-     title: "HAUTEUR",
-     device: {},
-     div: {},
-     activ: false,
-     visible: true,
-     gain: null,
-     userParams: [
-       {
-         name: "transp",
-         title: "TRANSPOSITION",
-         defaultValue: null,
-         param: {},
-         visible: true,
-         type: "real"
-       },
-       {
-         name: "mix",
-         title: "MIX",
-         defaultValue: 100.0,
-         param: {},
-         visible: false,
-         type: "real"
-       },
-     ],
-   },
-  {
-    name: "freeze",
-    title: "FREEZE (AUTO)",
-    device: {},
-    div: {},
-    activ: false,
-    visible: true,
-    gain: null,
-    userParams: [
-      {
-        name: "auto",
-        title: "AUTO",
-        defaultValue: 100.0,
-        param: {},
-        visible: false,
-        type: "bool"
-      },
-    ],
-  },
+  // {
+  //   name: "delay",
+  //   title: "ECHOS",
+  //   device: null,
+  //   div: null,
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //   {
+  //     name: "input",
+  //     title: "IN",
+  //     defaultValue: 1.0,
+  //     param: null,
+  //     visible: false,
+  //     type: "bool"
+  //   },
+  //   {
+  //     name: "time",
+  //     title: "TIME",
+  //     defaultValue: 30.0,
+  //     param: null,
+  //     visible: true,
+  //     type: "real"
+  //   }
+  //   ],
+  // },
+  // {
+  //   name: "disto",
+  //   title: "DISTORSION",
+  //   device: null,
+  //   div: null,
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "drive",
+  //       title: "DISTO",
+  //       defaultValue: 20.0,
+  //       param: null,
+  //       visible: true,
+  //       type: "real"
+  //     },{
+  //       name: "mix",
+  //       title: "MIX",
+  //       defaultValue: 100.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real"
+  //     },{
+  //       name: "midfreq",
+  //       title: "MIDFREQ",
+  //       defaultValue: 0.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real"
+  //     },{
+  //       name: "treble",
+  //       title: "TREBLE",
+  //       defaultValue: 50.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real"
+  //     },{
+  //       name: "mid",
+  //       title: "MID",
+  //       defaultValue: 100.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real"
+  //     },{
+  //       name: "bass",
+  //       title: "BASS",
+  //       defaultValue: 50.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real"
+  //     },
+  // ],
+  // },
+  // {
+  //   name: "downsample",
+  //   title: "DEGRADATION",
+  //   device: null,
+  //   div: null,
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //   {
+  //     name: "down-sample",
+  //     title: "DOWN-SAMPLE",
+  //     defaultValue: 10,
+  //     param: null,
+  //     visible: true,
+  //     type: "real"
+  //   }],
+  // },
+  // {
+  //   name: "reverb",
+  //   title: "REVERBERATION",
+  //   device: null,
+  //   div: null,
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "decay",
+  //       title: "DECAY",
+  //       defaultValue: null,
+  //       param: null,
+  //       visible: true,
+  //       type: "real"
+  //     },{
+  //       name: "mix",
+  //       title: "MIX",
+  //       defaultValue: 100.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real"
+  //     },
+  //   ],
+  // },
+  // {
+  //    name: "pitchshift",
+  //    title: "HAUTEUR",
+  //    device: null,
+  //    div: null,
+  //    activ: false,
+  //    visible: true,
+  //    gain: null,
+  //    userParams: [
+  //      {
+  //        name: "transp",
+  //        title: "TRANSPOSITION",
+  //        defaultValue: null,
+  //        param: null,
+  //        visible: true,
+  //        type: "real"
+  //      },
+  //      {
+  //        name: "mix",
+  //        title: "MIX",
+  //        defaultValue: 100.0,
+  //        param: null,
+  //        visible: false,
+  //        type: "real"
+  //      },
+  //    ],
+  //  },
+  // {
+  //   name: "freeze",
+  //   title: "FREEZE (AUTO)",
+  //   device: null,
+  //   div: null,
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "auto",
+  //       title: "AUTO",
+  //       defaultValue: 100.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "bool"
+  //     },
+  //   ],
+  // },
   // {
   //   name: "filter",
   //   title: "FILTER (HIGH-CUT)",
-  //   device: {},
-  //   div: {},
+  //   device: null,
+  //   div: null,
   //   activ: false,
   //   visible: true,
   //   gain: null,
@@ -307,7 +315,7 @@ const effects = [
   //       name: "hi-cut",
   //       title: "hi-cut",
   //       defaultValue: 1200.0,
-  //       param: {},
+  //       param: null,
   //       visible: true,
   //       type: "real"
   //     },
@@ -315,7 +323,7 @@ const effects = [
   //       name: "lo-cut",
   //       title: "lo-cut",
   //       defaultValue: null,
-  //       param: {},
+  //       param: null,
   //       visible: true,
   //       type: "real"
   //     }
@@ -324,8 +332,8 @@ const effects = [
   {
     name: "sampler",
     title: "SAMPLER",
-    device: {},
-    div: {},
+    device: null,
+    div: null,
     activ: false,
     visible: false,
     gain: null,
@@ -334,7 +342,7 @@ const effects = [
         name: "pitch",
         title: "VITESSE",
         defaultValue: 1.0,
-        param: {},
+        param: null,
         visible: true,
         type: "real"
       },
@@ -342,7 +350,7 @@ const effects = [
         name: "metro_speed",
         title: "LECTURE ALEATOIRE",
         defaultValue: null,
-        param: {},
+        param: null,
         visible: true,
         type: "real"
       },
@@ -350,7 +358,7 @@ const effects = [
         name: "size",
         title: "SIZE",
         defaultValue: 10.0,
-        param: {},
+        param: null,
         visible: false,
         type: "real"
       }],
@@ -449,7 +457,6 @@ socket.on("create", function () {
 
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
-  console.log(answer);
   if (answer == null){
     overlay.style.visibility = "visible";
     atablee.style.display = "none";
@@ -601,6 +608,7 @@ function changeScene(data){
           source = context.createMediaStreamSource(source_mic);
           context.suspend();
           document.getElementById("loading-bar").style.display = "initial";
+          removeAllChildNodes(document.getElementById("effects-params"));
           effects_Setup(effects)
           .then(()=>{
             context.resume();
@@ -638,7 +646,7 @@ function changeScene(data){
             myGUI.style.display = "flex";
             document.getElementById("loading-bar").style.display = "none";
           })
-    
+          
           const audioTracks = stream.getAudioTracks();
           if (audioTracks.length > 0) {
             console.log(`Using Audio device: ${audioTracks[0].label}`);
@@ -661,6 +669,7 @@ function changeScene(data){
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
       try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       if (context.state!='closed') context.close();
+      try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       atablee.style.display = "initial";
       userCanvas.style.display = "none";
@@ -683,6 +692,7 @@ function changeScene(data){
         // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
         try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
         if (context.state!='closed') context.close();
+        try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
         try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
         atablee.style.display = "initial";
         userCanvas.style.display = "none";
@@ -705,6 +715,7 @@ function changeScene(data){
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
       try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       if (context.state!='closed') context.close();
+      try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       //adminVideo.remove();
       atablee.style.display = "initial";
@@ -735,7 +746,7 @@ function changeScene(data){
       // vimeo.play();
       break;
     case 6:
-      effects.find(e=>e.name == 'nico01').device.parameters[0].value = Math.random();
+      effects.find(e=>e.name == 'nico01').device.parameters[1].value = Math.random();
       break;
     default :
       console.log("No scene...");
@@ -942,15 +953,15 @@ async function effects_Setup(effects) {
     }
   
     // (Optional) Fetch the dependencies
-    // let dependencies = [];
-    // try {
-    //     const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
-    //     dependencies = await dependenciesResponse.json();
-    //     // Prepend "export" to any file dependenciies
-    //     dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d);
-    // } catch (e) {
-    //   console.log('No dependencies in : ' + effects[i].name);
-    // }
+    let dependencies = [];
+    try {
+        const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
+        dependencies = await dependenciesResponse.json();
+        // Prepend "export" to any file dependenciies
+        dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d);
+    } catch (e) {
+      console.log('No dependencies in : ' + effects[i].name);
+    }
 
     // Create the device
     try {
@@ -959,10 +970,10 @@ async function effects_Setup(effects) {
         alert('err');
     }
 
-    // if (dependencies.length)
-    //   await effects[i].device.loadDataBufferDependencies(dependencies);
+    if (dependencies.length)
+      await effects[i].device.loadDataBufferDependencies(dependencies);
 
-    // attachOutports(effects[i].device);
+    attachOutports(effects[i].device);
 
     effects[i].gain = context.createGain();
     effects[i].gain.gain.value = 1.0;
@@ -996,22 +1007,27 @@ function loadRNBOScript(version) {
   });
 }
 
-// function attachOutports(device) {
-//   const outports = device.outports;
-//   if (outports.length < 1) {
-//       return;
-//   }
+function attachOutports(device) {
+  try{
+    const outports = device.outports;
+    if (outports.length < 1) {
+        return;
+    }
 
-//   device.messageEvent.subscribe((ev) => {
+    device.messageEvent.subscribe((ev) => {
 
-//       // Ignore message events that don't belong to an outport
-//       if (outports.findIndex(elt => elt.tag === ev.tag) < 0) return;
+        // Ignore message events that don't belong to an outport
+        if (outports.findIndex(elt => elt.tag === ev.tag) < 0) return;
 
-//       // Message events have a tag as well as a payload
-//       console.log(`${ev.tag}: ${ev.payload}`);
-//       alert('TAMERE');
-//   });
-// }
+        // Message events have a tag as well as a payload
+        // console.log(`${ev.tag}: ${ev.payload}`);
+        if (ev.tag == 'gain_1'){
+          document.getElementById("adminID").style.visibility = "visible";
+          setTimeout(()=>document.getElementById("adminID").style.visibility = "hidden", 300);
+        }
+    });
+  } catch(e) {alert(e)};
+}
 
 function makeGUI(device, userParams, effect_title, effect_activ) {
   let effect_div = document.createElement("div");
@@ -1128,7 +1144,6 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
 
 }
 
-
 function createParamGUI(param, effect_title, type, activ){
   let sliderContainer = document.createElement("div");
   sliderContainer.setAttribute("name", effect_title + "div");
@@ -1191,7 +1206,10 @@ function createParamGUI(param, effect_title, type, activ){
   return {sliderContainer, slider};
 }
 
-function testBtn(ev){
+function removeAllChildNodes(parent) {
+  while (parent.firstChild) {
+      parent.removeChild(parent.firstChild);
+  }
 }
 
 function onoffEffect(ev){
@@ -1264,7 +1282,8 @@ function nodeConnection(mode){ // TODO
     source.connect(f_effects[f_effects.length-1].device.node);
   };
   gain.connect(analyser);
-  analyser.connect(myPeer);
+  // analyser.connect(myPeer);
+  analyser.connect(context.destination);
 }
 
 let recTimeCount = 0;
