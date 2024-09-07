@@ -818,7 +818,7 @@ function onSendChannelStateChange() {
   console.log('Send channel state is: ' + readyState);
   if (readyState == 'closed'){
     goBackHome();
-    // alert('ZUT ! Tu as été sorti du jeu ?!');
+    alert('MINCE ! 🤔\nTu as été déconnecté !?');
     location.reload();
   }
 }

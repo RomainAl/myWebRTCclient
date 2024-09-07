@@ -113,7 +113,7 @@ button:focus {
   right: 0;
   margin: 10px;
   width: 50%;
-  z-index: 2;
+  z-index: 3;
 }
 
 audio::-webkit-media-controls-current-time-display,
@@ -142,14 +142,23 @@ audio {
   height: 20px;
   margin: 5px 0px;
 }
-/* audio::-webkit-media-controls-volume-slider-container,
-audio::-webkit-media-controls-volume-slider,
-audio::-webkit-media-controls-seek-back-button,
-audio::-webkit-media-controls-seek-forward-button,
-audio::-webkit-media-controls-fullscreen-button,
-audio::-webkit-media-controls-rewind-button,
-audio::-webkit-media-controls-return-to-realtime-button,
-audio::-webkit-media-controls-toggle-closed-captions-button,
-audio::-webkit-media-controls-mute-button {
-  display: none;
-} */
+
+#spatDiv{
+  position: absolute;
+  right: 0;
+  bottom: 5%;
+  z-index: 2;
+  background: black;
+  height: 400px;
+  width: 800px;
+}
+
+.spatDiv_client{
+  width:40px;
+  height:40px;
+  background:#00cf8a;
+  position:absolute;
+  border-radius:50%;
+  pointer-events: none;
+  cursor: grab;
+}

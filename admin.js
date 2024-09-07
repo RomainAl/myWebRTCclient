@@ -6,7 +6,6 @@ const   socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly
 console.log("Flyio ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 
-const adminVideos = document.getElementById("adminVideos");
 for (let i = 0; i < 20; i++){
   let videoelement = document.createElement("video");
   videoelement.src = './videos/video1.webm';
@@ -33,6 +32,7 @@ document.getElementById('btn_scene6').onclick = changeScene;
 document.getElementById('btn_tech').onclick = changeScene;
 document.getElementById('btn_lauch').onclick = sendData;
 const scenes = document.getElementById('scenes');
+const spatDiv = document.getElementById('spatDiv');
 const scenes_array = Array.from(scenes.children);
 const resizeTel = document.getElementById('resizeTel');
 resizeTel.addEventListener("input", () => {
@@ -78,13 +78,8 @@ let ch = 0;
 let source;
 let gainNode;
 let analyser;
-/*const compressor = new DynamicsCompressorNode(ctx, {
-  threshold: -50,
-  knee: 40,
-  ratio: 12,
-  attack: 0,
-  release: 0.25,
-});*/
+let spatGains;
+let mygsap;
 let cutFreq;
 
 function startContext(event) {
@@ -290,7 +285,9 @@ socket.on("offer", function (offer, clientId) {
           gainNode: gainNode,
           cutFreq: cutFreq,
           analyser: analyser,
-          audioCrac_myPeer: myPeer
+          audioCrac_myPeer: myPeer,
+          spatGains: spatGains,
+          gsap: mygsap
         };
         clientS.push(client);
     })
@@ -384,9 +381,20 @@ function OnTrackFunction(event) {
       cutFreq.frequency.value = cutFreq_f.value;
       cutFreq.type = "peaking";
       cutFreq.gain.value = -40;
-
+      // Sauvegarde sans spat :
       const splitter = ctx.createChannelSplitter(1);
-      source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
+      source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser);
+      // splitter.connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
+
+      let spatGains = [];
+      for (let i = 0; i<ctx.destination.maxChannelCount;i++){
+        const gain = ctx.createGain();
+        spatGains.push(gain);
+        analyser.connect(gain).connect(merger, 0, i);
+      }
+      
+      // source.connect(cutFreq).connect(gainNode)
+
       const btn_chan = document.createElement("div");
       divS.appendChild(btn_chan);
       for (let i=0; i<ctx.destination.maxChannelCount; i++){
@@ -405,6 +413,27 @@ function OnTrackFunction(event) {
       ch = ch % ctx.destination.maxChannelCount;
       const streamVisualizer = new MyWebAudio(source, analyser, canvas);
       streamVisualizer.start();
+
+      const spatDiv_client = document.createElement('div');
+      spatDiv_client.setAttribute("id", 'spatDiv'+ currentClientId);
+      spatDiv_client.classList.add('spatDiv_client');
+      const mygsap = gsap.quickTo(spatDiv_client, "x",
+        { duration: 1,
+          ease: "power3.inout",
+          onStart: function () {
+            gsap.ticker.fps(10);
+          },
+          // onUpdate: function(){
+          //   console.log(mygsap.getProperty(this.targets()[0], "x"))
+          // },
+          // repeat: -1,
+        });
+        spatDiv.addEventListener("mousemove", (e) => 
+          {
+            mygsap(e.clientX);
+            console.log(e.clientX);
+          });
+        spatDiv.append(spatDiv_client);
     };
 
     if ((currentSel!=0)&&(currentSel!=1)) divS.style.display = 'none';
@@ -453,7 +482,6 @@ function OnTrackFunction(event) {
     audioCrac2.muted = false;
     audioCrac2.src = './audios/audio2.wav';
     audioCrac2.controlsList="nodownload noplaybackrate";
-    // audioCrac2.playbackRate = Math.random()+0.3;
     divS.appendChild(audioCrac2);
 
     if ((currentSel!=0)&&(currentSel!=3)) divS.style.display = 'none';
@@ -594,7 +622,7 @@ function change2Crac(){
       audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
       audioSource2 = ctx.createMediaElementSource(audioCrac2);
       audioSource2.connect(client.audioCrac_myPeer);
-      audioCrac2.playbackRate = Math.random()+0.1;
+      audioCrac2.playbackRate = Math.random() + 1;
       audioCrac2.play();
       let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
       audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
