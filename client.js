@@ -10,13 +10,12 @@ userCanvas.height = Math.min(window.innerWidth,window.innerHeight)*2;
 const adminVideo = document.getElementById("video");
 // let adminVimeo = document.getElementById("vimeo");
 adminVideo.style.display = "none";
-// adminVideo.addEventListener("ended", (event) => {alert('fini')});
-// adminVideo.type="video/webm";
-// adminVideo.src = `./videos4Client/video20.webm`;
-// adminVideo.volume = 0;
 const adminVideo_webrtc = document.getElementById("video_webrtc");
 adminVideo_webrtc.style.display = "none";
 adminVideo_webrtc.volume = 0;
+const audio_nico = document.getElementById("audio_nico");
+audio_nico.src = `./audio4Client/LXR-${Math.round(Math.random()*7+1)}.wav`;
+audio_nico.muted = false;
 // let vimeo = new Vimeo.Player('vimeo');
 const effectsPan = document.getElementById("effects-params");
 effectsPan.style.display = "none";
@@ -63,6 +62,7 @@ btn_gain.onclick = (ev)=>{
 const startButton = document.getElementById( 'startButton' );
 startButton.onclick = ()=>init();
 overlay.ondblclick = ()=>{
+  goBackHome();
   location.reload();
 }
 
@@ -100,208 +100,210 @@ let source;
 let source_mic;
 let gain;
 let myPeer;
+let audio_nico_source;
 let timer_rec;
+let timer_nico;
 const displayAllEffectsParams = false;
 
 const effects = [
-  {
-    name: "nico01",
-    title: "nico01",
-    device: {},
-    div: {},
-    activ: true,
-    visible: true,
-    gain: null,
-    userParams: [
-    {
-      name: "CLEAR",
-      title: "CLEAR",
-      defaultValue: null,
-      param: {},
-      visible: true,
-      type: "real"
-    },
-    {
-      name: "START",
-      title: "START",
-      defaultValue: null,
-      param: {},
-      visible: true,
-      type: "real"
-    }
-    ],
-  },
   // {
-  //   name: "delay",
-  //   title: "ECHOS",
-  //   device: null,
-  //   div: null,
-  //   activ: false,
+  //   name: "nico01",
+  //   title: "nico01",
+  //   device: {},
+  //   div: {},
+  //   activ: true,
   //   visible: true,
   //   gain: null,
   //   userParams: [
   //   {
-  //     name: "input",
-  //     title: "IN",
-  //     defaultValue: 1.0,
-  //     param: null,
-  //     visible: false,
-  //     type: "bool"
+  //     name: "CLEAR",
+  //     title: "CLEAR",
+  //     defaultValue: null,
+  //     param: {},
+  //     visible: true,
+  //     type: "real"
   //   },
   //   {
-  //     name: "time",
-  //     title: "TIME",
-  //     defaultValue: 30.0,
-  //     param: null,
+  //     name: "START",
+  //     title: "START",
+  //     defaultValue: null,
+  //     param: {},
   //     visible: true,
   //     type: "real"
   //   }
   //   ],
   // },
-  // {
-  //   name: "disto",
-  //   title: "DISTORSION",
-  //   device: null,
-  //   div: null,
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "drive",
-  //       title: "DISTO",
-  //       defaultValue: 20.0,
-  //       param: null,
-  //       visible: true,
-  //       type: "real"
-  //     },{
-  //       name: "mix",
-  //       title: "MIX",
-  //       defaultValue: 100.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "real"
-  //     },{
-  //       name: "midfreq",
-  //       title: "MIDFREQ",
-  //       defaultValue: 0.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "real"
-  //     },{
-  //       name: "treble",
-  //       title: "TREBLE",
-  //       defaultValue: 50.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "real"
-  //     },{
-  //       name: "mid",
-  //       title: "MID",
-  //       defaultValue: 100.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "real"
-  //     },{
-  //       name: "bass",
-  //       title: "BASS",
-  //       defaultValue: 50.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "real"
-  //     },
-  // ],
-  // },
-  // {
-  //   name: "downsample",
-  //   title: "DEGRADATION",
-  //   device: null,
-  //   div: null,
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //   {
-  //     name: "down-sample",
-  //     title: "DOWN-SAMPLE",
-  //     defaultValue: 10,
-  //     param: null,
-  //     visible: true,
-  //     type: "real"
-  //   }],
-  // },
-  // {
-  //   name: "reverb",
-  //   title: "REVERBERATION",
-  //   device: null,
-  //   div: null,
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "decay",
-  //       title: "DECAY",
-  //       defaultValue: null,
-  //       param: null,
-  //       visible: true,
-  //       type: "real"
-  //     },{
-  //       name: "mix",
-  //       title: "MIX",
-  //       defaultValue: 100.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "real"
-  //     },
-  //   ],
-  // },
-  // {
-  //    name: "pitchshift",
-  //    title: "HAUTEUR",
-  //    device: null,
-  //    div: null,
-  //    activ: false,
-  //    visible: true,
-  //    gain: null,
-  //    userParams: [
-  //      {
-  //        name: "transp",
-  //        title: "TRANSPOSITION",
-  //        defaultValue: null,
-  //        param: null,
-  //        visible: true,
-  //        type: "real"
-  //      },
-  //      {
-  //        name: "mix",
-  //        title: "MIX",
-  //        defaultValue: 100.0,
-  //        param: null,
-  //        visible: false,
-  //        type: "real"
-  //      },
-  //    ],
-  //  },
-  // {
-  //   name: "freeze",
-  //   title: "FREEZE (AUTO)",
-  //   device: null,
-  //   div: null,
-  //   activ: false,
-  //   visible: true,
-  //   gain: null,
-  //   userParams: [
-  //     {
-  //       name: "auto",
-  //       title: "AUTO",
-  //       defaultValue: 100.0,
-  //       param: null,
-  //       visible: false,
-  //       type: "bool"
-  //     },
-  //   ],
-  // },
+  {
+    name: "delay",
+    title: "ECHOS",
+    device: null,
+    div: null,
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+    {
+      name: "input",
+      title: "IN",
+      defaultValue: 1.0,
+      param: null,
+      visible: false,
+      type: "bool"
+    },
+    {
+      name: "time",
+      title: "TIME",
+      defaultValue: 30.0,
+      param: null,
+      visible: true,
+      type: "real"
+    }
+    ],
+  },
+  {
+    name: "disto",
+    title: "DISTORSION",
+    device: null,
+    div: null,
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "drive",
+        title: "DISTO",
+        defaultValue: 20.0,
+        param: null,
+        visible: true,
+        type: "real"
+      },{
+        name: "mix",
+        title: "MIX",
+        defaultValue: 100.0,
+        param: null,
+        visible: false,
+        type: "real"
+      },{
+        name: "midfreq",
+        title: "MIDFREQ",
+        defaultValue: 0.0,
+        param: null,
+        visible: false,
+        type: "real"
+      },{
+        name: "treble",
+        title: "TREBLE",
+        defaultValue: 50.0,
+        param: null,
+        visible: false,
+        type: "real"
+      },{
+        name: "mid",
+        title: "MID",
+        defaultValue: 100.0,
+        param: null,
+        visible: false,
+        type: "real"
+      },{
+        name: "bass",
+        title: "BASS",
+        defaultValue: 50.0,
+        param: null,
+        visible: false,
+        type: "real"
+      },
+  ],
+  },
+  {
+    name: "downsample",
+    title: "DEGRADATION",
+    device: null,
+    div: null,
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+    {
+      name: "down-sample",
+      title: "DOWN-SAMPLE",
+      defaultValue: 10,
+      param: null,
+      visible: true,
+      type: "real"
+    }],
+  },
+  {
+    name: "reverb",
+    title: "REVERBERATION",
+    device: null,
+    div: null,
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "decay",
+        title: "DECAY",
+        defaultValue: null,
+        param: null,
+        visible: true,
+        type: "real"
+      },{
+        name: "mix",
+        title: "MIX",
+        defaultValue: 100.0,
+        param: null,
+        visible: false,
+        type: "real"
+      },
+    ],
+  },
+  {
+     name: "pitchshift",
+     title: "HAUTEUR",
+     device: null,
+     div: null,
+     activ: false,
+     visible: true,
+     gain: null,
+     userParams: [
+       {
+         name: "transp",
+         title: "TRANSPOSITION",
+         defaultValue: null,
+         param: null,
+         visible: true,
+         type: "real"
+       },
+       {
+         name: "mix",
+         title: "MIX",
+         defaultValue: 100.0,
+         param: null,
+         visible: false,
+         type: "real"
+       },
+     ],
+   },
+  {
+    name: "freeze",
+    title: "FREEZE (AUTO)",
+    device: null,
+    div: null,
+    activ: false,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "auto",
+        title: "AUTO",
+        defaultValue: 100.0,
+        param: null,
+        visible: false,
+        type: "bool"
+      },
+    ],
+  },
   // {
   //   name: "filter",
   //   title: "FILTER (HIGH-CUT)",
@@ -407,7 +409,9 @@ function init() {
   document.getElementById("startButton").disabled = true;
   //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
+  if (myPeer) myPeer = null;
   myPeer = context.createMediaStreamDestination();
+  analyser = context.createAnalyser();
   gain = context.createGain();
   gain.gain.value = 1.0;
   document.getElementById("gain").addEventListener("input", (event) => {
@@ -420,10 +424,23 @@ function init() {
       document.getElementById("g2").style.display = 'none';
     }
   });
-  analyser = context.createAnalyser();
+  gain_nico = context.createGain();
+  gain_nico.gain.value = 0.0;
+  if (!audio_nico_source) {
+    audio_nico_source = context.createMediaElementSource(audio_nico);
+    audio_nico_source.connect(gain_nico);
+  };
+  gain_nico.connect(analyser);
+  clearInterval(timer_nico);
   adminVideo.muted = false;
   adminVideo.volume = 0.0;
+  audio_nico.play();
+  // audio_nico.muted = false;
+  // adminVideo.volume = 0.0;
+  // audio_nico.volume = 0.0;
+  console.log(socket.id);
   socket.connect();
+  console.log(socket.id);
   socket.emit("join", roomName, false);
 };
 
@@ -458,29 +475,13 @@ socket.on("create", function () {
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
   if (answer == null){
-    overlay.style.visibility = "visible";
-    atablee.style.display = "none";
-    myGUI.style.display = "none";
-    adminVideo.pause();
-    adminVideo.volume = 0;
-    try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-    try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-    try{context.close();}catch(e){console.log(e)};
-    alert("Désolé, l'administrateur n'est pas prêt !");
-    document.getElementById("startButton").disabled = false;
-    document.getElementById("startButton").classList.remove("spinner");
+    goBackHome();
+    alert("ARF !!! 😯\nL'administrateur n'est pas prêt !\nRéveille-le ! 🙄");
+    location.reload();
   } else if (answer == "stopco") {
-    overlay.style.visibility = "visible";
-    atablee.style.display = "none";
-    myGUI.style.display = "none";
-    adminVideo.pause();
-    adminVideo.volume = 0;
-    try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-    try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-    try{context.close();}catch(e){console.log(e)};
-    alert("Désolé, il n'y a plus de place ! Revenez vite !");
-    document.getElementById("startButton").disabled = false;
-    document.getElementById("startButton").classList.remove("spinner");
+    goBackHome();
+    alert("ZUT !!! 😪\nIl n'y a plus de place !\nReviens après ! 🙏");
+    location.reload();
   } else {
     rtcPeerConnection.setRemoteDescription(answer);
     myID = socket.id;
@@ -496,10 +497,12 @@ socket.on("candidate", function (candidate) {
 });
 
 socket.on("disconnect", (reason) => {
-  console.log('Socket disconnected at ');
-  console.log(Date.now());
+  console.log('Socket disconnected');
   console.log(reason);
-  document.getElementById("startButton").disabled = true;
+  if ((receiveChannel)&&(receiveChannel.readyState != 'open')) {
+    document.getElementById("startButton").disabled = true;
+    document.getElementById("startButton").classList.add("spinner");
+  }
 });
 
 socket.on("connect", () => {
@@ -555,27 +558,23 @@ function onReceiveChannelMessageCallback(event) {
 }
 
 function changeScene(data){
+  adminVideo.muted = true;
+  clearInterval(timer_nico);
+  // audio_nico.muted = true;
   switch (data.scene){
     case 0:
+      goBackHome();
       location.reload();
       break;
     case 1:
-      if ((!context)||(context.state=='closed') ){ // TODO
+      if ((!context) || (context.state=='closed') ){ // TODO
         context = new AudioContext();
-        myPeer = context.createMediaStreamDestination();
-        gain = context.createGain();
-        gain.gain.value = 1.0;
-        document.getElementById("gain").addEventListener("input", (event) => {
-          gain.gain.value = event.target.value;
-          if (event.target.value < 0.1) {
-            document.getElementById("g2").style.display = 'inline-block';
-            document.getElementById("g1").style.display = 'none';
-          } else {
-            document.getElementById("g1").style.display = 'inline-block';
-            document.getElementById("g2").style.display = 'none';
-          }
-        });
-        analyser = context.createAnalyser();
+        let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+        audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+        let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+        videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
+      } else if (context.state == 'suspended') {
+        context.resume();
         let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
         audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
         let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
@@ -625,26 +624,30 @@ function changeScene(data){
             adminVideo_webrtc.style.display = "none";
             adminVideo_webrtc.volume = 0;
             adminVideo_webrtc.pause();
+            audio_nico.pause();
             myGUI.style.display = "flex";
             document.getElementById("loading-bar").style.display = "none";
           })
           .catch(function (err) {
-            context.resume();
-            console.log(`${err.name}, ${err.message}`);
-            alert('Désolé, impossible pour ton smartphone de charger les effets sonores !');
-            source.connect(gain);
-            gain.connect(analyser);
-            analyser.connect(myPeer); // TODO
-            atablee.style.display = "initial";
-            userCanvas.style.display = "initial";
-            adminVideo.style.display = "none";
-            adminVideo.volume = 0;
-            // adminVideo.pause();
-            adminVideo_webrtc.style.display = "none";
-            adminVideo_webrtc.volume = 0;
-            adminVideo_webrtc.pause();
-            myGUI.style.display = "flex";
-            document.getElementById("loading-bar").style.display = "none";
+            try {
+              context.resume();
+              console.log(`${err.name}, ${err.message}`);
+              alert('Désolé, impossible pour ton smartphone de charger les effets sonores !');
+              source.connect(gain);
+              gain.connect(analyser);
+              analyser.connect(myPeer); // TODO
+              atablee.style.display = "initial";
+              userCanvas.style.display = "initial";
+              adminVideo.style.display = "none";
+              adminVideo.muted = true;
+              adminVideo.play();
+              adminVideo_webrtc.style.display = "none";
+              adminVideo_webrtc.volume = 0;
+              adminVideo_webrtc.pause();
+              audio_nico.pause();
+              myGUI.style.display = "flex";
+              document.getElementById("loading-bar").style.display = "none";
+            } catch (e) { alert(e) };
           })
           
           const audioTracks = stream.getAudioTracks();
@@ -665,12 +668,12 @@ function changeScene(data){
         })
       break;
     case 20:
-      myPeer.stream.getTracks().forEach((track) => {track.stop();});
+      try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
       try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
-      if (context.state!='closed') context.close();
-      try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
-      try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
+      try {context.suspend()} catch(e) {console.log(e)}
+      try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
+      try {streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       atablee.style.display = "initial";
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
@@ -682,16 +685,19 @@ function changeScene(data){
       adminVideo.volume = 0;
       adminVideo.pause();
       overlay.style.visibility = "hidden";
+      audio_nico.pause();
       break;
     case 21:
       if (data.video){
-        adminVideo.src = `./videos4Client/video${data.video}.webm`;
+        adminVideo.src = `./videos4Client/video${data.video}.mp4`;
+        adminVideo.muted = false;
+        adminVideo.volume = 1;
         adminVideo.play();
       } else {
-        myPeer.stream.getTracks().forEach((track) => {track.stop();});
+        try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
         // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
         try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
-        if (context.state!='closed') context.close();
+        try {context.suspend()} catch(e) {console.log(e)}
         try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
         try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
         atablee.style.display = "initial";
@@ -708,13 +714,14 @@ function changeScene(data){
         adminVideo.muted = false;
         adminVideo.volume = 1;
         overlay.style.visibility = "hidden";
+        audio_nico.pause();
       }
       break;
     case 3:
       myPeer.stream.getTracks().forEach((track) => {track.stop();});
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
       try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
-      if (context.state!='closed') context.close();
+      try {context.suspend()} catch(e) {console.log(e)}
       try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       //adminVideo.remove();
@@ -728,6 +735,7 @@ function changeScene(data){
       adminVideo_webrtc.volume = 1;
       adminVideo_webrtc.play();
       overlay.style.visibility = "hidden";
+      audio_nico.pause();
       //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
@@ -746,23 +754,73 @@ function changeScene(data){
       // vimeo.play();
       break;
     case 6:
-      effects.find(e=>e.name == 'nico01').device.parameters[1].value = Math.random();
+      if ((!context) || (context.state=='closed') ){ // TODO
+        context = new AudioContext();
+        let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+        audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+        let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+        videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
+      } else if (context.state == 'suspended') {
+        context.resume();
+      }
+      analyser.disconnect(0);
+      analyser.connect(context.destination);
+      gain.disconnect(0);
+      clearInterval(timer_nico);
+      timer_nico = setInterval(()=>{
+        gain_nico.gain.value = Math.random();
+        audio_nico.currentTime = 0;
+        audio_nico.play();
+      }, 17000);
+      // context.close();
+      // userCanvas.style.display = "none";
+      gain_nico.gain.value = 1.0;
+      myGUI.style.display = "none";
+      // audio_nico.muted = false;
+      audio_nico.currentTime = 0;
+      audio_nico.play();
+      atablee.style.display = "initial";
+      userCanvas.style.display = "initial";
+      adminVideo.style.display = "none";
+      adminVideo.pause();
+      adminVideo.volume = 0;
+      adminVideo_webrtc.style.display = "none";
+      adminVideo_webrtc.volume = 0;
+      adminVideo_webrtc.pause();
+      myGUI.style.display = "none";
+      audio_nico.addEventListener("ended", (event) => {
+       flash('white');
+      });
+      if (!streamVisualizer4Clients) streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
+      streamVisualizer4Clients.start();
+      streamVisualizer4Clients.setStroke(true);
+      streamVisualizer4Clients.setSize(1000);
+      streamVisualizer4Clients.setFFT_SIZE(128);
+      overlay.style.visibility = "hidden";
+      try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
+      try {myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
       break;
     default :
       console.log("No scene...");
-      document.getElementById("adminID").style.visibility = "visible";
-      setTimeout(()=>document.getElementById("adminID").style.visibility = "hidden", 1000);
+      flash('red');
   }
 }
 
 function onReceiveChannelStateChange() {
   const readyState = receiveChannel.readyState;
   console.log(`Receive channel state is: ${readyState}`);
+  if (readyState=='open') socket.disconnect();
 }
 
 function onSendChannelStateChange() {
   const readyState = sendChannel.readyState;
   console.log('Send channel state is: ' + readyState);
+  if (readyState == 'closed'){
+    goBackHome();
+    // alert('ZUT ! Tu as été sorti du jeu ?!');
+    location.reload();
+  }
 }
 
 function onSendChannelMessageCallback(event) {
@@ -784,48 +842,21 @@ function webrtcStateChange(ev){
         break;
       case "disconnected":
         console.log("Disconnecting…");
-        overlay.style.visibility = "visible";
-        atablee.style.display = "none";
-        myGUI.style.display = "none";
-        adminVideo.pause();
-        adminVideo.volume = 0;
-        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-        try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
-        try{context.close();}catch(e){console.log(e)};
-        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        goBackHome();
+        alert('MINCE ! 🤔\nTu as été déconnecté !?');
+        location.reload();
         break;
       case "closed":
+        goBackHome();
         console.log("Offline");
-        overlay.style.visibility = "visible";
-        atablee.style.display = "none";
-        myGUI.style.display = "none";
-        adminVideo.pause();
-        adminVideo.volume = 0;
-        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-        try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
-        try{context.close();}catch(e){console.log(e)};
-        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        alert('MINCE ! 🤔\nTu as été sorti du jeu ?!');
+        location.reload();
         break;
       case "failed":
         console.log("Error");
-        overlay.style.visibility = "visible";
-        atablee.style.display = "none";
-        myGUI.style.display = "none";
-        adminVideo.pause();
-        adminVideo.volume = 0;
-        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-        try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-        try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
-        try{context.close();}catch(e){console.log(e)};
-        document.getElementById("startButton").classList.remove("spinner");
-        document.getElementById("startButton").disabled = false;
-        document.getElementById("wifi").classList.add("alert");
-        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        goBackHome();
+        alert('OUPS ! 🤔\nEs-tu bien connecté au wifi @TABLEE ?');
+        location.reload();
         break;
       default:
         overlay.style.visibility = "visible";
@@ -837,6 +868,29 @@ function webrtcStateChange(ev){
     }
 };
 
+function flash(color){
+  document.getElementById("adminID").style.background = color;
+  document.getElementById("adminID").style.visibility = "visible";
+  setTimeout(()=>document.getElementById("adminID").style.visibility = "hidden", 100);
+}
+
+function goBackHome(){
+  overlay.style.visibility = "visible";
+  atablee.style.display = "none";
+  myGUI.style.display = "none";
+  adminVideo.pause();
+  adminVideo.volume = 0;
+  adminVideo_webrtc.pause();
+  adminVideo_webrtc.volume = 0;
+  try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+  try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+  try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
+  try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+  try{context.suspend();}catch(e){console.log(e)};
+  document.getElementById("startButton").classList.remove("spinner");
+  document.getElementById("startButton").disabled = false;
+  try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
+}
 
 const requestWakeLock = async () => {
   try {
@@ -858,7 +912,7 @@ const requestWakeLock = async () => {
 document.addEventListener("visibilitychange", (event) => {
 
   try{
-    if (context.state != 'closed'){
+    if ((context)&&(context.state != 'closed')){
       if (document.visibilityState === "visible") {
         context.resume();
       } else {
@@ -953,15 +1007,15 @@ async function effects_Setup(effects) {
     }
   
     // (Optional) Fetch the dependencies
-    let dependencies = [];
-    try {
-        const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
-        dependencies = await dependenciesResponse.json();
-        // Prepend "export" to any file dependenciies
-        dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d);
-    } catch (e) {
-      console.log('No dependencies in : ' + effects[i].name);
-    }
+    // let dependencies = [];
+    // try {
+    //     const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
+    //     dependencies = await dependenciesResponse.json();
+    //     // Prepend "export" to any file dependenciies
+    //     dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d);
+    // } catch (e) {
+    //   console.log('No dependencies in : ' + effects[i].name);
+    // }
 
     // Create the device
     try {
@@ -970,10 +1024,10 @@ async function effects_Setup(effects) {
         alert('err');
     }
 
-    if (dependencies.length)
-      await effects[i].device.loadDataBufferDependencies(dependencies);
+    // if (dependencies.length)
+    //   await effects[i].device.loadDataBufferDependencies(dependencies);
 
-    attachOutports(effects[i].device);
+    // attachOutports(effects[i].device);
 
     effects[i].gain = context.createGain();
     effects[i].gain.gain.value = 1.0;
@@ -1007,27 +1061,27 @@ function loadRNBOScript(version) {
   });
 }
 
-function attachOutports(device) {
-  try{
-    const outports = device.outports;
-    if (outports.length < 1) {
-        return;
-    }
+// function attachOutports(device) {
+//   try{
+//     const outports = device.outports;
+//     if (outports.length < 1) {
+//         return;
+//     }
 
-    device.messageEvent.subscribe((ev) => {
+//     device.messageEvent.subscribe((ev) => {
 
-        // Ignore message events that don't belong to an outport
-        if (outports.findIndex(elt => elt.tag === ev.tag) < 0) return;
+//         // Ignore message events that don't belong to an outport
+//         if (outports.findIndex(elt => elt.tag === ev.tag) < 0) return;
 
-        // Message events have a tag as well as a payload
-        // console.log(`${ev.tag}: ${ev.payload}`);
-        if (ev.tag == 'gain_1'){
-          document.getElementById("adminID").style.visibility = "visible";
-          setTimeout(()=>document.getElementById("adminID").style.visibility = "hidden", 300);
-        }
-    });
-  } catch(e) {alert(e)};
-}
+//         // Message events have a tag as well as a payload
+//         // console.log(`${ev.tag}: ${ev.payload}`);
+//         if (ev.tag == 'gain_1'){
+//           document.getElementById("adminID").style.visibility = "visible";
+//           setTimeout(()=>document.getElementById("adminID").style.visibility = "hidden", 300);
+//         }
+//     });
+//   } catch(e) {alert(e)};
+// }
 
 function makeGUI(device, userParams, effect_title, effect_activ) {
   let effect_div = document.createElement("div");
@@ -1282,8 +1336,8 @@ function nodeConnection(mode){ // TODO
     source.connect(f_effects[f_effects.length-1].device.node);
   };
   gain.connect(analyser);
-  // analyser.connect(myPeer);
-  analyser.connect(context.destination);
+  analyser.connect(myPeer);
+  // analyser.connect(context.destination);
 }
 
 let recTimeCount = 0;

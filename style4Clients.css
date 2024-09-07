@@ -524,3 +524,7 @@
   input[type="range"]:disabled::-moz-range-thumb {
     cursor: not-allowed;
   }
+
+  #audio_nico{
+    z-index: 2;
+  }

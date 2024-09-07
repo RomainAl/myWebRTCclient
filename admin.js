@@ -451,7 +451,7 @@ function OnTrackFunction(event) {
     audioCrac2.loop = true;
     audioCrac2.autoplay = false;
     audioCrac2.muted = false;
-    audioCrac2.src = './audios/LXR-1.wav';
+    audioCrac2.src = './audios/audio2.wav';
     audioCrac2.controlsList="nodownload noplaybackrate";
     // audioCrac2.playbackRate = Math.random()+0.3;
     divS.appendChild(audioCrac2);
