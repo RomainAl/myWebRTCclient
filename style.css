@@ -145,20 +145,43 @@ audio {
 
 #spatDiv{
   position: absolute;
-  right: 0;
-  bottom: 5%;
+  display: none;
+  left: 50%;
+  top: 50%;
   z-index: 2;
   background: black;
   height: 400px;
   width: 800px;
+  text-align: center;
+  /* transform: translate(-50%, -50%); */
 }
 
 .spatDiv_client{
-  width:40px;
-  height:40px;
+  z-index: 3;
+  width:20px;
+  height:20px;
   background:#00cf8a;
   position:absolute;
   border-radius:50%;
-  pointer-events: none;
   cursor: grab;
+  border-width: 2px;
+  border: solid;
+  border-color: #00cf8a;
+}
+
+.spatDiv_client_selected{
+  border-color: red;
+}
+
+.spatDiv_speakers{
+  z-index: 3;
+  width:20px;
+  height:20px;
+  background:yellow;
+  position:absolute;
+  border-radius:50%;
+  cursor: grab;
+  border-width: 2px;
+  border: solid;
+  border-color: yellow;
 }

@@ -78,9 +78,36 @@ let ch = 0;
 let source;
 let gainNode;
 let analyser;
-let spatGains;
-let mygsap;
+// let spatGains= [];
 let cutFreq;
+// let spatDiv_client;
+// const NN = 300;
+
+// 4SPAT :
+// function mousemove(e) {
+//   gsap.to('.spatDiv_client_selected',
+//     { x: e.clientX-spatDiv.getBoundingClientRect().left-10,
+//       y: e.clientY-spatDiv.getBoundingClientRect().top-10, //"+=250" -> NOTE for relative
+//       duration: 2,
+//       ease: "power3.inout",
+//       onStart: function () {
+//         gsap.ticker.fps(60);
+//       },
+//       onUpdate: function(){
+//         const clientId = this.targets()[0].getAttribute("id").substring(7);
+//         for (let i=0; i<ctx.destination.maxChannelCount; i++){
+//           let value = 1/(1+Math.sqrt(Math.pow((gsap.getProperty(this.targets()[0], "x")-NN*i)*0.1,2)));
+//           clientS.find(c=>c.clientId==clientId).spatGains[i].gain.value = value;
+//         }
+//       },
+//       // repeat: -1,
+//     });
+// }
+// function mouseup(e) {
+//   document.getElementsByClassName('spatDiv_client_selected')[0].classList.remove('spatDiv_client_selected');
+//   spatDiv.removeEventListener("mousemove", mousemove);
+//   spatDiv.removeEventListener("mouseup", mouseup);
+// }
 
 function startContext(event) {
   //console.log(navigator.mediaDevices.enumerateDevices());
@@ -91,9 +118,16 @@ function startContext(event) {
   merger.channelInterpretation = 'discrete';
   merger.connect(ctx.destination);
   console.log("Channel number: " + ctx.destination.maxChannelCount);
-  //merger.channelInterpretation = 'discrete';
   console.log(ctx);
   document.body.style.background = 'white';
+  // 4SPAT :
+  // for (let i=0; i<ctx.destination.maxChannelCount; i++){
+  //   let speaker = document.createElement('div');
+  //   speaker.style.left = (i*NN)+'px';
+  //   // spatDiv_client.setAttribute("id", 'spatDiv'+ currentClientId);
+  //   speaker.classList.add('spatDiv_speakers');
+  //   spatDiv.appendChild(speaker);
+  // }
 }
 
 // Display statistics
@@ -286,8 +320,7 @@ socket.on("offer", function (offer, clientId) {
           cutFreq: cutFreq,
           analyser: analyser,
           audioCrac_myPeer: myPeer,
-          spatGains: spatGains,
-          gsap: mygsap
+          // spatGains: spatGains, // 4SPAT :
         };
         clientS.push(client);
     })
@@ -359,6 +392,7 @@ function OnTrackFunction(event) {
     canvas.width = 250;
     divS.appendChild(canvas);
     if (ctx){
+      // spatGains = [];// 4SPAT :
       source = ctx.createMediaStreamSource(event.streams[0]);
       gainNode = ctx.createGain();
       gainNode.gain.value = gain.value;
@@ -381,19 +415,21 @@ function OnTrackFunction(event) {
       cutFreq.frequency.value = cutFreq_f.value;
       cutFreq.type = "peaking";
       cutFreq.gain.value = -40;
-      // Sauvegarde sans spat :
       const splitter = ctx.createChannelSplitter(1);
-      source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser);
-      // splitter.connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
+      source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser).connect(merger, 0, ch);
 
-      let spatGains = [];
-      for (let i = 0; i<ctx.destination.maxChannelCount;i++){
-        const gain = ctx.createGain();
-        spatGains.push(gain);
-        analyser.connect(gain).connect(merger, 0, i);
-      }
-      
-      // source.connect(cutFreq).connect(gainNode)
+      // 4SPAT :
+      // source.connect(splitter).connect(cutFreq).connect(gainNode).connect(analyser);
+      // for (let i = 0; i < ctx.destination.maxChannelCount;i++){
+      //   const gain = ctx.createGain();
+      //   if (i == ch){
+      //     gain.gain.value = 1;
+      //   } else {
+      //     gain.gain.value = 0;
+      //   }
+      //   spatGains.push(gain);
+      //   analyser.connect(gain).connect(merger, 0, i);
+      // }
 
       const btn_chan = document.createElement("div");
       divS.appendChild(btn_chan);
@@ -414,26 +450,12 @@ function OnTrackFunction(event) {
       const streamVisualizer = new MyWebAudio(source, analyser, canvas);
       streamVisualizer.start();
 
-      const spatDiv_client = document.createElement('div');
-      spatDiv_client.setAttribute("id", 'spatDiv'+ currentClientId);
-      spatDiv_client.classList.add('spatDiv_client');
-      const mygsap = gsap.quickTo(spatDiv_client, "x",
-        { duration: 1,
-          ease: "power3.inout",
-          onStart: function () {
-            gsap.ticker.fps(10);
-          },
-          // onUpdate: function(){
-          //   console.log(mygsap.getProperty(this.targets()[0], "x"))
-          // },
-          // repeat: -1,
-        });
-        spatDiv.addEventListener("mousemove", (e) => 
-          {
-            mygsap(e.clientX);
-            console.log(e.clientX);
-          });
-        spatDiv.append(spatDiv_client);
+      // 4SPAT :
+      // spatDiv_client = document.createElement('div');
+      // spatDiv_client.setAttribute("id", 'spatDiv'+ currentClientId);
+      // spatDiv_client.classList.add('spatDiv_client');
+      // spatDiv_client.addEventListener("mousedown", mousedown);
+      // spatDiv.appendChild(spatDiv_client);
     };
 
     if ((currentSel!=0)&&(currentSel!=1)) divS.style.display = 'none';
@@ -522,8 +544,22 @@ function receiveChannelCallback(event) {
 
 function onReceiveChannelMessageCallback(event) {
   console.log('Received Message : ' + event.data);
-  clientS.find(c=>c.clientId == JSON.parse(event.data).clientId).div.style.background = "red";
-  setTimeout(()=>{clientS.find(c=>c.clientId == JSON.parse(event.data).clientId).div.style.background = "white";}, 1000);
+  data = JSON.parse(event.data)
+  let client = clientS.find(c=>c.clientId == data.clientId);
+  client.div.style.background = "red";
+  setTimeout(()=>{client.div.style.background = "white";}, 1000);
+  if (data.mess){
+    switch (data.mess){
+      case 'NoMic':
+        let div = Array.from(client.div.children).find(c=>c.getAttribute('name')=='divS1');
+        removeAllChildNodes(div);
+        const nomic = document.createTextNode("No MIC");
+        div.appendChild(nomic);
+      break;
+      default:
+        console.log('No mess');
+    }
+  }
 }
 
 function onReceiveChannelStateChange() {
@@ -729,6 +765,13 @@ function changeChan(event){
   let client = clientS.find(t=>t.clientId==clientId);
   client.analyser.disconnect(0);
   client.analyser.connect(merger, 0, parseInt(event.target.innerText)-1);
+  // for (let i = 0; i<client.spatGains.length; i++){ 
+  //   if (i == parseInt(event.target.innerText)-1){
+  //     client.spatGains[i].gain.exponentialRampToValueAtTime(1.0, ctx.currentTime + 2);
+  //   } else {
+  //     client.spatGains[i].gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 2);
+  //   }
+  // }
   for (const child of event.target.parentElement.children) {
     child.style.background = "white";
   }
