@@ -104,7 +104,7 @@ let audio_nico_source;
 let timer_rec;
 let timer_nico;
 const displayAllEffectsParams = false;
-let = effects_loaded = false;
+let effects_loaded = false;
 
 const effects = [
   // {
