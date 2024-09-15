@@ -1,7 +1,3 @@
-if (location.protocol !== 'https:') { // TODO
-  location.replace(`https:${location.href.substring(location.protocol.length)}`);
-  alert("Go HTTPS !");
-}
 const socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
 
 const userCanvas = document.getElementById("canvas");
@@ -12,7 +8,6 @@ const adminVideo = document.getElementById("video");
 adminVideo.style.display = "none";
 const adminVideo_webrtc = document.getElementById("video_webrtc");
 adminVideo_webrtc.style.display = "none";
-adminVideo_webrtc.volume = 0;
 const audio_nico = document.getElementById("audio_nico");
 audio_nico.src = `./audio4Client/LXR-${Math.round(Math.random()*7+1)}.wav`;
 audio_nico.muted = false;
@@ -23,9 +18,12 @@ const gainPan = document.getElementById("gain-param");
 gainPan.style.display = "none";
 const BtnsPan = document.getElementById("Btns");
 const overlay = document.getElementById('overlay');
+const overlayTHEEND = document.getElementById('overlayTHEEND');
 const myGUI = document.getElementById("GUI");
 const atablee = document.getElementById("atablee");
 const btn_fullscreen = document.getElementById("btn_fullscreen");
+let fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+if (fullscreenElement===undefined) btn_fullscreen.style.display = 'none';
 const btn_gain = document.getElementById("btn_gain");
 const btn_rec = document.getElementById("btn_rec");
 btn_rec.style.background = "transparent";
@@ -103,6 +101,9 @@ let myPeer;
 let audio_nico_source;
 let timer_rec;
 let timer_nico;
+let gain_nico;
+let isDraggingSlider = false;
+
 const displayAllEffectsParams = false;
 let effects_loaded = false;
 
@@ -408,7 +409,6 @@ function init() {
   requestWakeLock();
   document.getElementById("startButton").classList.add("spinner");
   document.getElementById("startButton").disabled = true;
-  //changeFullScreen(); TODO if not leave the button
   context = new AudioContext();
   if (myPeer) myPeer = null;
   myPeer = context.createMediaStreamDestination();
@@ -436,6 +436,9 @@ function init() {
   adminVideo.muted = false;
   adminVideo.volume = 0.0;
   audio_nico.play();
+  adminVideo_webrtc.muted = false;
+  adminVideo_webrtc.volume = 0;
+  adminVideo_webrtc.play();
   // audio_nico.muted = false;
   // adminVideo.volume = 0.0;
   // audio_nico.volume = 0.0;
@@ -534,7 +537,6 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   if (adminVideo_webrtc.srcObject !== event.streams[0]) {
     adminVideo_webrtc.srcObject = event.streams[0];
   }
-  
   // adminVideo.volume = 0;
   // adminVideo.controls = true;
   // adminVideo.loop = true;
@@ -568,12 +570,11 @@ function changeScene(data){
       location.reload();
       break;
     case 1:
-      if (!myPeer.stream.active) {
+      if ((!myPeer)||(!myPeer.stream.active)) {
         myPeer = context.createMediaStreamDestination();
         let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
         audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
       }
-      console.log(myPeer);
       if (streamVisualizer4Clients) try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       if ((!context) || (context.state=='closed') ){ // TODO
         console.log('context1 1');
@@ -713,7 +714,7 @@ function changeScene(data){
     case 20:
       try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       try {context.suspend()} catch(e) {console.log(e)}
       // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       if (streamVisualizer4Clients) try {streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
@@ -729,6 +730,7 @@ function changeScene(data){
       adminVideo.pause();
       overlay.style.visibility = "hidden";
       audio_nico.pause();
+      changeFullScreen();
       break;
     case 21:
       if (data.video){
@@ -739,7 +741,7 @@ function changeScene(data){
       } else {
         try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
         // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-        try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+        if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
         try {context.suspend()} catch(e) {console.log(e)}
         // try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
         if (streamVisualizer4Clients) try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
@@ -759,27 +761,27 @@ function changeScene(data){
         overlay.style.visibility = "hidden";
         audio_nico.pause();
       }
+      changeFullScreen();
       break;
     case 3:
-      try { myPeer.stream.getTracks().forEach((track) => {track.stop();}); } catch(e) {console.log(e)};
+      try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       try {context.suspend()} catch(e) {console.log(e)}
-      // try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
-      if (streamVisualizer4Clients) try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
-      //adminVideo.remove();
+      // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
+      if (streamVisualizer4Clients) try {streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
       atablee.style.display = "initial";
       userCanvas.style.display = "none";
       myGUI.style.display = "none";
       adminVideo.style.display = "none";
-      adminVideo.pause();
-      adminVideo.volume = 0;
+      //document.getElementById("overlay").remove(); // TODO
       adminVideo_webrtc.style.display = "none";
       adminVideo_webrtc.volume = 1;
       adminVideo_webrtc.play();
+      adminVideo.volume = 0;
+      adminVideo.pause();
       overlay.style.visibility = "hidden";
       audio_nico.pause();
-      //document.getElementById("overlay").remove(); // TODO
       break;
     case 4:
       setTimeout(()=>{
@@ -842,10 +844,29 @@ function changeScene(data){
       streamVisualizer4Clients.setSize(1000);
       streamVisualizer4Clients.setFFT_SIZE(128);
       overlay.style.visibility = "hidden";
-      try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       try {myPeer.stream.getTracks().forEach((track) => {track.stop()}) } catch(e) {console.log(e)};
+      changeFullScreen();
       break;
+      case 7:
+        overlay.style.visibility = "hidden";
+        overlayTHEEND.style.visibility = "visible";
+        atablee.style.display = "none";
+        myGUI.style.display = "none";
+        adminVideo.pause();
+        adminVideo.volume = 0;
+        adminVideo_webrtc.pause();
+        adminVideo_webrtc.volume = 0;
+        try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+        // try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
+        if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+        try{context.suspend();}catch(e){console.log(e)};
+        document.getElementById("startButton").classList.remove("spinner");
+        document.getElementById("startButton").disabled = false;
+        try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
+        break;
     default :
       console.log("No scene...");
       flash('red');
@@ -863,7 +884,7 @@ function onSendChannelStateChange() {
   console.log('Send channel state is: ' + readyState);
   if (readyState == 'closed'){
     goBackHome();
-    alert('MINCE ! 🤔\nTu as été déconnecté !?');
+    // alert('MINCE ! 🤔\nTu as été déconnecté !?');
     location.reload();
   }
 }
@@ -930,7 +951,7 @@ function goBackHome(){
   try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
   try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
   try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-  try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+  if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
   try{context.suspend();}catch(e){console.log(e)};
   document.getElementById("startButton").classList.remove("spinner");
   document.getElementById("startButton").disabled = false;
@@ -977,46 +998,48 @@ document.addEventListener("visibilitychange", (event) => {
 });
 
 function changeFullScreen(){
-  const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
-  if(!fullscreenElement)
-  {
-      if(document.documentElement.requestFullscreen)
-      {
-        document.documentElement.requestFullscreen();
-        btn_fullscreen.style.backgroundColor = "#5c5c5c";
-        document.getElementById("fs2").style.display = 'inline-block';
-        document.getElementById("fs1").style.display = 'none';
-      }
-      else if(document.documentElement.webkitRequestFullscreen)
-      {
-        document.documentElement.webkitRequestFullscreen();
-        btn_fullscreen.style.backgroundColor = "#5c5c5c";
-        document.getElementById("fs2").style.display = 'inline-block';
-        document.getElementById("fs1").style.display = 'none';
-      }
-  }
-  else
-  {
-      if(document.exitFullscreen)
-      {
-          document.exitFullscreen();
-          btn_fullscreen.style.backgroundColor = "transparent";
-          document.getElementById("fs1").style.display = 'inline-block';
-          document.getElementById("fs2").style.display = 'none';
-      }
-      else if(document.webkitExitFullscreen)
-      {
-          document.webkitExitFullscreen();
-          btn_fullscreen.style.backgroundColor = "transparent";
-          document.getElementById("fs1").style.display = 'inline-block';
-          document.getElementById("fs2").style.display = 'none';
-      }
+  fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fullscreenElement !== undefined){
+    if (!fullscreenElement)
+    {
+        if(document.documentElement.requestFullscreen)
+        {
+          document.documentElement.requestFullscreen();
+          btn_fullscreen.style.backgroundColor = "#5c5c5c";
+          document.getElementById("fs2").style.display = 'inline-block';
+          document.getElementById("fs1").style.display = 'none';
+        }
+        else if(document.documentElement.webkitRequestFullscreen)
+        {
+          document.documentElement.webkitRequestFullscreen();
+          btn_fullscreen.style.backgroundColor = "#5c5c5c";
+          document.getElementById("fs2").style.display = 'inline-block';
+          document.getElementById("fs1").style.display = 'none';
+        }
+    }
+    else
+    {
+        if(document.exitFullscreen)
+        {
+            document.exitFullscreen();
+            btn_fullscreen.style.backgroundColor = "transparent";
+            document.getElementById("fs1").style.display = 'inline-block';
+            document.getElementById("fs2").style.display = 'none';
+        }
+        else if(document.webkitExitFullscreen)
+        {
+            document.webkitExitFullscreen();
+            btn_fullscreen.style.backgroundColor = "transparent";
+            document.getElementById("fs1").style.display = 'inline-block';
+            document.getElementById("fs2").style.display = 'none';
+        }
+    }
   }
 }
 
 async function effects_Setup(effects) {
   let response, patcher;
-  for (i=0; i<effects.length;i++){
+  for (let i=0; i<effects.length; i++){
     if (window.matchMedia("(orientation: portrait)").matches){
       document.getElementById("loading-bar").style.transform = `scaleY(${(i+1)/effects.length})`;
     }  else {
@@ -1134,7 +1157,6 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
   let pdiv = document.getElementById("effects-params");
   pdiv.appendChild(effect_div);
   // This will allow us to ignore parameter update events while dragging the slider.
-  let isDraggingSlider = false;
   let uiElements = {};
   
   // ON/OFF BOUTON :
@@ -1182,7 +1204,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
   });
 
   // Listen to parameter changes from the device
-  autoChangeGUI(device, isDraggingSlider, uiElements);
+  autoChangeGUI(device, uiElements);
 }
 
 function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
@@ -1193,7 +1215,6 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
   let pdiv = document.getElementById("effects-params");
   pdiv.appendChild(effect_div);
   // This will allow us to ignore parameter update events while dragging the slider.
-  let isDraggingSlider = false;
   let uiElements = {};
 
   userParams.forEach((userParam)=>{
@@ -1239,7 +1260,7 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
     };
   });
   // Listen to parameter changes from the device
-  autoChangeGUI(device, isDraggingSlider, uiElements);
+  autoChangeGUI(device, uiElements);
 
 }
 
@@ -1350,13 +1371,14 @@ function onoffSampler(ev){
   })
 }
 
-function autoChangeGUI(device, isDraggingSlider, uiElements){
+function autoChangeGUI(device, uiElements){
   device.parameterChangeEvent.subscribe(param => {
     if (!isDraggingSlider){
       try{
           uiElements[param.id].slider.value = param.value;
       } catch (err){
-        // TODO
+        console.log('UIELEMENTS err');
+        console.log(err);
       }
     }
   });
@@ -1375,7 +1397,7 @@ function nodeConnection(mode){ // TODO
     source.connect(f_effects[0].device.node);
   } else {
     f_effects[0].gain.connect(gain);
-    for (i = 1; i < f_effects.length; i++){
+    for (let i = 1; i < f_effects.length; i++){
       f_effects[i].gain.connect(f_effects[i-1].device.node);
     }
     source.connect(f_effects[f_effects.length-1].device.node);

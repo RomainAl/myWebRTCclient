@@ -54,7 +54,7 @@ StreamVisualizer4Clients.prototype.draw = function() {
     for (let i = 0; i < this.analyser.frequencyBinCount; i++) {
       value = (this.times[i] / 256)-0.5;
       meanVal += Math.abs(value);
-      y = Math.min(Math.max(value * this.canvas.height * this.gain*10000 + this.canvas.height*0.5,0),this.canvas.height) - this.rectSize/2;
+      let y = Math.min(Math.max(value * this.canvas.height * this.gain*10000 + this.canvas.height*0.5,0),this.canvas.height) - this.rectSize/2;
       value = Math.abs(value);
       barWidth = this.canvas.width/this.analyser.frequencyBinCount;
       this.drawContext.strokeStyle = this.myColor; //'hsl(' + (1-2*value)*500 + ', 100%, 50%)';
@@ -66,7 +66,7 @@ StreamVisualizer4Clients.prototype.draw = function() {
       value = (this.times[i] / 256)-0.5;
       if (Math.abs(value) < 0.01) value = 0;
       meanVal += Math.abs(value);
-      y = Math.min(Math.max(value * this.canvas.height * this.gain + this.canvas.height*0.5,0),this.canvas.height) - this.rectSize/2;
+      let y = Math.min(Math.max(value * this.canvas.height * this.gain + this.canvas.height*0.5,0),this.canvas.height) - this.rectSize/2;
       barWidth = this.canvas.width/this.analyser.frequencyBinCount;
       this.drawContext.fillStyle = this.myColor;
       this.drawContext.fillRect(i * barWidth, y, this.rectSize, this.rectSize);

@@ -52,7 +52,7 @@
     height:100%;
   }
 
-  #overlay {
+  .overlay {
     position: absolute;
     font-size: 16px;
     z-index: 2;
@@ -80,7 +80,7 @@
     visibility: hidden;
   }
 
-	#overlay button {
+	.overlay button {
 		background: transparent;
 		border: 0;
 		border: 2px solid rgb(255, 255, 255);
@@ -101,7 +101,7 @@
     font-weight: bold;
   }
 
-  #overlay h1,h2,h3,h4,p,span {
+  .overlay h1,h2,h3,h4,p,span {
 		background: transparent;
 		border: 0;
 		color: #ffffff;

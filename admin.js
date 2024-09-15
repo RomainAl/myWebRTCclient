@@ -29,6 +29,7 @@ document.getElementById('btn_scene21').onclick = changeScene;
 // document.getElementById('btn_scene21_random').onclick = sendData;
 document.getElementById('btn_scene3').onclick = changeScene;
 document.getElementById('btn_scene6').onclick = changeScene;
+document.getElementById('btn_sceneTHEEND').onclick = changeScene;
 document.getElementById('btn_tech').onclick = changeScene;
 document.getElementById('btn_lauch').onclick = sendData;
 const scenes = document.getElementById('scenes');
@@ -573,6 +574,9 @@ function sendData(event) {
     case "btn_reload":
       data = {"scene": 0};
       currentSceneNb = 1;
+      for (const child of scenes.children) {
+        child.style.border = 'none';
+      }
       break;
     case "btn_reco":
       socket.connect();
@@ -582,35 +586,57 @@ function sendData(event) {
 
       const scene = scenes_array.find(c=>c.style.background == 'orange');
       if (scene){
+        for (const child of scenes.children) {
+          child.style.border = 'none';
+        }
         switch (scene.getAttribute('id')){
           case "btn_scene1":
             currentSceneNb = 1;
             data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
             break;
           case "btn_scene20":
             currentSceneNb = 20;
             data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
             break;
           case "btn_scene21":
             currentSceneNb = 21;
             data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
             // change2Vid();
             break;
           case "btn_scene21_random":
             currentSceneNb = 5;
             data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
             // change2Vid();
             break;
           case "btn_scene3":
             // data = {"scene": 6};
             currentSceneNb = 3;
             data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
             change2Crac();
             break;
           case "btn_scene6":
             data = {"scene": 6};
             currentSceneNb = 6;
             data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
+            break;
+          case "btn_sceneTHEEND":
+            data = {"scene": 7};
+            currentSceneNb = 7;
+            data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
             break;
           default:
             alert('Sélectionne une scène ! (1)');
@@ -655,8 +681,8 @@ function change2Crac(){
       let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
       let audioSource = ctx.createMediaElementSource(audioCrac);
       audioSource.connect(client.audioCrac_myPeer);
-      audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
-      audioSource2 = ctx.createMediaElementSource(audioCrac2);
+      let audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
+      let audioSource2 = ctx.createMediaElementSource(audioCrac2);
       audioSource2.connect(client.audioCrac_myPeer);
       audioCrac2.playbackRate = Math.random() + 1;
       audioCrac2.play();
@@ -748,6 +774,20 @@ function changeScene(event){
         document.getElementsByName('divS3').forEach(d=>d.style.display='flex');
         document.getElementsByName('divTech').forEach(d=>d.style.display='none');
         currentSel = 3;
+        break;
+      case "btn_scene6":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 1;
+        break;
+      case "btn_sceneTHEEND":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 1;
         break;
       case "btn_tech":
         document.getElementsByName('divS1').forEach(d=>d.style.display='none');
