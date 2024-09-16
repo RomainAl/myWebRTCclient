@@ -11,7 +11,8 @@ adminVideo.style.display = "none";
 const adminVideo_webrtc = document.getElementById("video_webrtc");
 adminVideo_webrtc.style.display = "none";
 const audio_nico = document.getElementById("audio_nico");
-audio_nico.src = `./audio4Client/LXR-${Math.round(Math.random()*7+1)}.wav`;
+// audio_nico.src = `./audio4Client/LXR-${Math.round(Math.random()*7+1)}.wav`;
+audio_nico.src = `./audio4Client/LXR-1.wav`;
 audio_nico.muted = false;
 // let vimeo = new Vimeo.Player('vimeo');
 const effectsPan = document.getElementById("effects-params");
@@ -72,6 +73,7 @@ adminVideo.ondblclick = adminID;
 adminVideo_webrtc.ondblclick = adminID;
 userCanvas.ondblclick = adminID;
 function adminID(e){
+    changeFullScreen();
     console.log(rtcPeerConnection.signalingState);
     if (sendChannel.readyState === 'open') {
       sendChannel.send(JSON.stringify({clientId: myID}));
@@ -432,7 +434,7 @@ function init() {
     audio_nico_source.connect(gain_nico);
   };
   gain_nico.connect(analyser);
-  clearInterval(timer_nico);
+  // clearInterval(timer_nico);
   adminVideo.muted = false;
   adminVideo.volume = 0.0;
   audio_nico.play();
@@ -569,7 +571,7 @@ function onReceiveChannelMessageCallback(event) {
 
 function changeScene(data){
   adminVideo.muted = true;
-  clearInterval(timer_nico);
+  // clearInterval(timer_nico);
   // audio_nico.muted = true;
   switch (data.scene){
     case 0:
@@ -695,6 +697,7 @@ function changeScene(data){
           streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
           streamVisualizer4Clients.start();
           overlay.style.visibility = "hidden";
+          overlayTHEEND.style.visibility = "hidden";
         })
         .catch(function (err) {
           overlay.style.visibility = "visible";
@@ -711,7 +714,11 @@ function changeScene(data){
           adminVideo_webrtc.volume = 0;
           adminVideo_webrtc.pause();
           audio_nico.pause();
-          myGUI.style.display = "none";
+          if (fullscreenElement===undefined) {
+            myGUI.style.display = "none";
+          } else {
+            myGUI.style.display = "flex";
+          }
           if (sendChannel.readyState === 'open') {
             sendChannel.send(JSON.stringify({clientId: myID, mess: "NoMic"}));
           }
@@ -736,15 +743,22 @@ function changeScene(data){
       adminVideo.volume = 0;
       adminVideo.pause();
       overlay.style.visibility = "hidden";
+      overlayTHEEND.style.visibility = "hidden";
       audio_nico.pause();
-      goFullScreen();
       break;
     case 21:
       if (data.video){
-        adminVideo.src = `./videos4Client/video${data.video}.mp4`;
-        adminVideo.muted = false;
-        adminVideo.volume = 1;
-        adminVideo.play();
+        if (data.video==="R"){
+          adminVideo.currentTime = Math.random()*0.8*adminVideo.duration;
+          adminVideo.muted = false;
+          adminVideo.volume = 1;
+          adminVideo.play();
+        } else {
+          adminVideo.src = `./videosNEW/video${data.video}.mp4`;
+          adminVideo.muted = false;
+          adminVideo.volume = 1;
+          adminVideo.play();
+        }
       } else {
         try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
         // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
@@ -766,9 +780,9 @@ function changeScene(data){
         adminVideo.muted = false;
         adminVideo.volume = 1;
         overlay.style.visibility = "hidden";
+        overlayTHEEND.style.visibility = "hidden";
         audio_nico.pause();
       }
-      goFullScreen();
       break;
     case 3:
       try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
@@ -788,6 +802,7 @@ function changeScene(data){
       adminVideo.volume = 0;
       adminVideo.pause();
       overlay.style.visibility = "hidden";
+      overlayTHEEND.style.visibility = "hidden";
       audio_nico.pause();
       break;
     case 4:
@@ -821,18 +836,19 @@ function changeScene(data){
       analyser.disconnect(0);
       analyser.connect(context.destination);
       gain.disconnect(0);
-      clearInterval(timer_nico);
-      timer_nico = setInterval(()=>{
-        gain_nico.gain.value = Math.random();
-        audio_nico.currentTime = 0;
-        audio_nico.play();
-      }, 17000);
+      // clearInterval(timer_nico);
+      // timer_nico = setInterval(()=>{
+      //   gain_nico.gain.value = Math.random();
+      //   audio_nico.currentTime = 0;
+      //   audio_nico.play();
+      // }, 17000);
       // context.close();
       // userCanvas.style.display = "none";
       gain_nico.gain.value = 1.0;
       // audio_nico.muted = false;
       audio_nico.currentTime = 0;
       audio_nico.play();
+      audio_nico.loop = true;
       atablee.style.display = "initial";
       userCanvas.style.display = "initial";
       adminVideo.style.display = "none";
@@ -851,10 +867,10 @@ function changeScene(data){
       streamVisualizer4Clients.setSize(1000);
       streamVisualizer4Clients.setFFT_SIZE(128);
       overlay.style.visibility = "hidden";
+      overlayTHEEND.style.visibility = "hidden";
       if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       try {myPeer.stream.getTracks().forEach((track) => {track.stop()}) } catch(e) {console.log(e)};
-      goFullScreen();
       break;
       case 7:
         overlay.style.visibility = "hidden";
@@ -1006,67 +1022,69 @@ document.addEventListener("visibilitychange", (event) => {
 });
 
 function changeFullScreen(){
-  fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
-  if (fullscreenElement !== undefined){
-    if (!fullscreenElement)
-    {
-        if(document.documentElement.requestFullscreen)
-        {
-          document.documentElement.requestFullscreen();
-          btn_fullscreen.style.backgroundColor = "#5c5c5c";
-          document.getElementById("fs2").style.display = 'inline-block';
-          document.getElementById("fs1").style.display = 'none';
-        }
-        else if(document.documentElement.webkitRequestFullscreen)
-        {
-          document.documentElement.webkitRequestFullscreen();
-          btn_fullscreen.style.backgroundColor = "#5c5c5c";
-          document.getElementById("fs2").style.display = 'inline-block';
-          document.getElementById("fs1").style.display = 'none';
-        }
+  try {
+    fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+    if (fullscreenElement !== undefined){
+      if (!fullscreenElement)
+      {
+          if(document.documentElement.requestFullscreen)
+          {
+            document.documentElement.requestFullscreen();
+            btn_fullscreen.style.backgroundColor = "#5c5c5c";
+            document.getElementById("fs2").style.display = 'inline-block';
+            document.getElementById("fs1").style.display = 'none';
+          }
+          else if(document.documentElement.webkitRequestFullscreen)
+          {
+            document.documentElement.webkitRequestFullscreen();
+            btn_fullscreen.style.backgroundColor = "#5c5c5c";
+            document.getElementById("fs2").style.display = 'inline-block';
+            document.getElementById("fs1").style.display = 'none';
+          }
+      }
+      else
+      {
+          if(document.exitFullscreen)
+          {
+              document.exitFullscreen();
+              btn_fullscreen.style.backgroundColor = "transparent";
+              document.getElementById("fs1").style.display = 'inline-block';
+              document.getElementById("fs2").style.display = 'none';
+          }
+          else if(document.webkitExitFullscreen)
+          {
+              document.webkitExitFullscreen();
+              btn_fullscreen.style.backgroundColor = "transparent";
+              document.getElementById("fs1").style.display = 'inline-block';
+              document.getElementById("fs2").style.display = 'none';
+          }
+      }
     }
-    else
-    {
-        if(document.exitFullscreen)
-        {
-            document.exitFullscreen();
-            btn_fullscreen.style.backgroundColor = "transparent";
-            document.getElementById("fs1").style.display = 'inline-block';
-            document.getElementById("fs2").style.display = 'none';
-        }
-        else if(document.webkitExitFullscreen)
-        {
-            document.webkitExitFullscreen();
-            btn_fullscreen.style.backgroundColor = "transparent";
-            document.getElementById("fs1").style.display = 'inline-block';
-            document.getElementById("fs2").style.display = 'none';
-        }
-    }
-  }
+  } catch(e) { console.log(e) }
 }
 
-function goFullScreen(){
-  fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
-  if (fullscreenElement !== undefined){
-    if (!fullscreenElement)
-    {
-        if(document.documentElement.requestFullscreen)
-        {
-          document.documentElement.requestFullscreen();
-          btn_fullscreen.style.backgroundColor = "#5c5c5c";
-          document.getElementById("fs2").style.display = 'inline-block';
-          document.getElementById("fs1").style.display = 'none';
-        }
-        else if(document.documentElement.webkitRequestFullscreen)
-        {
-          document.documentElement.webkitRequestFullscreen();
-          btn_fullscreen.style.backgroundColor = "#5c5c5c";
-          document.getElementById("fs2").style.display = 'inline-block';
-          document.getElementById("fs1").style.display = 'none';
-        }
-    }
-  }
-}
+// function goFullScreen(){
+//   fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+//   if (fullscreenElement !== undefined){
+//     if (!fullscreenElement)
+//     {
+//         if(document.documentElement.requestFullscreen)
+//         {
+//           document.documentElement.requestFullscreen();
+//           btn_fullscreen.style.backgroundColor = "#5c5c5c";
+//           document.getElementById("fs2").style.display = 'inline-block';
+//           document.getElementById("fs1").style.display = 'none';
+//         }
+//         else if(document.documentElement.webkitRequestFullscreen)
+//         {
+//           document.documentElement.webkitRequestFullscreen();
+//           btn_fullscreen.style.backgroundColor = "#5c5c5c";
+//           document.getElementById("fs2").style.display = 'inline-block';
+//           document.getElementById("fs1").style.display = 'none';
+//         }
+//     }
+//   }
+// }
 
 async function effects_Setup(effects) {
   let response, patcher;
@@ -1189,7 +1207,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
   let pdiv = document.getElementById("effects-params");
   pdiv.appendChild(effect_div);
   // This will allow us to ignore parameter update events while dragging the slider.
-  let uiElements = {};
+  // let uiElements = {};
   
   // ON/OFF BOUTON :
   //param_input.value = 1.0;
@@ -1228,7 +1246,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
       
       // Store the slider and text by name so we can access them later
       let slider = paramGUI.slider;
-      uiElements[param.id] = { slider };
+      // uiElements[param.id] = { slider };
       
       // Add the slider element
       effect_div.appendChild(paramGUI.sliderContainer);
@@ -1236,7 +1254,7 @@ function makeGUI(device, userParams, effect_title, effect_activ) {
   });
 
   // Listen to parameter changes from the device
-  autoChangeGUI(device, uiElements);
+  // autoChangeGUI(device, uiElements);
 }
 
 function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
@@ -1247,7 +1265,7 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
   let pdiv = document.getElementById("effects-params");
   pdiv.appendChild(effect_div);
   // This will allow us to ignore parameter update events while dragging the slider.
-  let uiElements = {};
+  // let uiElements = {};
 
   userParams.forEach((userParam)=>{
     let param = device.parameters.find(t=>t.name==userParam.name);
@@ -1285,14 +1303,14 @@ function makeSamplerGUI(device, userParams, effect_title, effect_activ) {
         let paramGUI = createParamGUI(param, param.name, userParam.type, effect_activ);
         // Store the slider and text by name so we can access them later
         let slider = paramGUI.slider;
-        uiElements[param.id] = { slider };
+        // uiElements[param.id] = { slider };
         // Add the slider element
         effect_div.appendChild(paramGUI.sliderContainer);
       }
     };
   });
   // Listen to parameter changes from the device
-  autoChangeGUI(device, uiElements);
+  // autoChangeGUI(device, uiElements);
 
 }
 
@@ -1403,18 +1421,18 @@ function onoffSampler(ev){
   })
 }
 
-function autoChangeGUI(device, uiElements){
-  device.parameterChangeEvent.subscribe(param => {
-    if (!isDraggingSlider){
-      try{
-          uiElements[param.id].slider.value = param.value;
-      } catch (err){
-        console.log('UIELEMENTS err');
-        console.log(err);
-      }
-    }
-  });
-}
+// function autoChangeGUI(device, uiElements){
+//   device.parameterChangeEvent.subscribe(param => {
+//     if (!isDraggingSlider){
+//       try{
+//           uiElements[param.id].slider.value = param.value;
+//       } catch (err){
+//         console.log('UIELEMENTS err');
+//         console.log(err);
+//       }
+//     }
+//   });
+// }
 
 function nodeConnection(mode){ // TODO
   source.disconnect(0);
@@ -1436,7 +1454,6 @@ function nodeConnection(mode){ // TODO
   };
   gain.connect(analyser);
   analyser.connect(myPeer);
-  console.log("Co myPeer");
   // analyser.connect(context.destination);
 }
 

@@ -8,8 +8,8 @@ console.log("Flyio ok");
 
 for (let i = 0; i < 20; i++){
   let videoelement = document.createElement("video");
-  videoelement.src = './videos/video1.webm';
-  videoelement.type="video/webm";
+  videoelement.src = './videosNEW/video1.mp4';
+  videoelement.type="video/mp4";
   videoelement.width = 250;
   videoelement.playsinline = true;
   videoelement.loop = true;
@@ -494,6 +494,11 @@ function OnTrackFunction(event) {
         button.onclick = changeVid;
         btn_videos.appendChild(button);
       }
+      const button = document.createElement("button");
+      button.setAttribute("name", 'btn'+ currentClientId);
+      button.innerText = "R";
+      button.onclick = randVid;
+      btn_videos.appendChild(button);
     }
     if ((currentSel!=0)&&(currentSel!=20)&&(currentSel!=21)) divS.style.display = 'none';
 
@@ -706,6 +711,24 @@ function change2Crac(){
   });
 }
 
+function randVid(event){
+  const clientId = event.target.name.substring(3);
+  const scene = scenes_array.find(c=>c.style.background == 'orange');
+  if (scene){
+    switch (scene.getAttribute('id')){
+      case "btn_scene20":
+        break;
+      case "btn_scene21":
+        data = {"scene": 21, "video": event.target.innerText};
+        console.log(data);
+        const client = clientS.find(c=>c.clientId == clientId);
+        if (client.rtcDataSendChannel.readyState === 'open') {
+          client.rtcDataSendChannel.send(JSON.stringify(data));
+        }
+    }
+  }
+}
+
 function changeVid(event){
   for (const child of event.target.parentElement.children) {
     child.style.background = 'white';
@@ -717,7 +740,7 @@ function changeVid(event){
     switch (scene.getAttribute('id')){
       case "btn_scene20":
         let videoelement = document.getElementsByName('video' + clientId)[0];
-        videoelement.src = './videos/video'+event.target.innerText+'.mp4';
+        videoelement.src = './videosNEW/video'+event.target.innerText+'.mp4';
         videoelement.type="video/mp4";
         videoelement.play()
         .then(() => {
@@ -955,7 +978,7 @@ function onMIDIMessage(event){
 	}*/
 	
 	//log('data', data, 'cmd', cmd, 'channel', channel);
-	logger(keyData, 'key data', data);
+	// logger(keyData, 'key data', data);
 
   if ((note == 46)&&(velocity==127)) {
     let randNumber = Math.max(Math.round(Math.random()*clientS.length), 1);
@@ -972,6 +995,17 @@ function onMIDIMessage(event){
       console.error(error);
     }
     iterKey+=randNumber;
+  } else if (note == 60){
+      if (velocity==80){
+        const scene = scenes_array.find(c=>c.style.background == 'orange');
+        if ((scene==undefined)||(scene.getAttribute("id")!=="btn_scene6")){
+          document.getElementById("btn_scene6").click();
+        }
+        document.getElementById("btn_lauch").click();
+    } else {
+      document.getElementById("btn_scene1").click();
+      document.getElementById("btn_lauch").click();
+    }
   }
   /*try {
     data = {"scene": 4};
@@ -1033,7 +1067,6 @@ function onStateChange(event){
 	var port = event.port, state = port.state, name = port.name, type = port.type;
 	if(type == "input")
 		log("name", name, "port", port, "state", state);
-
 }
 
 function listInputs(inputs){
