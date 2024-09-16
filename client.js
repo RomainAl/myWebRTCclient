@@ -1,4 +1,6 @@
 const socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly.dev/");
+// const socket = io.connect("https://192.168.10.2:1337");
+console.log("Flyio ok");
 
 const userCanvas = document.getElementById("canvas");
 userCanvas.width = Math.max(window.innerWidth,window.innerHeight)*2;
@@ -79,12 +81,10 @@ function adminID(e){
 // let testBool = true;
 // btn_test.onclick = testBtn;
 
-//effectsPan.style.visibility = "collapse";
-
 navigator.vibrate = navigator.vibrate || navigator.webkitVibrate || navigator.mozVibrate || navigator.msVibrate; 
 let streamVisualizer4Clients;
 let myID;
-let roomName = "atablee";
+let roomName = "!?ATtablee007!?";
 let rtcPeerConnection;
 let receiveChannel;
 let sendChannel;
@@ -437,7 +437,7 @@ function init() {
   adminVideo.volume = 0.0;
   audio_nico.play();
   adminVideo_webrtc.muted = false;
-  adminVideo_webrtc.volume = 0;
+  adminVideo_webrtc.volume = 0.0;
   adminVideo_webrtc.play();
   // audio_nico.muted = false;
   // adminVideo.volume = 0.0;
@@ -475,6 +475,13 @@ socket.on("create", function () {
       console.log(error);
     });
 });
+
+socket.on("noCreate", function(){
+  console.log("Socket receive noCreate");
+  socket.disconnect();
+  alert("ARF !!! 😯\nL'administrateur n'est pas connecté !\nRéveille-le ! 🙄");
+  location.reload();
+})
 
 // Triggered on receiving an answer from the person who joined the room.
 socket.on("answer", function (answer) {
@@ -730,7 +737,7 @@ function changeScene(data){
       adminVideo.pause();
       overlay.style.visibility = "hidden";
       audio_nico.pause();
-      changeFullScreen();
+      goFullScreen();
       break;
     case 21:
       if (data.video){
@@ -761,7 +768,7 @@ function changeScene(data){
         overlay.style.visibility = "hidden";
         audio_nico.pause();
       }
-      changeFullScreen();
+      goFullScreen();
       break;
     case 3:
       try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
@@ -847,7 +854,7 @@ function changeScene(data){
       if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
       // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       try {myPeer.stream.getTracks().forEach((track) => {track.stop()}) } catch(e) {console.log(e)};
-      changeFullScreen();
+      goFullScreen();
       break;
       case 7:
         overlay.style.visibility = "hidden";
@@ -858,6 +865,7 @@ function changeScene(data){
         adminVideo.volume = 0;
         adminVideo_webrtc.pause();
         adminVideo_webrtc.volume = 0;
+        audio_nico.pause();
         try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         // try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
@@ -1037,6 +1045,29 @@ function changeFullScreen(){
   }
 }
 
+function goFullScreen(){
+  fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement;
+  if (fullscreenElement !== undefined){
+    if (!fullscreenElement)
+    {
+        if(document.documentElement.requestFullscreen)
+        {
+          document.documentElement.requestFullscreen();
+          btn_fullscreen.style.backgroundColor = "#5c5c5c";
+          document.getElementById("fs2").style.display = 'inline-block';
+          document.getElementById("fs1").style.display = 'none';
+        }
+        else if(document.documentElement.webkitRequestFullscreen)
+        {
+          document.documentElement.webkitRequestFullscreen();
+          btn_fullscreen.style.backgroundColor = "#5c5c5c";
+          document.getElementById("fs2").style.display = 'inline-block';
+          document.getElementById("fs1").style.display = 'none';
+        }
+    }
+  }
+}
+
 async function effects_Setup(effects) {
   let response, patcher;
   for (let i=0; i<effects.length; i++){
@@ -1052,7 +1083,8 @@ async function effects_Setup(effects) {
             // Load RNBO script dynamically
             // Note that you can skip this by knowing the RNBO version of your patch
             // beforehand and just include it using a <script> tag
-            await loadRNBOScript(patcher.desc.meta.rnboversion);
+            // await loadRNBOScript(patcher.desc.meta.rnboversion);
+            // console.log(patcher.desc.meta.rnboversion);
         //}
 
     } catch (err) {
@@ -1111,23 +1143,23 @@ async function effects_Setup(effects) {
   };
 }
 
-function loadRNBOScript(version) {
-  return new Promise((resolve, reject) => {
-      if (/^\d+\.\d+\.\d+-dev$/.test(version)) {
-          throw new Error("Patcher exported with a Debug Version!\nPlease specify the correct RNBO version to use in the code.");
-      }
-      const el = document.createElement("script");
+// function loadRNBOScript(version) {
+//   return new Promise((resolve, reject) => {
+//       if (/^\d+\.\d+\.\d+-dev$/.test(version)) {
+//           throw new Error("Patcher exported with a Debug Version!\nPlease specify the correct RNBO version to use in the code.");
+//       }
+//       const el = document.createElement("script");
       
-      el.src = "https://c74-public.nyc3.digitaloceanspaces.com/rnbo/" + encodeURIComponent(version) + "/rnbo.min.js";
+//       el.src = "https://c74-public.nyc3.digitaloceanspaces.com/rnbo/" + encodeURIComponent(version) + "/rnbo.min.js";
       
-      el.onload = resolve;
-      el.onerror = function(err) {
-          console.log(err);
-          reject(new Error("Failed to load rnbo.js v" + version));
-      };
-      document.body.append(el);
-  });
-}
+//       el.onload = resolve;
+//       el.onerror = function(err) {
+//           console.log(err);
+//           reject(new Error("Failed to load rnbo.js v" + version));
+//       };
+//       document.body.append(el);
+//   });
+// }
 
 // function attachOutports(device) {
 //   try{

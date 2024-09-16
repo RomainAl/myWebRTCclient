@@ -20,7 +20,6 @@ for (let i = 0; i < 20; i++){
 document.getElementById('btn_start').onclick = startContext;
 document.getElementById('btn_reload').onclick = sendData;
 document.getElementById('btn_stopAll').onclick = removeAllStoped;
-document.getElementById('btn_reco').onclick = sendData;
 // const btn_midi = document.getElementById('btn_midi');
 // const slider_midi = document.getElementById('slider_midi');
 document.getElementById('btn_scene1').onclick = changeScene;
@@ -50,7 +49,7 @@ let currentSel = 0;
 let iterKey = 0;
 document.addEventListener('keydown', changeBackgroundColor);
 const NVideo = 21;
-const roomName = "atablee";
+const roomName = "!?ATtablee007!?";
 let currentClientId;
 let stopco = false;
 document.getElementById("btn_stopco").onclick = ()=>{
@@ -60,6 +59,20 @@ document.getElementById("btn_stopco").onclick = ()=>{
   } else {
     document.getElementById("btn_stopco").style.background = 'red';
     stopco = true;
+  }
+}
+let stopco2 = false;
+document.getElementById("btn_stopco2").onclick = ()=>{
+  if (stopco2){
+    document.getElementById("btn_stopco2").style.background = 'white';
+    document.getElementById("btn_stopco2").innerText = 'Disco';
+    stopco2 = false;
+    socket.connect();
+  } else {
+    document.getElementById("btn_stopco2").style.background = 'green';
+    document.getElementById("btn_stopco2").innerText = 'Reco';
+    stopco2 = true;
+    socket.disconnect();
   }
 }
 
@@ -222,8 +235,6 @@ function dumpStats(results, statsPrev) {
   return stats;
 }
 
-socket.emit("join", roomName, true);
-
 socket.on("create", function () {
 });
 
@@ -342,8 +353,11 @@ socket.on("disconnect", (reason) => {
     // the disconnection was initiated by the server, you need to reconnect manually
     socket.connect();
   }
-  socket.emit("join", roomName, true);
   // else the socket will automatically try to reconnect
+});
+
+socket.on("connect", () => {
+  socket.emit("join", roomName, 'ClintIsDead007!?');
 });
 
 // Implementing the OnIceCandidateFunction which is part of the RTCPeerConnection Interface.
@@ -577,10 +591,6 @@ function sendData(event) {
       for (const child of scenes.children) {
         child.style.border = 'none';
       }
-      break;
-    case "btn_reco":
-      socket.connect();
-      socket.emit("join", roomName, true);
       break;
     case "btn_lauch":
 
