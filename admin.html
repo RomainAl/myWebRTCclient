@@ -13,10 +13,11 @@
     <div id="buttons">
         <div id="techs">
         <button id="btn_start" style="background: green">Start Admin</button>
-        <button id="btn_reload" style="background: red">Reload Tels</button>
+        <button id="btn_reload" style="background: red">ReloadTels</button>
         <button id="btn_stopAll" style="background: white">Clean</button>
         <button id="btn_stopco2" style="background: white">Disco</button>
-        <button id="btn_stopco" style="background: white">Stop Tels</button>
+        <button id="btn_stopco" style="background: white">BlocTels</button>
+        <button id="btn_showG" style="background: white">ShowG</button>
         <!-- <button id="test" style="background: white">TEST</button> -->
     </div>
         <!-- <button id="btn_midi">Midi</button> -->
@@ -36,6 +37,10 @@
         <input type="range" id="slider_midi" name="MidiMess" min="0" max="255" />
     </div> -->
     <div id="stats"></div>
+    <div id="S_global" class="global">
+        <input id="S1_param1" type="range" min="20" max="120" value="80" step="1">
+        <label for="S1_param1">FREQ CUT</label>
+    </div>
     <input id="resizeTel" type="range" min="0" max="100" value="20" step="1">
     <!-- <div id="key_data"></div> -->
     <div id="adminVideos" style="display: none;"></div> 

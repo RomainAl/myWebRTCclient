@@ -31,6 +31,15 @@ document.getElementById('btn_scene6').onclick = changeScene;
 document.getElementById('btn_sceneTHEEND').onclick = changeScene;
 document.getElementById('btn_tech').onclick = changeScene;
 document.getElementById('btn_lauch').onclick = sendData;
+document.getElementById("btn_showG").onclick = (e) => {
+  if (e.target.style.background == 'white'){
+    e.target.style.background = 'orange';
+    Array.from(document.getElementsByClassName('global')).forEach(g=>g.style.display = 'flex');
+  } else {
+    e.target.style.background = 'white';
+    Array.from(document.getElementsByClassName('global')).forEach(g=>g.style.display = 'none');
+  }
+}
 const scenes = document.getElementById('scenes');
 const spatDiv = document.getElementById('spatDiv');
 const scenes_array = Array.from(scenes.children);
@@ -82,6 +91,15 @@ let iceServers = {
     { urls: "stun:stun.l.google.com:19302" },
   ],
 };
+
+document.getElementById("S1_param1").addEventListener("input", (event) => {
+  const data = {"scene": 1, "freq": event.target.value};
+  for (let i = 0; i < clientS.length; i++){
+    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
+      clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
+    }
+  }
+});
 
 //{ sinkId: "124e612f375942fd133185c04186d1a26bc79eda5e4fc75317b508430d00e4ea" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
@@ -472,7 +490,11 @@ function OnTrackFunction(event) {
       // spatDiv_client.addEventListener("mousedown", mousedown);
       // spatDiv.appendChild(spatDiv_client);
     };
-
+    let button = document.createElement("button");
+    button.setAttribute("name", 'btn_id'+ currentClientId);
+    button.innerText = "ID";
+    button.onclick = clientResearch;
+    divS.appendChild(button);
     if ((currentSel!=0)&&(currentSel!=1)) divS.style.display = 'none';
 
     divS = document.createElement("div");
@@ -500,6 +522,11 @@ function OnTrackFunction(event) {
       button.onclick = randVid;
       btn_videos.appendChild(button);
     }
+    button = document.createElement("button");
+    button.setAttribute("name", 'btn_id'+ currentClientId);
+    button.innerText = "ID";
+    button.onclick = clientResearch;
+    divS.appendChild(button);
     if ((currentSel!=0)&&(currentSel!=20)&&(currentSel!=21)) divS.style.display = 'none';
 
     divS = document.createElement("div");
@@ -526,6 +553,11 @@ function OnTrackFunction(event) {
     audioCrac2.controlsList="nodownload noplaybackrate";
     divS.appendChild(audioCrac2);
 
+    button = document.createElement("button");
+    button.setAttribute("name", 'btn_id'+ currentClientId);
+    button.innerText = "ID";
+    button.onclick = clientResearch;
+    divS.appendChild(button);
     if ((currentSel!=0)&&(currentSel!=3)) divS.style.display = 'none';
     
     divS = document.createElement("div");
@@ -533,7 +565,7 @@ function OnTrackFunction(event) {
     divS.classList.add("divS");
     clientdiv.appendChild(divS);
     
-    let button = document.createElement("button");
+    button = document.createElement("button");
     button.setAttribute("name", 'btn_id'+ currentClientId);
     button.innerText = "ID";
     button.onclick = clientResearch;
@@ -693,18 +725,20 @@ function change2Crac(){
   // let audioSource2 = ctx.createMediaElementSource(audioCrac2);
   clientS.forEach((client)=>{
     try {
-      let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
-      let audioSource = ctx.createMediaElementSource(audioCrac);
-      audioSource.connect(client.audioCrac_myPeer);
-      let audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
-      let audioSource2 = ctx.createMediaElementSource(audioCrac2);
-      audioSource2.connect(client.audioCrac_myPeer);
-      audioCrac2.playbackRate = Math.random() + 1;
-      audioCrac2.play();
-      let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-      audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
-      let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
-      client.rtcPeerConnection.removeTrack(videoSender);
+      if (client.rtcPeerConnection.connectionState !== "closed"){
+        let audioCrac = document.getElementsByName('audioCrac' + client.clientId)[0];
+        let audioSource = ctx.createMediaElementSource(audioCrac);
+        audioSource.connect(client.audioCrac_myPeer);
+        let audioCrac2 = document.getElementsByName('audioCrac2' + client.clientId)[0];
+        let audioSource2 = ctx.createMediaElementSource(audioCrac2);
+        audioSource2.connect(client.audioCrac_myPeer);
+        audioCrac2.playbackRate = Math.random() + 1;
+        audioCrac2.play();
+        let audioSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+        audioSender.replaceTrack(client.audioCrac_myPeer.stream.getTracks()[0]);
+        let videoSender = client.rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+        client.rtcPeerConnection.removeTrack(videoSender);
+      }
     } catch(err){
       console.log(err);
     }
@@ -720,7 +754,6 @@ function randVid(event){
         break;
       case "btn_scene21":
         data = {"scene": 21, "video": event.target.innerText};
-        console.log(data);
         const client = clientS.find(c=>c.clientId == clientId);
         if (client.rtcDataSendChannel.readyState === 'open') {
           client.rtcDataSendChannel.send(JSON.stringify(data));
@@ -912,11 +945,16 @@ function changeBackgroundColor(event){
     try {
       data = {"scene": 4};
       for (let i = 0; i < randNumber; i++){
-        clientS[(iterKey+i) % clientS.length].rtcDataSendChannel.send(JSON.stringify(data));
+        let datachan = clientS[(iterKey+i) % clientS.length].rtcDataSendChannel;
         let audioCrac = document.getElementsByName('audioCrac'+clientS[(iterKey+i) % clientS.length].clientId)[0];
-        audioCrac.playbackRate = Math.random()+0.1;
-        audioCrac.play();
-        setTimeout(()=>{audioCrac.pause()}, 1500);
+        if (datachan.readyState === 'open') {
+          datachan.send(JSON.stringify(data));
+          audioCrac.playbackRate = Math.random()+0.1;
+          audioCrac.play();
+          setTimeout(()=>{audioCrac.pause()}, 2000);
+        } else {
+          audioCrac.pause();
+        }
       }
     } catch (error) {
       console.error(error);

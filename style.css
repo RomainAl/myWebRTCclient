@@ -209,3 +209,19 @@ audio {
   text-align: center;
   transform: translate(-50%, -50%);
 }
+
+#S_global{
+  position: absolute;
+  display: none;
+  left: 50%;
+  top: 50%;
+  z-index: 2;
+  background: rgb(215, 62, 62, 0.5);
+  height: 50%;
+  width: 50%;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  overflow-y: scroll;
+  flex-direction: column;
+  align-content: flex-start;
+}
