@@ -5,6 +5,7 @@ const   socket = io.connect("https://mywebrtcserver-thrumming-resonance-5604.fly
 // const socket = io.connect("https://192.168.10.2:1337");
 console.log("Flyio ok");
 //const socket = io.connect("https://192.168.10.2:1337");
+const adminVideos = document.getElementById("adminVideos");
 
 for (let i = 0; i < 20; i++){
   let videoelement = document.createElement("video");
@@ -338,7 +339,7 @@ socket.on("offer", function (offer, clientId) {
               break;
           }
         };
-        myPeer = ctx.createMediaStreamDestination();
+        let myPeer = ctx.createMediaStreamDestination();
         let client = {
           rtcDataSendChannel: sendChannel,
           rtcPeerConnection: rtcPeerConnection,
@@ -420,7 +421,7 @@ function OnTrackFunction(event) {
     gain.step = 0.1;
     gain.addEventListener("input", changeGain);
     divS.appendChild(gain);
-    canvas = document.createElement("canvas");
+    let canvas = document.createElement("canvas");
     canvas.setAttribute("name", 'canvas' + currentClientId);
     canvas.width = 250;
     divS.appendChild(canvas);
@@ -788,7 +789,7 @@ function changeVid(event){
           });
         break;
       case "btn_scene21":
-        data = {"scene": 21, "video": event.target.innerText};
+        const data = {"scene": 21, "video": event.target.innerText};
         console.log(data);
         const client = clientS.find(c=>c.clientId == clientId);
         if (client.rtcDataSendChannel.readyState === 'open') {
@@ -943,7 +944,7 @@ function changeBackgroundColor(event){
   if  (event.code == "Space"){
     let randNumber = Math.max(Math.round(Math.random()*clientS.length), 1);
     try {
-      data = {"scene": 4};
+      const data = {"scene": 4};
       for (let i = 0; i < randNumber; i++){
         let datachan = clientS[(iterKey+i) % clientS.length].rtcDataSendChannel;
         let audioCrac = document.getElementsByName('audioCrac'+clientS[(iterKey+i) % clientS.length].clientId)[0];

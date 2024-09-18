@@ -535,15 +535,3 @@ input[type="range"]:active::-moz-range-progress {
 input[type="range"]:disabled::-moz-range-thumb {
   cursor: not-allowed;
 }
-
-/* #FS{
-  display: none;
-  position: absolute;
-  z-index: 2;
-  bottom:0;
-  left: 50%;
-  width: 50px;
-  height: 50px;
-  background-color: red;
-  transform: translate(-50%, -0%);
-} */
