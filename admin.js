@@ -7,9 +7,9 @@ console.log("Flyio ok");
 //const socket = io.connect("https://192.168.10.2:1337");
 const adminVideos = document.getElementById("adminVideos");
 
-for (let i = 0; i < 20; i++){
+for (let i = 0; i < 50; i++){
   let videoelement = document.createElement("video");
-  videoelement.src = './videosNEW/video1.mp4';
+  videoelement.src = './videosNEW/video21.mp4';
   videoelement.type="video/mp4";
   videoelement.width = 250;
   videoelement.playsinline = true;
@@ -30,6 +30,7 @@ document.getElementById('btn_scene21').onclick = changeScene;
 document.getElementById('btn_scene3').onclick = changeScene;
 document.getElementById('btn_scene6').onclick = changeScene;
 document.getElementById('btn_sceneTHEEND').onclick = changeScene;
+document.getElementById('btn_sceneWAIT').onclick = changeScene;
 document.getElementById('btn_tech').onclick = changeScene;
 document.getElementById('btn_lauch').onclick = sendData;
 document.getElementById("btn_showG").onclick = (e) => {
@@ -42,7 +43,7 @@ document.getElementById("btn_showG").onclick = (e) => {
   }
 }
 const scenes = document.getElementById('scenes');
-const spatDiv = document.getElementById('spatDiv');
+// const spatDiv = document.getElementById('spatDiv');
 const scenes_array = Array.from(scenes.children);
 const resizeTel = document.getElementById('resizeTel');
 resizeTel.addEventListener("input", () => {
@@ -102,6 +103,41 @@ document.getElementById("S1_param1").addEventListener("input", (event) => {
   }
 });
 
+document.getElementById("SN_param1").addEventListener("input", (event) => {
+  const data = {"scene": 6, "vol": event.target.value};
+  for (let i = 0; i < clientS.length; i++){
+    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
+      clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
+    }
+  }
+});
+
+document.getElementById("SN_param2").addEventListener("input", (event) => {
+  const data = {"scene": 6, "freeze": event.target.value};
+  for (let i = 0; i < clientS.length; i++){
+    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
+      clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
+    }
+  }
+});
+
+document.getElementById("SN_param3").addEventListener("input", (event) => {
+  const data = {"scene": 6, "gain": event.target.value};
+  for (let i = 0; i < clientS.length; i++){
+    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
+      clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
+    }
+  }
+});
+
+document.getElementById("SN_param4").addEventListener("input", (event) => {
+  const data = {"scene": 6, "fft": event.target.value};
+  for (let i = 0; i < clientS.length; i++){
+    if (clientS[i].rtcDataSendChannel.readyState === 'open') {
+      clientS[i].rtcDataSendChannel.send(JSON.stringify(data));
+    }
+  }
+});
 //{ sinkId: "124e612f375942fd133185c04186d1a26bc79eda5e4fc75317b508430d00e4ea" }
 //dd857c29f4637fcbf86c57824bb2a1a64bf64a1df8e63d004230d6cb31ccc748
 let ctx;
@@ -153,6 +189,7 @@ function startContext(event) {
   console.log("Channel number: " + ctx.destination.maxChannelCount);
   console.log(ctx);
   document.body.style.background = 'white';
+  document.getElementById('btn_scene1').click();
   // 4SPAT :
   // for (let i=0; i<ctx.destination.maxChannelCount; i++){
   //   let speaker = document.createElement('div');
@@ -322,17 +359,19 @@ socket.on("offer", function (offer, clientId) {
               console.log("Disconnecting…");
               ev.currentTarget.close();
               clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
-              //removeClient(clientId);
+              setTimeout(()=>{removeClient(clientId);}, 30000);
               break;
             case "closed":
               console.log("Offline");
               ev.currentTarget.close();
               clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
+              setTimeout(()=>{removeClient(clientId);}, 30000);
               break;
             case "failed":
               console.log("Error");
               ev.currentTarget.close();
               clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
+              setTimeout(()=>{removeClient(clientId);}, 30000);
               break;
             default:
               console.log("Unknown");
@@ -506,6 +545,7 @@ function OnTrackFunction(event) {
     videoMaster = videoMaster.getElementsByTagName("video")[0];
     if (videoMaster != undefined){
       videoMaster.setAttribute("name", 'video' + currentClientId);
+      videoMaster.classList.add('videoRTC');
       videoMaster.style.display = "inline";
       divS.appendChild(videoMaster);
       const btn_videos = document.createElement("div");
@@ -546,6 +586,7 @@ function OnTrackFunction(event) {
 
     let audioCrac2= document.createElement("audio");
     audioCrac2.setAttribute("name", 'audioCrac2' + currentClientId);
+    audioCrac2.classList.add('audioCrac2');
     audioCrac2.controls = true;
     audioCrac2.loop = true;
     audioCrac2.autoplay = false;
@@ -629,6 +670,8 @@ function sendData(event) {
       for (const child of scenes.children) {
         child.style.border = 'none';
       }
+      Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+      Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
       break;
     case "btn_lauch":
 
@@ -643,26 +686,32 @@ function sendData(event) {
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
             break;
           case "btn_scene20":
             currentSceneNb = 20;
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.play());
             break;
           case "btn_scene21":
             currentSceneNb = 21;
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
-            // change2Vid();
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
             break;
           case "btn_scene21_random":
             currentSceneNb = 5;
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
-            // change2Vid();
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
             break;
           case "btn_scene3":
             // data = {"scene": 6};
@@ -670,6 +719,7 @@ function sendData(event) {
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
             change2Crac();
             break;
           case "btn_scene6":
@@ -678,6 +728,8 @@ function sendData(event) {
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
             break;
           case "btn_sceneTHEEND":
             data = {"scene": 7};
@@ -685,6 +737,17 @@ function sendData(event) {
             data = {"scene": currentSceneNb};
             scene.style.border = 'solid';
             scene.style.borderColor = 'red';
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
+            break;
+          case "btn_sceneWAIT":
+            data = {"scene": 8};
+            currentSceneNb = 8;
+            data = {"scene": currentSceneNb};
+            scene.style.border = 'solid';
+            scene.style.borderColor = 'red';
+            Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.pause());
+            Array.from(document.getElementsByClassName('videoRTC')).forEach(a=>a.pause());
             break;
           default:
             alert('Sélectionne une scène ! (1)');
@@ -724,6 +787,7 @@ function onSendChannelMessageCallback(event) {
 function change2Crac(){
   // let audioCrac2 = document.getElementsByName('audioCrac2' + clientS[0].clientId)[0];
   // let audioSource2 = ctx.createMediaElementSource(audioCrac2);
+  Array.from(document.getElementsByClassName('audioCrac2')).forEach(a=>a.play());
   clientS.forEach((client)=>{
     try {
       if (client.rtcPeerConnection.connectionState !== "closed"){
@@ -812,7 +876,6 @@ function changeScene(event){
       child.style.background = 'yellow';
     }
     event.target.style.background = 'orange';
-    console.log(event.target.getAttribute('id'));
     switch (event.target.getAttribute('id')){
       case "btn_scene1":
         document.getElementsByName('divS1').forEach(d=>d.style.display='flex');
@@ -862,6 +925,13 @@ function changeScene(event){
         document.getElementsByName('divS3').forEach(d=>d.style.display='none');
         document.getElementsByName('divTech').forEach(d=>d.style.display='flex');
         currentSel = 4;
+        break;
+      case "btn_sceneWAIT":
+        document.getElementsByName('divS1').forEach(d=>d.style.display='flex');
+        document.getElementsByName('divS2').forEach(d=>d.style.display='none');
+        document.getElementsByName('divS3').forEach(d=>d.style.display='none');
+        document.getElementsByName('divTech').forEach(d=>d.style.display='none');
+        currentSel = 1;
         break;
     }
   }
@@ -994,6 +1064,7 @@ function onMIDISuccess(midiAccess){
 }
 
 function onMIDIMessage(event){
+  // console.log(event.data);
 	data = event.data,
 	cmd = data[0] >> 4,
 	channel = data[0] & 0xf,
@@ -1045,6 +1116,21 @@ function onMIDIMessage(event){
       document.getElementById("btn_scene1").click();
       document.getElementById("btn_lauch").click();
     }
+  } else if ((note == 41)&&(velocity==127)){
+      document.getElementById("btn_lauch").click();
+  } else if ((note == 59)&&(velocity==127)){
+      const scenes = Array.from(document.getElementsByClassName('scene'));
+      const index = scenes.findIndex(c=>c.style.background == 'orange');
+      console.log(index);
+      if ((index>-1)&&(index<scenes_array.length-2)){
+        scenes[index+1].click();
+      }
+    } else if ((note == 58)&&(velocity==127)){
+      const scenes = Array.from(document.getElementsByClassName('scene'));
+      const index = scenes.findIndex(c=>c.style.background == 'orange');
+      if ((index>0)&&(index<scenes_array.length-1)){
+        scenes[index-1].click();
+      }
   }
   /*try {
     data = {"scene": 4};

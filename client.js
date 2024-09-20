@@ -16,8 +16,8 @@ adminVideo.style.display = "none";
 const adminVideo_webrtc = document.getElementById("video_webrtc");
 adminVideo_webrtc.style.display = "none";
 const audio_nico = document.getElementById("audio_nico");
-// audio_nico.src = `./audio4Client/LXR-${Math.round(Math.random()*7+1)}.wav`;
 audio_nico.src = `./audio4Client/LXR-1.wav`;
+// audio_nico.src = `./audio4Client/LXR-.wav`;
 audio_nico.muted = false;
 // let vimeo = new Vimeo.Player('vimeo');
 const effectsPan = document.getElementById("effects-params");
@@ -27,6 +27,7 @@ gainPan.style.display = "none";
 const BtnsPan = document.getElementById("Btns");
 const overlay = document.getElementById('overlay');
 const overlayTHEEND = document.getElementById('overlayTHEEND');
+const overlayWAIT = document.getElementById("overlayWAIT");
 const myGUI = document.getElementById("GUI");
 const atablee = document.getElementById("atablee");
 const btn_fullscreen = document.getElementById("btn_fullscreen");
@@ -78,7 +79,6 @@ adminVideo.ondblclick = adminID;
 adminVideo_webrtc.ondblclick = adminID;
 userCanvas.ondblclick = adminID;
 function adminID(e){
-    console.log(filter.device.parameters.find(p=>p.name=="FREQ").value);
     changeFullScreen();
     console.log(rtcPeerConnection.signalingState);
     if (sendChannel.readyState === 'open') {
@@ -103,7 +103,7 @@ let AudioContext = window.AudioContext || window.webkitAudioContext;
 let context;
 let analyser;
 let source;
-let source_mic;
+let source_mic = null;
 let gain;
 let myPeer;
 let audio_nico_source;
@@ -441,13 +441,13 @@ function init() {
     audio_nico_source.connect(gain_nico);
   };
   gain_nico.connect(analyser);
-  // clearInterval(timer_nico);
+  clearInterval(timer_nico);
   adminVideo.muted = false;
   adminVideo.volume = 0.0;
   audio_nico.play();
   adminVideo_webrtc.muted = false;
-  adminVideo_webrtc.volume = 0.0;
-  adminVideo_webrtc.play();
+  // adminVideo_webrtc.volume = 0.0;
+  // adminVideo_webrtc.play();
   // audio_nico.muted = false;
   // adminVideo.volume = 0.0;
   // audio_nico.volume = 0.0;
@@ -578,9 +578,30 @@ function onReceiveChannelMessageCallback(event) {
 
 function changeScene(data){
   adminVideo.muted = true;
-  // clearInterval(timer_nico);
+  clearInterval(timer_nico);
   // audio_nico.muted = true;
   switch (data.scene){
+    case 8:
+      overlay.style.visibility = "hidden";
+      overlayTHEEND.style.visibility = "hidden";
+      overlayWAIT.style.visibility = "visible";
+      atablee.style.display = "none";
+      myGUI.style.display = "none";
+      adminVideo.pause();
+      adminVideo.volume = 0;
+      adminVideo_webrtc.pause();
+      // adminVideo_webrtc.volume = 0;
+      audio_nico.pause();
+      try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+      try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+      // try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
+      if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+      try{context.suspend();}catch(e){console.log(e)};
+      document.getElementById("startButton").classList.remove("spinner");
+      document.getElementById("startButton").disabled = false;
+      try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
+      break;
+      break;
     case 0:
       goBackHome();
       location.reload();
@@ -630,121 +651,163 @@ function changeScene(data){
             });
           }
         }
-        source_mic = null;
-        navigator.mediaDevices
-          .getUserMedia(constraints)
-          .then(function (stream) {
-            source_mic = stream;
-            source = context.createMediaStreamSource(source_mic);
-            context.suspend();
-            document.getElementById("loading-bar").style.display = "initial";
-            // removeAllChildNodes(document.getElementById("effects-params"));
-            if (!effects_loaded){
-              effects_Setup(effects)
-              .then(()=>{
-                filter_Setup(filter).then(()=>{
-                  context.resume();
-                  source.connect(filter.device.node);
-                  nodeConnection("auto");
-                  btn_effects.disabled = false;
-                  btn_effects.style.borderColor = "white";
-                  btn_rec.disabled = false;
-                  btn_rec.style.borderColor = "white";
-                  atablee.style.display = "initial";
-                  userCanvas.style.display = "initial";
-                  adminVideo.style.display = "none";
-                  adminVideo.muted = true;
-                  adminVideo.play();
-                  adminVideo_webrtc.style.display = "none";
-                  adminVideo_webrtc.volume = 0;
-                  adminVideo_webrtc.pause();
-                  audio_nico.pause();
-                  myGUI.style.display = "flex";
-                  document.getElementById("loading-bar").style.display = "none";
-                  effects_loaded = true;
-                });
-              })
-              .catch(function (err) {
-                try {
-                  context.resume();
-                  console.log(`${err.name}, ${err.message}`);
-                  alert('Désolé, impossible pour ton smartphone de charger les effets sonores !');
-                  source.connect(gain);
-                  gain.connect(analyser);
-                  analyser.connect(myPeer); // TODO
-                  atablee.style.display = "initial";
-                  userCanvas.style.display = "initial";
-                  adminVideo.style.display = "none";
-                  adminVideo.muted = true;
-                  adminVideo.play();
-                  adminVideo_webrtc.style.display = "none";
-                  adminVideo_webrtc.volume = 0;
-                  adminVideo_webrtc.pause();
-                  audio_nico.pause();
-                  myGUI.style.display = "flex";
-                  document.getElementById("loading-bar").style.display = "none";
-                } catch (e) { alert(e) };
-              })
-            } else {
-              context.resume();
-              nodeConnection("auto");
-              btn_effects.disabled = false;
-              btn_effects.style.borderColor = "white";
-              btn_rec.disabled = false;
-              btn_rec.style.borderColor = "white";
-              atablee.style.display = "initial";
-              userCanvas.style.display = "initial";
+        if (!source_mic){
+          navigator.mediaDevices
+            .getUserMedia(constraints)
+            .then(function (stream) {
+              source_mic = stream;
+              source = context.createMediaStreamSource(source_mic);
+              context.suspend();
+              document.getElementById("loading-bar").style.display = "initial";
+              if (!effects_loaded){
+                try {removeAllChildNodes(document.getElementById("effects-params"))} catch(e){console.log(e)};
+                effects_Setup(effects)
+                .then(()=>{
+                  filter_Setup(filter).then(()=>{
+                    context.resume();
+                    source.connect(filter.device.node);
+                    nodeConnection("auto");
+                    btn_effects.disabled = false;
+                    btn_effects.style.borderColor = "white";
+                    btn_rec.disabled = false;
+                    btn_rec.style.borderColor = "white";
+                    atablee.style.display = "initial";
+                    userCanvas.style.display = "initial";
+                    adminVideo.style.display = "none";
+                    adminVideo.muted = true;
+                    adminVideo.play();
+                    adminVideo_webrtc.style.display = "none";
+                    // adminVideo_webrtc.volume = 0;
+                    adminVideo_webrtc.pause();
+                    audio_nico.pause();
+                    myGUI.style.display = "flex";
+                    document.getElementById("loading-bar").style.display = "none";
+                    effects_loaded = true;
+                  });
+                })
+                .catch(function (err) {
+                  try {
+                    context.resume();
+                    console.log(`${err.name}, ${err.message}`);
+                    alert('Désolé, impossible pour ton smartphone de charger les effets sonores !');
+                    source.connect(gain);
+                    gain.connect(analyser);
+                    analyser.connect(myPeer); // TODO
+                    atablee.style.display = "initial";
+                    userCanvas.style.display = "initial";
+                    adminVideo.style.display = "none";
+                    adminVideo.muted = true;
+                    adminVideo.play();
+                    adminVideo_webrtc.style.display = "none";
+                    // adminVideo_webrtc.volume = 0;
+                    adminVideo_webrtc.pause();
+                    audio_nico.pause();
+                    myGUI.style.display = "flex";
+                    document.getElementById("loading-bar").style.display = "none";
+                  } catch (e) { alert(e) };
+                })
+              } else {
+                context.resume();
+                nodeConnection("auto");
+                btn_effects.disabled = false;
+                btn_effects.style.borderColor = "white";
+                btn_rec.disabled = false;
+                btn_rec.style.borderColor = "white";
+                atablee.style.display = "initial";
+                userCanvas.style.display = "initial";
+                adminVideo.style.display = "none";
+                adminVideo.muted = true;
+                adminVideo.play();
+                adminVideo_webrtc.style.display = "none";
+                // adminVideo_webrtc.volume = 0;
+                adminVideo_webrtc.pause();
+                audio_nico.pause();
+                myGUI.style.display = "flex";
+                document.getElementById("loading-bar").style.display = "none";
+              }
+              const audioTracks = stream.getAudioTracks();
+              if (audioTracks.length > 0) {
+                console.log(`Using Audio device: ${audioTracks[0].label}`);
+              }
+              if (!streamVisualizer4Clients) {
+                streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
+              } else {
+                streamVisualizer4Clients.stop();
+                streamVisualizer4Clients.setStroke(false);
+                streamVisualizer4Clients.setSize(10);
+                streamVisualizer4Clients.setFFT_SIZE(512);
+                streamVisualizer4Clients.setGAIN(1);
+              }
+              streamVisualizer4Clients.start();
+              overlay.style.visibility = "hidden";
+              overlayTHEEND.style.visibility = "hidden";
+              overlayWAIT.style.visibility = "hidden";
+            })
+            .catch(function (err) {
+              overlay.style.visibility = "visible";
+              overlayTHEEND.style.visibility = "hidden";
+              overlayWAIT.style.visibility = "hidden";
+              document.getElementById( 'titles' ).style.display = "none";
+              document.getElementById( 'err' ).style.display = "inline-block";
+              document.getElementById( 'microon' ).style.display = "none";
+              document.getElementById( 'microoff' ).style.display = "inline-block";
+              atablee.style.display = "none";
+              userCanvas.style.display = "none";
               adminVideo.style.display = "none";
               adminVideo.muted = true;
               adminVideo.play();
               adminVideo_webrtc.style.display = "none";
-              adminVideo_webrtc.volume = 0;
+              // adminVideo_webrtc.volume = 0;
               adminVideo_webrtc.pause();
               audio_nico.pause();
-              myGUI.style.display = "flex";
-              document.getElementById("loading-bar").style.display = "none";
-            }
-            const audioTracks = stream.getAudioTracks();
-            if (audioTracks.length > 0) {
-              console.log(`Using Audio device: ${audioTracks[0].label}`);
-            }
-            streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
-            streamVisualizer4Clients.start();
-            overlay.style.visibility = "hidden";
-            overlayTHEEND.style.visibility = "hidden";
-          })
-          .catch(function (err) {
-            overlay.style.visibility = "visible";
-            overlayTHEEND.style.visibility = "hidden";
-            document.getElementById( 'titles' ).style.display = "none";
-            document.getElementById( 'err' ).style.display = "inline-block";
-            document.getElementById( 'microon' ).style.display = "none";
-            document.getElementById( 'microoff' ).style.display = "inline-block";
-            atablee.style.display = "none";
-            userCanvas.style.display = "none";
+              if (fullscreenElement===undefined) {
+                myGUI.style.display = "none";
+              } else {
+                myGUI.style.display = "flex";
+              }
+              if (sendChannel.readyState === 'open') {
+                sendChannel.send(JSON.stringify({clientId: myID, mess: "NoMic"}));
+              }
+              console.log(err);
+            })
+          } else {
+            source = context.createMediaStreamSource(source_mic);
+            context.resume();
+            source.connect(filter.device.node);
+            nodeConnection("auto");
+            btn_effects.disabled = false;
+            btn_effects.style.borderColor = "white";
+            btn_rec.disabled = false;
+            btn_rec.style.borderColor = "white";
+            atablee.style.display = "initial";
+            userCanvas.style.display = "initial";
             adminVideo.style.display = "none";
             adminVideo.muted = true;
             adminVideo.play();
             adminVideo_webrtc.style.display = "none";
-            adminVideo_webrtc.volume = 0;
+            // adminVideo_webrtc.volume = 0;
             adminVideo_webrtc.pause();
             audio_nico.pause();
-            if (fullscreenElement===undefined) {
-              myGUI.style.display = "none";
+            myGUI.style.display = "flex";
+            document.getElementById("loading-bar").style.display = "none";
+            effects_loaded = true;
+            if (!streamVisualizer4Clients) {
+              streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
             } else {
-              myGUI.style.display = "flex";
+              streamVisualizer4Clients.stop();
+              streamVisualizer4Clients.setStroke(false);
+              streamVisualizer4Clients.setSize(10);
+              streamVisualizer4Clients.setFFT_SIZE(512);
+              streamVisualizer4Clients.setGAIN(1);
             }
-            if (sendChannel.readyState === 'open') {
-              sendChannel.send(JSON.stringify({clientId: myID, mess: "NoMic"}));
-            }
-            console.log(err);
-          })
+            streamVisualizer4Clients.start();
+          }
         }
       break;
     case 20:
       try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();}); source_mic= null;} catch(e) {console.log(e)};
       try {context.suspend()} catch(e) {console.log(e)}
       // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       if (streamVisualizer4Clients) try {streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
@@ -754,12 +817,13 @@ function changeScene(data){
       adminVideo.style.display = "none";
       //document.getElementById("overlay").remove(); // TODO
       adminVideo_webrtc.style.display = "initial";
-      adminVideo_webrtc.volume = 1;
+      // adminVideo_webrtc.volume = 1;
       adminVideo_webrtc.play();
       adminVideo.volume = 0;
       adminVideo.pause();
       overlay.style.visibility = "hidden";
       overlayTHEEND.style.visibility = "hidden";
+      overlayWAIT.style.visibility = "hidden";
       audio_nico.pause();
       break;
     case 21:
@@ -778,7 +842,7 @@ function changeScene(data){
       } else {
         try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
         // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-        if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+        if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();}); source_mic= null;} catch(e) {console.log(e)};
         try {context.suspend()} catch(e) {console.log(e)}
         // try { effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
         if (streamVisualizer4Clients) try { streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
@@ -787,7 +851,7 @@ function changeScene(data){
         myGUI.style.display = "none";
         adminVideo_webrtc.style.display = "none";
         //document.getElementById("overlay").remove(); // TODO
-        adminVideo_webrtc.volume = 0;
+        // adminVideo_webrtc.volume = 0;
         adminVideo_webrtc.pause();
         adminVideo.style.display = "initial";
         adminVideo.loop = true;
@@ -797,13 +861,14 @@ function changeScene(data){
         adminVideo.volume = 1;
         overlay.style.visibility = "hidden";
         overlayTHEEND.style.visibility = "hidden";
+        overlayWAIT.style.visibility = "hidden";
         audio_nico.pause();
       }
       break;
     case 3:
       try { myPeer.stream.getTracks().forEach((track) => {track.stop();}) } catch(e) {console.log(e)};
       // rtcPeerConnection.getSenders().forEach(t => rtcPeerConnection.removeTrack(t));
-      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+      if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();}); source_mic= null;} catch(e) {console.log(e)};
       try {context.suspend()} catch(e) {console.log(e)}
       // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
       if (streamVisualizer4Clients) try {streamVisualizer4Clients.stop(); } catch(e) {console.log(e)};
@@ -813,12 +878,13 @@ function changeScene(data){
       adminVideo.style.display = "none";
       //document.getElementById("overlay").remove(); // TODO
       adminVideo_webrtc.style.display = "none";
-      adminVideo_webrtc.volume = 1;
+      // adminVideo_webrtc.volume = 1;
       adminVideo_webrtc.play();
       adminVideo.volume = 0;
       adminVideo.pause();
       overlay.style.visibility = "hidden";
       overlayTHEEND.style.visibility = "hidden";
+      overlayWAIT.style.visibility = "hidden";
       audio_nico.pause();
       break;
     case 4:
@@ -837,70 +903,95 @@ function changeScene(data){
       // vimeo.play();
       break;
     case 6:
-      flash('white');
-      if ((!context) || (context.state=='closed') ){ // TODO
-        console.log('context1');
-        context = new AudioContext();
-        let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-        audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
-        let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
-        videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
-      } else if (context.state == 'suspended') {
-        context.resume();
+      if (data.vol){
+        gain_nico.gain.value = data.vol;
+      } else if (data.freeze){
+        console.log(data.freeze);
+        if (streamVisualizer4Clients) streamVisualizer4Clients.setRAND(data.freeze);
+      } else if (data.gain){
+        console.log(data.gain);
+        if (streamVisualizer4Clients) streamVisualizer4Clients.setGAIN(data.gain);
+      } else if (data.fft){
+        console.log(data.fft);
+        if (streamVisualizer4Clients) streamVisualizer4Clients.setFFT_SIZE(Math.pow(2,data.fft));
+      } else {
+        flash('white');
+        if ((!context) || (context.state=='closed') ){ // TODO
+          console.log('context1');
+          context = new AudioContext();
+          let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+          audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+          let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+          videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
+        } else if (context.state == 'suspended') {
+          context.resume();
+        }
+        analyser.disconnect(0);
+        analyser.connect(context.destination);
+        gain.disconnect(0);
+        clearInterval(timer_nico);
+        try{
+            if (navigator.vibrate){ 
+              timer_nico = setInterval(()=>{
+                navigator.vibrate([400, 0, 300, 0, 200, 0, 100].map(function(x) { return (x+200) * Math.random(); }));
+              }, 3000);
+            }
+          } catch (e) {
+            console.log(e);
+          }
+        // context.close();
+        // userCanvas.style.display = "none";
+        gain_nico.gain.value = 1.0;
+        // audio_nico.muted = false;
+        audio_nico.currentTime = 0;
+        audio_nico.play();
+        audio_nico.loop = true;
+        atablee.style.display = "initial";
+        userCanvas.style.display = "initial";
+        adminVideo.style.display = "none";
+        adminVideo.pause();
+        adminVideo.volume = 0;
+        adminVideo_webrtc.style.display = "none";
+        // adminVideo_webrtc.volume = 0;
+        adminVideo_webrtc.pause();
+        myGUI.style.display = "none";
+        audio_nico.addEventListener("ended", (event) => {
+        flash('white');
+        });
+        if (!streamVisualizer4Clients) {
+          streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
+        } else {
+          streamVisualizer4Clients.stop();
+        }
+        streamVisualizer4Clients.start();
+        streamVisualizer4Clients.setStroke(true);
+        streamVisualizer4Clients.setSize(1000);
+        streamVisualizer4Clients.setFFT_SIZE(128);
+        streamVisualizer4Clients.setGAIN(10000);
+        overlay.style.visibility = "hidden";
+        overlayTHEEND.style.visibility = "hidden";
+        overlayWAIT.style.visibility = "hidden";
+        // btn_fullscreen.style.display = "initial";
+        // if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
+        // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
+        try {myPeer.stream.getTracks().forEach((track) => {track.stop()}) } catch(e) {console.log(e)};
       }
-      analyser.disconnect(0);
-      analyser.connect(context.destination);
-      gain.disconnect(0);
-      // clearInterval(timer_nico);
-      // timer_nico = setInterval(()=>{
-      //   gain_nico.gain.value = Math.random();
-      //   audio_nico.currentTime = 0;
-      //   audio_nico.play();
-      // }, 17000);
-      // context.close();
-      // userCanvas.style.display = "none";
-      gain_nico.gain.value = 1.0;
-      // audio_nico.muted = false;
-      audio_nico.currentTime = 0;
-      audio_nico.play();
-      audio_nico.loop = true;
-      atablee.style.display = "initial";
-      userCanvas.style.display = "initial";
-      adminVideo.style.display = "none";
-      adminVideo.pause();
-      adminVideo.volume = 0;
-      adminVideo_webrtc.style.display = "none";
-      adminVideo_webrtc.volume = 0;
-      adminVideo_webrtc.pause();
-      myGUI.style.display = "none";
-      audio_nico.addEventListener("ended", (event) => {
-       flash('white');
-      });
-      if (!streamVisualizer4Clients) streamVisualizer4Clients = new StreamVisualizer4Clients(analyser, canvas);
-      streamVisualizer4Clients.start();
-      streamVisualizer4Clients.setStroke(true);
-      streamVisualizer4Clients.setSize(1000);
-      streamVisualizer4Clients.setFFT_SIZE(128);
-      overlay.style.visibility = "hidden";
-      overlayTHEEND.style.visibility = "hidden";
-      // if (source_mic) try {source_mic.getTracks().forEach(function(track) {track.stop();});} catch(e) {console.log(e)};
-      // try {effects.forEach(e=>e.device = null) } catch (e){console.log(e)};
-      try {myPeer.stream.getTracks().forEach((track) => {track.stop()}) } catch(e) {console.log(e)};
       break;
       case 7:
         overlay.style.visibility = "hidden";
         overlayTHEEND.style.visibility = "visible";
+        overlayWAIT.style.visibility = "hidden";
         atablee.style.display = "none";
         myGUI.style.display = "none";
         adminVideo.pause();
         adminVideo.volume = 0;
         adminVideo_webrtc.pause();
-        adminVideo_webrtc.volume = 0;
+        // adminVideo_webrtc.volume = 0;
         audio_nico.pause();
         try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
         // try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-        if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+        if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();}); source_mic= null;}catch(e){console.log(e)};
         try{context.suspend();}catch(e){console.log(e)};
         document.getElementById("startButton").classList.remove("spinner");
         document.getElementById("startButton").disabled = false;
@@ -966,6 +1057,7 @@ function webrtcStateChange(ev){
       default:
         overlay.style.visibility = "visible";
         overlayTHEEND.style.visibility = "hidden";
+        overlayWAIT.style.visibility = "hidden";
         atablee.style.display = "none";
         myGUI.style.display = "none";
         adminVideo.pause();
@@ -983,16 +1075,17 @@ function flash(color){
 function goBackHome(){
   overlay.style.visibility = "visible";
   overlayTHEEND.style.visibility = "hidden";
+  overlayWAIT.style.visibility = "hidden";
   atablee.style.display = "none";
   myGUI.style.display = "none";
   adminVideo.pause();
   adminVideo.volume = 0;
   adminVideo_webrtc.pause();
-  adminVideo_webrtc.volume = 0;
+  // adminVideo_webrtc.volume = 0;
   try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
   try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
   try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-  if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
+  if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();}); source_mic= null;}catch(e){console.log(e)};
   try{context.suspend();}catch(e){console.log(e)};
   document.getElementById("startButton").classList.remove("spinner");
   document.getElementById("startButton").disabled = false;
