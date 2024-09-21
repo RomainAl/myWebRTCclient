@@ -227,6 +227,10 @@ function startContext(event) {
   //   speaker.classList.add('spatDiv_speakers');
   //   spatDiv.appendChild(speaker);
   // }
+
+  setInterval(() => {
+    document.getElementById('btn_stopAll').click();
+  }, 30000);
 }
 
 // Display statistics
@@ -388,19 +392,19 @@ socket.on("offer", function (offer, clientId) {
               console.log("Disconnecting…");
               ev.currentTarget.close();
               clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
-              setTimeout(()=>{try{removeClient(clientId)} catch (e) {console.log(e)}}, 30000);
+              // setTimeout(()=>{try{removeClient(clientId)} catch (e) {console.log(e)}}, 30000);
               break;
             case "closed":
               console.log("Offline");
               ev.currentTarget.close();
               clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
-              setTimeout(()=>{try{removeClient(clientId)} catch (e) {console.log(e)}}, 30000);
+              // setTimeout(()=>{try{removeClient(clientId)} catch (e) {console.log(e)}}, 30000);
               break;
             case "failed":
               console.log("Error");
               ev.currentTarget.close();
               clientS.find(t=>t.rtcPeerCoID.includes(ev.currentTarget.remoteDescription.sdp.slice(9, 29))).div.style.borderColor = "red";
-              setTimeout(()=>{try{removeClient(clientId)} catch (e) {console.log(e)}}, 30000);
+              // setTimeout(()=>{try{removeClient(clientId)} catch (e) {console.log(e)}}, 30000);
               break;
             default:
               console.log("Unknown");
@@ -820,7 +824,6 @@ function onSendChannelStateChange(e) {
     e.currentTarget.send(JSON.stringify({"scene":  currentSceneNb}));
     if (currentSceneNb == 3) change2Crac();
     let val = Array.from(document.getElementsByClassName('videoDebut')).find(b=>b.style.background=="green").innerText;
-    console.log(val);
     if (currentSceneNb == 21) {
       e.currentTarget.send(JSON.stringify({"scene":  currentSceneNb, "video": val}));
     } else {
