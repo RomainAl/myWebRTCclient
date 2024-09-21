@@ -17,7 +17,7 @@
         <button id="btn_stopAll" style="background: white">Clean</button>
         <button id="btn_stopco2" style="background: white">Disco</button>
         <button id="btn_stopco" style="background: white">BlocTels</button>
-        <button id="btn_showG" style="background: white">ShowG</button>
+        <button id="btn_showG" style="background: white">Params Globaux</button>
         <!-- <button id="test" style="background: white">TEST</button> -->
     </div>
         <!-- <button id="btn_midi">Midi</button> -->
@@ -39,16 +39,29 @@
     </div> -->
     <div id="stats"></div>
     <div id="S_global" class="global">
-        <label for="S1_param1">FREQ CUT (S1) </label>
+        <strong>SCENE 1:</strong>
+        <label for="S1_param1">FREQ CUT</label>
         <input id="S1_param1" type="range" min="20" max="120" value="80" step="1"><br><br>
-        <label for="SN_param1">VOLUME (SN)</label>
-        <input id="SN_param1" type="range" min="0" max="1" value="1" step="0.1"><br><br>
-        <label for="SN_param2">FREEZE SCREEN (S1/SN)</label>
-        <input id="SN_param2" type="range" min="0" max="1" value="0" step="0.1"><br><br>
-        <label for="SN_param3">GAIN (S1/SN)</label>
-        <input id="SN_param3" type="range" min="1" max="20000" value="1" step="100"><br><br>
-        <label for="SN_param4">FFT NB (S1/SN)</label>
+
+        <strong>SCENE 1 et N:</strong>
+        <label for="SN_param1">VOLUME</label>
+        <input id="SN_param1" type="range" min="0" max="1" value="1" step="0.1">
+        <label for="SN_param2">FREEZE SCREEN</label>
+        <input id="SN_param2" type="range" min="0" max="1" value="0" step="0.1">
+        <label for="SN_param3">GAIN 1-20000 (SN)</label>
+        <input id="SN_param3" type="range" min="1" max="20000" value="1" step="100">
+        <label for="SN_param5">GAIN 0-1 (S1)</label>
+        <input id="SN_param5" type="range" min="0" max="1" value="1" step="0.1">
+        <label for="SN_param4">FFT NB</label>
         <input id="SN_param4" type="range" min="1" max="12" value="10" step="1"><br><br>
+
+        <strong>SCENE 21:</strong>
+        <label for="S21_param1">VIDEO DEBUT</label>
+        <div>
+            <button id="S21_param1" class="videoDebut" style="background: green;">1</button>
+            <button id="S21_param2" class="videoDebut">9</button>
+            <button id="S21_param3" class="videoDebut">21</button>
+        </div><br><br>
     </div>
     <input id="resizeTel" type="range" min="0" max="100" value="10" step="1">
     <!-- <div id="key_data"></div> -->

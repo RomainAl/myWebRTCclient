@@ -443,6 +443,7 @@ function init() {
   gain_nico.connect(analyser);
   clearInterval(timer_nico);
   adminVideo.muted = false;
+  adminVideo.pause();
   adminVideo.volume = 0.0;
   audio_nico.play();
   adminVideo_webrtc.muted = false;
@@ -553,6 +554,7 @@ function OnTrackFunction(event) { // TODO : FOR SAFARI ONLY AUDIO !? (BUT IF NO 
   if (adminVideo_webrtc.srcObject !== event.streams[0]) {
     adminVideo_webrtc.srcObject = event.streams[0];
   }
+  adminVideo_webrtc.muted = false;
   // adminVideo.volume = 0;
   // adminVideo.controls = true;
   // adminVideo.loop = true;
@@ -593,14 +595,12 @@ function changeScene(data){
       // adminVideo_webrtc.volume = 0;
       audio_nico.pause();
       try{myPeer.stream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
-      try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
+      // try{userCanvasStream.getTracks().forEach((track) => {track.stop()});}catch(e){console.log(e)};
       // try{rtcPeerConnection.close(); rtcPeerConnection = null;}catch(e){console.log(e)};
-      if (source_mic) try{source_mic.getTracks().forEach(function(track) {track.stop();});}catch(e){console.log(e)};
       try{context.suspend();}catch(e){console.log(e)};
       document.getElementById("startButton").classList.remove("spinner");
       document.getElementById("startButton").disabled = false;
       try{streamVisualizer4Clients.stop();}catch(e){console.log(e)};
-      break;
       break;
     case 0:
       goBackHome();
@@ -785,6 +785,9 @@ function changeScene(data){
             adminVideo.muted = true;
             adminVideo.play();
             adminVideo_webrtc.style.display = "none";
+            overlayWAIT.style.visibility = "hidden";
+            overlay.style.visibility = "hidden";
+            overlayTHEEND.style.visibility = "hidden";
             // adminVideo_webrtc.volume = 0;
             adminVideo_webrtc.pause();
             audio_nico.pause();
@@ -835,8 +838,13 @@ function changeScene(data){
           adminVideo.play();
         } else {
           adminVideo.src = `./videosNEW/video${data.video}.mp4`;
-          adminVideo.muted = false;
-          adminVideo.volume = 1;
+          if (!data.muted){
+            adminVideo.muted = false;
+            adminVideo.volume = 1;
+          } else {
+            adminVideo.muted = true;
+            adminVideo.volume = 0;
+          }
           adminVideo.play();
         }
       } else {
@@ -891,6 +899,7 @@ function changeScene(data){
       setTimeout(()=>{
         atablee.style.background = "white";
       }, 100);
+      console.log(navigator.vibrate);
       if (navigator.vibrate){ navigator.vibrate([400, 0, 300, 0, 200, 0, 100].map(function(x) { return (x+200) * Math.random(); })); }
       setTimeout(()=>{atablee.style.background = "black";}, 1500);
       break;

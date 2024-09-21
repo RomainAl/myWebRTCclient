@@ -69,7 +69,8 @@ button:focus {
   margin: 0.2%;
   padding: 10px;
   align-items: center;
-  border-width: 3px;
+  border-width: 6px;
+  border-color: pink;
   overflow-y: scroll;
 }
 
@@ -216,12 +217,19 @@ audio {
   left: 50%;
   top: 50%;
   z-index: 2;
-  background: rgb(215, 62, 62, 0.5);
-  height: 50%;
-  width: 50%;
+  background: rgb(215, 62, 62, 0.9);
+  height: 70%;
+  width: 40%;
   text-align: center;
   transform: translate(-50%, -50%);
   overflow-y: scroll;
   flex-direction: column;
   align-content: flex-start;
+  border: solid;
+  border-radius: 20px;
+  margin: 0.2%;
+  padding: 10px;
+  border-width: 3px;
+  border-color: black;
+  overflow-y: scroll;
 }
