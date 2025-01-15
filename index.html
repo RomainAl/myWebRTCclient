@@ -1,82 +1,107 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="./style4Clients.css" rel="stylesheet" />
     <title>ATABLEE - Beta - v1</title>
-    <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-</head>
-<body>
+    <link rel="icon" href="data:," />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+      integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+  </head>
+  <body>
     <div id="atablee">
-        <!-- <iframe id="vimeo" src="https://player.vimeo.com/video/750452856?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"></iframe> -->
-        <canvas id="canvas"></canvas>
-        <!-- <div data-vimeo-id="750452856" id="vimeo" data-vimeo-loop="true" data-vimeo-controls="true" data-vimeo-autoplay="true" data-vimeo-muted="true" ></div> -->
-        <video id="video" src = "./videosNEW/video1.mp4" type="video/mp4" playsinline preload="none" autoplay muted></video>
-        <video id="video_webrtc" playsinline preload="none" autoplay muted></video>
-        <audio id="audio_nico" style="display: none"></audio>
+      <!-- <iframe id="vimeo" src="https://player.vimeo.com/video/750452856?badge=0&amp;autopause=0&amp;player_id=0&amp;app_id=58479"></iframe> -->
+      <canvas id="canvas"></canvas>
+      <!-- <div data-vimeo-id="750452856" id="vimeo" data-vimeo-loop="true" data-vimeo-controls="true" data-vimeo-autoplay="true" data-vimeo-muted="true" ></div> -->
+      <video id="video" src="./videosNEW/video1.mp4" type="video/mp4" playsinline preload="none" autoplay muted></video>
+      <video id="video_webrtc" playsinline preload="none" autoplay muted></video>
+      <audio id="audio_nico" style="display: none"></audio>
     </div>
-    <div id="GUI" style="display: none;">
-        <div id="effects-params"> </div>
-        <div id="gain-param">
-            <div class="div_slider">
-                <label for="test"></label>
-                <input type="range" class="param-slider" id="gain" name="gain" min="0" max="1.5" step="0.05" >
-            </div>
+    <div id="GUI" style="display: none">
+      <div id="effects-params"></div>
+      <div id="gain-param">
+        <div class="div_slider">
+          <label for="test"></label>
+          <input type="range" class="param-slider" id="gain" name="gain" min="0" max="1.5" step="0.05" />
         </div>
-            
-        <div id="Btns">
-            <button id="btn_effects" disabled style="padding: 14px 16px;"><i class="fa-solid fa-gear" style="color: #ffffff;"></i></button>
-            <button id="btn_rec" disabled style="padding: 14px 14px;">
-                <i id="rec" class="fa-solid fa-circle fa-lg" style="color: #FF0000;"></i>
-                <i id="stop" class="fa-solid fa-square fa-lg" style="color: #FFFFFF;  display: none; padding: 0px 1px;"></i>
-                <i id="trash" class="fa-regular fa-trash-can fa-lg" style="color: #ffffff; display: none; padding: 0px 2px;"></i></button>
-            <button id="btn_gain" style="padding: 14px 13px;"><i id="g1" class="fa-solid fa-volume-high fa-lg" style="color: #ffffff;"></i><i id="g2" class="fa-solid fa-volume-xmark fa-lg" style="color: #ffffff; display: none"></i></button>
-            <button id="btn_fullscreen" style="padding: 14px 16px;"><i id="fs1" class="fa-solid fa-up-right-and-down-left-from-center" style="color: #ffffff;"></i><i id="fs2" class="fa-solid fa-down-left-and-up-right-to-center" style="color: #ffffff; display: none"></i></button>
-    
-            <!-- <button id="btn_test">TEST</button> -->
-        </div>
+      </div>
+
+      <div id="Btns">
+        <button id="btn_effects" disabled style="padding: 14px 16px"><i class="fa-solid fa-gear" style="color: #ffffff"></i></button>
+        <button id="btn_rec" disabled style="padding: 14px 14px">
+          <i id="rec" class="fa-solid fa-circle fa-lg" style="color: #ff0000"></i>
+          <i id="stop" class="fa-solid fa-square fa-lg" style="color: #ffffff; display: none; padding: 0px 1px"></i>
+          <i id="trash" class="fa-regular fa-trash-can fa-lg" style="color: #ffffff; display: none; padding: 0px 2px"></i>
+        </button>
+        <button id="btn_gain" style="padding: 14px 13px">
+          <i id="g1" class="fa-solid fa-volume-high fa-lg" style="color: #ffffff"></i
+          ><i id="g2" class="fa-solid fa-volume-xmark fa-lg" style="color: #ffffff; display: none"></i>
+        </button>
+        <button id="btn_fullscreen" style="padding: 14px 16px">
+          <i id="fs1" class="fa-solid fa-up-right-and-down-left-from-center" style="color: #ffffff"></i
+          ><i id="fs2" class="fa-solid fa-down-left-and-up-right-to-center" style="color: #ffffff; display: none"></i>
+        </button>
+
+        <!-- <button id="btn_test">TEST</button> -->
+      </div>
     </div>
-        
+
     <!-- <div id="FS"></div> -->
     <div id="overlay" class="overlay">
-        <div id="titles">
-            <h2 >Bienvenue dans l'expérience<br>@TABLÉE</h2>
-            <p id="wifi">Connecte toi au wifi : <br> "<strong>attablee</strong>" mdp: "12345678"</p>
-            <p>. Monte ton volume . <br>. Monte ta luminosité . <br>
-                . Et allume ton micro :</p>
-        </div>
-        <p id="err" style="display: none"><i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #ffffff;"></i><br><br><br>Accès impossible à ton micro... <br> Mais tu peux rester pour la suite ! </p>
-        <button id="startButton" disabled class="spinner">
-            <i id="microon" class="fa-solid fa-microphone fa-2xl" style="color: #ffffff;"></i>
-            <i id="microoff" class="fa-solid fa-microphone-slash fa-2xl" style="color: #ffffff; padding: 12px 0; display: none"></i>
-        </button>
-        <p class="alert" style="display: none">. Désolé, nous travaillons actuellement sur le site . <br>. (v2.02) .</p>
+      <div id="titles">
+        <h2>Bienvenue dans l'expérience<br />@TABLÉE</h2>
+        <p id="wifi">
+          Connecte toi au wifi : <br />
+          "<strong>attablee</strong>" mdp: "12345678"
+        </p>
+        <p>
+          . Monte ton volume . <br />. Monte ta luminosité . <br />
+          . Et allume ton micro :
+        </p>
+      </div>
+      <p id="err" style="display: none">
+        <i class="fa-solid fa-triangle-exclamation fa-2xl" style="color: #ffffff"></i><br /><br /><br />Accès impossible à ton micro... <br />
+        Mais tu peux rester pour la suite !
+      </p>
+      <button id="startButton" disabled class="spinner">
+        <i id="microon" class="fa-solid fa-microphone fa-2xl" style="color: #ffffff"></i>
+        <i id="microoff" class="fa-solid fa-microphone-slash fa-2xl" style="color: #ffffff; padding: 12px 0; display: none"></i>
+      </button>
+      <p class="alert" style="display: none">. Désolé, nous travaillons actuellement sur le site . <br />. (v2.02) .</p>
     </div>
-    <div id = "overlayWAIT" class="overlay" style="visibility: hidden">
-        <p>Attends un peu...</p>
-        <div id="circle"></div>
+    <div id="overlayWAIT" class="overlay" style="visibility: hidden">
+      <p>Attends un peu...</p>
+      <div id="circle"></div>
     </div>
     <div id="overlayTHEEND" class="overlay" style="visibility: hidden">
-        <h1><strong>FIN</strong></h1>
-        <p>
-            <strong>Olivia SCEMAMA</strong><br>Contrebasse <br><br>
-            <strong>Romain AL.</strong><br>Développement numérique / Vidéos live <br><br>
-            <strong>Nicolas CANOT</strong><br>Électronique / FX / Spatialisation sonore
-        </p>
-        <p>Expérience imaginée avec<br><strong>Yann JOUSSEIN</strong></p>
+      <h1><strong>FIN</strong></h1>
+      <p>
+        <strong>Olivia SCEMAMA</strong><br />Contrebasse <br /><br />
+        <strong>Romain AL.</strong><br />Développement numérique / Vidéos live <br /><br />
+        <strong>Nicolas CANOT</strong><br />Électronique / FX / Spatialisation sonore
+      </p>
+      <p>Expérience imaginée avec<br /><strong>Yann JOUSSEIN</strong></p>
     </div>
-    <div id="loading-bar" ></div>
+    <div id="loading-bar"></div>
     <div id="adminID"></div>
     <!-- <script src="https://192.168.10.2:1337/socket.io/socket.io.min.js"></script> -->
-    <script src="https://cdn.socket.io/4.5.3/socket.io.min.js" integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi" crossorigin="anonymous"></script>
+    <script
+      src="https://cdn.socket.io/4.5.3/socket.io.min.js"
+      integrity="sha384-WPFUvHkB1aHA5TDSZi6xtDgkF0wXJcIIxXhC6h8OT8EH3fC5PWro5pWJ1THjcfEi"
+      crossorigin="anonymous"
+    ></script>
     <!-- <script src="https://cdn.socket.io/4.6.0/socket.io.min.js" integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+" crossorigin="anonymous"></script> -->
     <script src="./nosleep.js"></script>
     <script src="./streamvisualizer4Clients.js"></script>
     <script src="https://player.vimeo.com/api/player.js"></script>
     <!-- <script type="text/javascript"  src="./rnbo123.js"></script> -->
     <script src="./client.js"></script>
-</body>
+  </body>
 </html>
