@@ -35,6 +35,15 @@ let fullscreenElement = document.fullscreenElement || document.webkitFullscreenE
 if (fullscreenElement === undefined) btn_fullscreen.style.display = "none";
 const btn_gain = document.getElementById("btn_gain");
 const btn_rec = document.getElementById("btn_rec");
+let changeS = 1;
+document.getElementById("changeS").onclick = () => {
+  if (changeS == 1) {
+    changeS = 6;
+  } else {
+    changeS = 1;
+  }
+  changeScene({ scene: changeS });
+};
 btn_rec.style.background = "transparent";
 btn_rec.onclick = recfunction;
 const rec = document.getElementById("rec");
@@ -198,65 +207,65 @@ const effects = [
       },
     ],
   },
-  {
-    name: "disto",
-    title: "DISTORSION",
-    device: null,
-    div: null,
-    activ: false,
-    visible: true,
-    gain: null,
-    userParams: [
-      {
-        name: "drive",
-        title: "DISTO",
-        defaultValue: 20.0,
-        param: null,
-        visible: true,
-        type: "real",
-      },
-      {
-        name: "mix",
-        title: "MIX",
-        defaultValue: 100.0,
-        param: null,
-        visible: false,
-        type: "real",
-      },
-      {
-        name: "midfreq",
-        title: "MIDFREQ",
-        defaultValue: 0.0,
-        param: null,
-        visible: false,
-        type: "real",
-      },
-      {
-        name: "treble",
-        title: "TREBLE",
-        defaultValue: 50.0,
-        param: null,
-        visible: false,
-        type: "real",
-      },
-      {
-        name: "mid",
-        title: "MID",
-        defaultValue: 100.0,
-        param: null,
-        visible: false,
-        type: "real",
-      },
-      {
-        name: "bass",
-        title: "BASS",
-        defaultValue: 50.0,
-        param: null,
-        visible: false,
-        type: "real",
-      },
-    ],
-  },
+  // {
+  //   name: "disto",
+  //   title: "DISTORSION",
+  //   device: null,
+  //   div: null,
+  //   activ: false,
+  //   visible: true,
+  //   gain: null,
+  //   userParams: [
+  //     {
+  //       name: "drive",
+  //       title: "DISTO",
+  //       defaultValue: 20.0,
+  //       param: null,
+  //       visible: true,
+  //       type: "real",
+  //     },
+  //     {
+  //       name: "mix",
+  //       title: "MIX",
+  //       defaultValue: 100.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real",
+  //     },
+  //     {
+  //       name: "midfreq",
+  //       title: "MIDFREQ",
+  //       defaultValue: 0.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real",
+  //     },
+  //     {
+  //       name: "treble",
+  //       title: "TREBLE",
+  //       defaultValue: 50.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real",
+  //     },
+  //     {
+  //       name: "mid",
+  //       title: "MID",
+  //       defaultValue: 100.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real",
+  //     },
+  //     {
+  //       name: "bass",
+  //       title: "BASS",
+  //       defaultValue: 50.0,
+  //       param: null,
+  //       visible: false,
+  //       type: "real",
+  //     },
+  //   ],
+  // },
   {
     name: "downsample",
     title: "DEGRADATION",
@@ -350,6 +359,57 @@ const effects = [
     ],
   },
   {
+    name: "glitches",
+    title: "GLITCHES (Del/Chance/Feed/Range/Speed)",
+    device: null,
+    div: null,
+    activ: true,
+    visible: true,
+    gain: null,
+    userParams: [
+      {
+        name: "DEL",
+        title: "DEL",
+        defaultValue: null,
+        param: null,
+        visible: true,
+        type: "real",
+      },
+      {
+        name: "CHANCE",
+        title: "CHANCE",
+        defaultValue: null,
+        param: null,
+        visible: true,
+        type: "real",
+      },
+      {
+        name: "FEED",
+        title: "FEED",
+        defaultValue: null,
+        param: null,
+        visible: true,
+        type: "real",
+      },
+      {
+        name: "RANGE",
+        title: "RANGE",
+        defaultValue: null,
+        param: null,
+        visible: true,
+        type: "real",
+      },
+      {
+        name: "SPEED",
+        title: "SPEED",
+        defaultValue: null,
+        param: null,
+        visible: true,
+        type: "real",
+      },
+    ],
+  },
+  {
     name: "sampler",
     title: "SAMPLER",
     device: null,
@@ -425,6 +485,7 @@ function init() {
   // document.getElementById("startButton").disabled = true; // TODO -> Only Nico
   context = new AudioContext();
   if (myPeer) myPeer = null;
+  // myPeer = context.createMediaStreamDestination();
   myPeer = context.createMediaStreamDestination();
   analyser = context.createAnalyser();
   gain = context.createGain();
@@ -460,7 +521,7 @@ function init() {
   console.log(socket.id);
   socket.connect();
   console.log(socket.id);
-  changeScene({ scene: 6 }); // TODO -> Only Nico
+  changeScene({ scene: 1 }); // TODO -> Only Nico
   // socket.emit("join", roomName, false); // TODO -> Only Nico
 }
 
@@ -631,11 +692,11 @@ function changeScene(data) {
       if (data.freq) {
         filter.device.parameters.find((p) => p.name == "FREQ").value = data.freq;
       } else {
-        if (!myPeer || !myPeer.stream.active) {
-          myPeer = context.createMediaStreamDestination();
-          let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-          audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
-        }
+        // if (!myPeer || !myPeer.stream.active) {
+        //   myPeer = context.createMediaStreamDestination();
+        //   let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+        //   audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+        // }
         if (streamVisualizer4Clients)
           try {
             streamVisualizer4Clients.stop();
@@ -646,17 +707,17 @@ function changeScene(data) {
           // TODO
           console.log("context1 1");
           context = new AudioContext();
-          let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-          audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
-          let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
-          videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
-        } else if (context.state == "suspended") {
-          console.log("context2 1");
-          context.resume();
-          let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
-          audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
-          let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
-          videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
+          //   let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+          //   audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+          //   let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+          //   videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
+          // } else if (context.state == "suspended") {
+          //   console.log("context2 1");
+          //   context.resume();
+          //   let audioSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "audio");
+          //   audioSender.replaceTrack(myPeer.stream.getTracks()[0]);
+          //   let videoSender = rtcPeerConnection.getSenders().find((s) => s.track.kind === "video");
+          //   videoSender.replaceTrack(userCanvasStream.getTracks()[0]);
         }
 
         if (navigator.mediaDevices.getUserMedia === undefined) {
@@ -1076,7 +1137,7 @@ function changeScene(data) {
         adminVideo_webrtc.style.display = "none";
         // adminVideo_webrtc.volume = 0;
         adminVideo_webrtc.pause();
-        myGUI.style.display = "none";
+        // myGUI.style.display = "none";
         audio_nico.addEventListener("ended", (event) => {
           flash("white");
         });
@@ -1416,15 +1477,15 @@ async function effects_Setup(effects) {
     }
 
     // (Optional) Fetch the dependencies
-    // let dependencies = [];
-    // try {
-    //     const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
-    //     dependencies = await dependenciesResponse.json();
-    //     // Prepend "export" to any file dependenciies
-    //     dependencies = dependencies.map(d => d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d);
-    // } catch (e) {
-    //   console.log('No dependencies in : ' + effects[i].name);
-    // }
+    let dependencies = [];
+    try {
+      const dependenciesResponse = await fetch(`./effects/${effects[i].name}_dependencies.json`);
+      dependencies = await dependenciesResponse.json();
+      // Prepend "export" to any file dependenciies
+      dependencies = dependencies.map((d) => (d.file ? Object.assign({}, d, { file: "./effects/" + d.file }) : d));
+    } catch (e) {
+      console.log("No dependencies in : " + effects[i].name);
+    }
 
     // Create the device
     try {
@@ -1433,8 +1494,7 @@ async function effects_Setup(effects) {
       alert("err");
     }
 
-    // if (dependencies.length)
-    //   await effects[i].device.loadDataBufferDependencies(dependencies);
+    if (dependencies.length) await effects[i].device.loadDataBufferDependencies(dependencies);
 
     // attachOutports(effects[i].device);
 
@@ -1804,8 +1864,8 @@ function nodeConnection(mode) {
     filter.gain.connect(f_effects[f_effects.length - 1].device.node);
   }
   gain.connect(analyser);
-  analyser.connect(myPeer);
-  // analyser.connect(context.destination);
+  // analyser.connect(myPeer); // TODO -> Only Nico
+  analyser.connect(context.destination);
 }
 
 let recTimeCount = 0;
