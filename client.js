@@ -35,14 +35,11 @@ let fullscreenElement = document.fullscreenElement || document.webkitFullscreenE
 if (fullscreenElement === undefined) btn_fullscreen.style.display = "none";
 const btn_gain = document.getElementById("btn_gain");
 const btn_rec = document.getElementById("btn_rec");
-let changeS = 1;
+let changeS = 0;
+let changeSA = [1, 6, 21];
 document.getElementById("changeS").onclick = () => {
-  if (changeS == 1) {
-    changeS = 6;
-  } else {
-    changeS = 1;
-  }
-  changeScene({ scene: changeS });
+  changeS = (changeS + 1) % 3;
+  changeScene({ scene: changeSA[changeS] });
 };
 btn_rec.style.background = "transparent";
 btn_rec.onclick = recfunction;
@@ -751,6 +748,7 @@ function changeScene(data) {
                 } catch (e) {
                   console.log(e);
                 }
+                atablee.style.display = "none";
                 effects_Setup(effects)
                   .then(() => {
                     filter_Setup(filter).then(() => {
@@ -994,7 +992,7 @@ function changeScene(data) {
           }
         atablee.style.display = "initial";
         userCanvas.style.display = "none";
-        myGUI.style.display = "none";
+        // myGUI.style.display = "none";
         adminVideo_webrtc.style.display = "none";
         //document.getElementById("overlay").remove(); // TODO
         // adminVideo_webrtc.volume = 0;
